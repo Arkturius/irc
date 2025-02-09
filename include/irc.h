@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:04:01 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/09 21:17:35 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/09 21:32:59 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,10 +40,10 @@ typedef std::string str;
 # define IRC_OK(msg, ...)	_IRC_LOG(GREEN,	 "done:", msg, ##__VA_ARGS__)
 # define IRC_ERR(msg, ...)	_IRC_LOG(RED,	 "error:", msg, ##__VA_ARGS__)
 
-# define EXCEPTION(n, m)	class n:public std::exception { const char *what() const throw() { return (m) ; } ; }
+# define EXCEPTION(n, m)	class n:public std::exception { inline const char *what() const throw() { return (m) ; } ; }
 
-# define GETTER(t, x)		t &get##x() { return this->x ; }				\
-							const t &get##x() const { return this->x ; }
+# define GETTER(t, x)		inline t &get##x() { return this->x ; }				\
+							inline const t &get##x() const { return this->x ; }
 
 # define SETTER(c, t, x)	inline t c::set##x(t other) { this->x = other ; }
 
