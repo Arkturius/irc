@@ -1,0 +1,6 @@
+.cache
+build
+ircserv
+*.o
+*.json
+*.py
