@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/09 21:34:12 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/10 18:35:47 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,9 @@ class Server
 
 		bool	_updatePollSet();
 
+		void	_acceptClient();
+		void	_disconnectClient(size_t id);
+
 	public:
 		Server(int port, str password);
 		~Server(void);
@@ -59,6 +62,7 @@ class Server
 		EXCEPTION(ServerBindFailedException,	"bind() failed.");
 		EXCEPTION(ServerListenFailedException,	"listen() failed.");
 		EXCEPTION(ServerPollFailedException,	"poll() failed.");
+		EXCEPTION(ServerAcceptFailedException,	"accept() failed.");
 };
 
 #endif // SERVER_HPP
