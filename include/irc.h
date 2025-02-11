@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:04:01 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/10 18:02:01 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/11 12:39:25 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,16 +36,26 @@ typedef std::string str;
 
 # define _IRC_LOG(c, t, msg, ...)	printf(BOLD(COLOR(c,"%6s"))" > "msg"\n", t, ##__VA_ARGS__)
 
-# define IRC_LOG(msg, ...)	_IRC_LOG(YELLOW, "info:", msg, ##__VA_ARGS__)
-# define IRC_OK(msg, ...)	_IRC_LOG(GREEN,	 "done:", msg, ##__VA_ARGS__)
+# ifdef IRC_VERBOSE
+#  define IRC_LOG(msg, ...)	_IRC_LOG(YELLOW, "info:", msg, ##__VA_ARGS__)
+#  define IRC_OK(msg, ...)	_IRC_LOG(GREEN,	 "done:", msg, ##__VA_ARGS__)
+# else
+#  define IRC_LOG(msg, ...)
+#  define IRC_OK(msg, ...)
+#endif
+
 # define IRC_ERR(msg, ...)	_IRC_LOG(RED,	 "error:", msg, ##__VA_ARGS__)
+
+# define IRC_FLAG_SET(w, f)	(w) = (ServerFlag)((w) | (f))
+# define IRC_FLAG_DEL(w, f)	(w) = (ServerFlag)((w) & ~(f))
+# define IRC_FLAG_GET(w, f)	((w) & (f))
 
 # define EXCEPTION(n, m)	class n:public std::exception { inline const char *what() const throw() { return (m) ; } ; }
 
-# define GETTER(t, x)		inline t &get##x() { return this->x ; }				\
-							inline const t &get##x() const { return this->x ; }
+# define GETTER(t, x)		inline t &get##x() { return this->x ; }
+# define GETTER_C(t, x)		inline const t &get##x() const { return this->x ; }
 
-# define SETTER(c, t, x)	inline t c::set##x(t other) { this->x = other ; }
+# define SETTER(t, x)		inline void set##x(t other) { this->x = other ; }
 
 # define auto __auto_type
 
