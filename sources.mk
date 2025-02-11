@@ -6,9 +6,11 @@
 #    By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/08 16:01:29 by rgramati          #+#    #+#              #
-#    Updated: 2025/02/08 16:28:38 by rgramati         ###   ########.fr        #
+#    Updated: 2025/02/11 15:58:26 by yroussea         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 SRCS	:=	ircserv.cpp	\
-			Server.cpp
+			Server.cpp	\
+			Channel.cpp	\
+			Regex.cpp

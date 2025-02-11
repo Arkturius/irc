@@ -6,35 +6,21 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/11 14:00:12 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/11 16:02:06 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <Channel.h>
 #include <algorithm>
 #include <exception>
-#include <regex.h>
 #include <vector>
-
-bool	regex_match(str regex, str string)
-{
-	regex_t preg;
-	int err = regcomp (&preg, regex.c_str(), REG_NOSUB | REG_EXTENDED);
-	if (err == 0)
-	{
-		int match = regexec (&preg, string.c_str(), 0, NULL, 0);
-		regfree (&preg);
-		if (match == 0)
-			return true;
-	}
-	return false;
-}
+#include <RegexMatch.h>
 
 Channel::Channel(str channelName, int firstClient): _name(channelName), _inviteOnlyChannel(true), _userLimit(100)
 {
 	IRC_LOG("Channel constructor called.");
 
-	if (!regex_match(REGEX_APPROVE_CHANNEL_NAME, channelName))
+	if (!regex_match(REGEX_APPROVE_CHANNEL_NAME, channelName.c_str()))
 		throw invalideChannelNameException();
 
 	_fdAdminClient.push_back(firstClient);
