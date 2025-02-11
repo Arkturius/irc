@@ -6,7 +6,7 @@
 #    By: rgramati <rgramati@student.42angouleme.fr  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/05 17:09:56 by rgramati          #+#    #+#              #
-#    Updated: 2025/02/09 19:10:52 by rgramati         ###   ########.fr        #
+#    Updated: 2025/02/11 12:17:27 by rgramati         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,8 +23,13 @@ OBJS 		:=	$(addprefix $(OBJ_DIR)/, $(SRCS:%.cpp=%.o))
 CC			:=	clang++
 
 CFLAGS		:=	-Wall -Wextra -Werror -std=c++98
+
 ifeq ($(TEMP), 1)
 	CFLAGS	+=	-save-temps
+endif
+
+ifeq ($(VERBOSE), 1)
+	CFLAGS	+=	-DIRC_VERBOSE=1
 endif
 
 IFLAGS		:=	-I$(INC_DIR)

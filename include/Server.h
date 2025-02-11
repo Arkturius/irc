@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/10 18:35:47 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/11 12:42:01 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,6 @@ typedef enum
 	IRC_STATUS_NULL	=	0,
 	IRC_STATUS_OK	=	1U << 0,
 }	ServerFlag;
-
-# define IRC_FLAG_SET(w, f)	(w) = (ServerFlag)((w) | (f))
-# define IRC_FLAG_DEL(w, f)	(w) = (ServerFlag)((w) & ~(f))
-# define IRC_FLAG_GET(w, f)	((w) & (f))
 
 class Server
 {
@@ -57,6 +53,11 @@ class Server
 
 		GETTER(int, _port);
 		GETTER(int, _sockfd);
+		GETTER_C(int, _port);
+		GETTER_C(int, _sockfd);
+
+		SETTER(int, _port);
+		SETTER(int, _sockfd);
 
 		EXCEPTION(ServerSocketFailedException,	"socket() failed.");
 		EXCEPTION(ServerBindFailedException,	"bind() failed.");
@@ -64,5 +65,7 @@ class Server
 		EXCEPTION(ServerPollFailedException,	"poll() failed.");
 		EXCEPTION(ServerAcceptFailedException,	"accept() failed.");
 };
+
+std::ostream &operator<<(std::ostream &os, const Server &client);
 
 #endif // SERVER_HPP
