@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:04:01 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/11 12:39:25 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/12 15:41:43 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 # define IRC_H
 
 # include <stdio.h>
+# include <stdint.h>
 # include <string>
 # include <iostream>
 # include <exception>
@@ -46,8 +47,8 @@ typedef std::string str;
 
 # define IRC_ERR(msg, ...)	_IRC_LOG(RED,	 "error:", msg, ##__VA_ARGS__)
 
-# define IRC_FLAG_SET(w, f)	(w) = (ServerFlag)((w) | (f))
-# define IRC_FLAG_DEL(w, f)	(w) = (ServerFlag)((w) & ~(f))
+# define IRC_FLAG_SET(w, f)	(w) = ((w) | (f))
+# define IRC_FLAG_DEL(w, f)	(w) = ((w) & ~(f))
 # define IRC_FLAG_GET(w, f)	((w) & (f))
 
 # define EXCEPTION(n, m)	class n:public std::exception { inline const char *what() const throw() { return (m) ; } ; }

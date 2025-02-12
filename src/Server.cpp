@@ -6,11 +6,13 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/10 20:55:48 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/12 18:01:22 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <Server.h>
+#include <Client.h>
+#include <ClientList.h>
 
 #include <errno.h>
 #include <arpa/inet.h>
@@ -25,7 +27,7 @@ Server::Server(int port, str password): _flag(IRC_STATUS_OK), _port(port), _pass
 	if (_sockfd == -1)
 		throw ServerSocketFailedException();
 	
-	IRC_OK("socket opened [%d]", _sockfd);
+	IRC_OK("socket opened on fd "BOLD(COLOR(GRAY,"[%d]")), _sockfd);
 }
 
 Server::~Server(void)
@@ -34,7 +36,7 @@ Server::~Server(void)
 
 	close(_sockfd);
 
-	IRC_OK("closed socket on fd [%d]", _sockfd);
+	IRC_OK("closed socket on fd "BOLD(COLOR(GRAY,"[%d]")), _sockfd);
 }
 
 void	Server::_bindSocket() const
@@ -110,7 +112,7 @@ bool	Server::_updatePollSet()
 		e == ENETUNREACH\
 )
 
-void	Server::_acceptClient()
+struct pollfd	*Server::_acceptClient()
 {
 	IRC_LOG("new client connection.");
 
@@ -125,7 +127,7 @@ void	Server::_acceptClient()
 			IRC_LOG("accept failed. retrying...");
 		else
 			throw ServerAcceptFailedException();
-		return ;
+		return (NULL);
 	}
 
 	struct pollfd	client_pfd;
@@ -133,17 +135,41 @@ void	Server::_acceptClient()
 	client_pfd.fd = fd;
 	client_pfd.events = POLLIN | POLLOUT;
 	client_pfd.revents = 0;
+
 	_pollSet.push_back(client_pfd);
 
-	IRC_OK("client accepted on fd [%d].", fd);
+	IRC_OK("client accepted on fd "BOLD(COLOR(GRAY,"[%d]"))".", fd);
+	return (&_pollSet[_pollSet.size() - 1]);
 }
 
-void	Server::_disconnectClient(size_t id)
+void	Server::_executeCommand(Client *client)
 {
-	IRC_LOG("client on fd [%d] disconnected.", _pollSet[id].fd);
+	(void) client;
+}
 
-	close(_pollSet[id].fd);
-	_pollSet[id].fd = -1;
+void	Server::_handleMessage(Client *client)
+{
+	str	buffer = client->get_buffer();
+
+	while (true)
+	{
+		size_t	linefeed = buffer.find("\n");
+		if (linefeed == std::string::npos)
+			break ;
+
+		str		cmd = buffer.substr(0, linefeed - 1);
+
+		IRC_OK("Command extracted : <%s>", cmd.c_str());
+
+		if (cmd.length() + 2 == buffer.length())
+		{
+			buffer = "";
+			break ;
+		}
+
+		buffer = buffer.substr(linefeed + 1, buffer.length());
+	}
+	client->updateBuffer(buffer);
 }
 
 void	Server::start()
@@ -155,6 +181,10 @@ void	Server::start()
 	server_pfd.fd = _sockfd;
 	server_pfd.events = POLLIN | POLLOUT;
 	_pollSet.push_back(server_pfd);
+
+// 	ClientList	clients;
+	std::map<int, Client>	clients;
+	Client					*client;
 
 	while (IRC_FLAG_GET(_flag, IRC_STATUS_OK))
 	{
@@ -168,10 +198,22 @@ void	Server::start()
 			if (curr.revents & POLLIN)
 			{
 				if (id == 0)
-					_acceptClient();
+				{
+					struct pollfd	*client_pfd = _acceptClient();
+
+					clients[client_pfd->fd] = Client(client_pfd);
+				}
 				else
-					(void)0;
-					// Client reading and saving
+				{
+					client = &clients[curr.fd];
+
+					client->readBytes();
+					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOT))
+					{
+						IRC_ERR("GOT MESSAGE <%s>", client->get_buffer().c_str());
+						_handleMessage(client);
+					}
+				}
 			}
 		}
 	}
@@ -180,7 +222,7 @@ void	Server::start()
 }
 
 void	Server::serverInfo() const
-{	
+{
 	IRC_LOG
 	(
 		"Server:\n"

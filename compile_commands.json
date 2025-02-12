@@ -2,11 +2,12 @@
  {
   "directory": "/nfs/homes/rgramati/Documents/42cursus/irc",
   "arguments": [
-   "c++",
+   "clang++",
    "-Wall",
    "-Wextra",
    "-Werror",
    "-std=c++98",
+   "-save-temps",
    "-Iinclude",
    "-o",
    "build/src/ircserv.o",
@@ -18,11 +19,12 @@
  {
   "directory": "/nfs/homes/rgramati/Documents/42cursus/irc",
   "arguments": [
-   "c++",
+   "clang++",
    "-Wall",
    "-Wextra",
    "-Werror",
    "-std=c++98",
+   "-save-temps",
    "-Iinclude",
    "-o",
    "build/src/Server.o",
@@ -30,5 +32,22 @@
    "src/Server.cpp"
   ],
   "file": "src/Server.cpp"
+ },
+ {
+  "directory": "/nfs/homes/rgramati/Documents/42cursus/irc",
+  "arguments": [
+   "clang++",
+   "-Wall",
+   "-Wextra",
+   "-Werror",
+   "-std=c++98",
+   "-save-temps",
+   "-Iinclude",
+   "-o",
+   "build/src/Client.o",
+   "-c",
+   "src/Client.cpp"
+  ],
+  "file": "src/Client.cpp"
  }
 ]
