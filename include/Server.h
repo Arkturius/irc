@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/12 17:21:57 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 16:31:17 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ class Server
 
 		void			_handleMessage(Client *client);
 		str				_extractCommand(str *source);
-		void			_executeCommand(Client *client);
+		void			_executeCommand(Client *client, const str &command);
 
 	public:
 		Server(int port, str password);

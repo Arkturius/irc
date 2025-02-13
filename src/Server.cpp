@@ -6,13 +6,12 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/12 18:01:22 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 17:15:01 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <Server.h>
 #include <Client.h>
-#include <ClientList.h>
 
 #include <errno.h>
 #include <arpa/inet.h>
@@ -142,9 +141,10 @@ struct pollfd	*Server::_acceptClient()
 	return (&_pollSet[_pollSet.size() - 1]);
 }
 
-void	Server::_executeCommand(Client *client)
+void	Server::_executeCommand(Client *client, const str &command)
 {
 	(void) client;
+	IRC_LOG(BOLD(COLOR(MAGENTA,"command execution : <%s>")), command.c_str());
 }
 
 void	Server::_handleMessage(Client *client)
@@ -157,16 +157,14 @@ void	Server::_handleMessage(Client *client)
 		if (linefeed == std::string::npos)
 			break ;
 
-		str		cmd = buffer.substr(0, linefeed - 1);
+		const str		command = buffer.substr(0, linefeed - 1);
+		_executeCommand(client, command);	
 
-		IRC_OK("Command extracted : <%s>", cmd.c_str());
-
-		if (cmd.length() + 2 == buffer.length())
+		if (command.length() + 2 == buffer.length())
 		{
 			buffer = "";
 			break ;
 		}
-
 		buffer = buffer.substr(linefeed + 1, buffer.length());
 	}
 	client->updateBuffer(buffer);
@@ -182,7 +180,6 @@ void	Server::start()
 	server_pfd.events = POLLIN | POLLOUT;
 	_pollSet.push_back(server_pfd);
 
-// 	ClientList	clients;
 	std::map<int, Client>	clients;
 	Client					*client;
 

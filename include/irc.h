@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:04:01 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/13 15:50:03 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 17:06:54 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ typedef std::string str;
 # define	UNUSED(X)			(void)(X)
 # define	UNIMPLEMENTED(X)	assert(0 && "Unimplemented")
 
-# define	BOLD(X)				"\033[1m"X"\033[22m"
-# define 	ITALIC(X)			"\033[3m"X"\033[23m"
+# define	BOLD(X)				"\033[1m" X "\033[22m"
+# define 	ITALIC(X)			"\033[3m" X "\033[23m"
 # define 	RED					"\033[31m"
 # define 	GREEN				"\033[32m"
 # define 	YELLOW				"\033[33m"
@@ -35,7 +35,7 @@ typedef std::string str;
 # define 	RESET				"\033[0m"
 # define 	COLOR(C, X)			C X RESET
 
-# define _IRC_LOG(c, t, msg, ...)	printf(BOLD(COLOR(c,"%6s"))" > "msg"\n", t, ##__VA_ARGS__)
+# define _IRC_LOG(c, t, msg, ...)	printf(BOLD(COLOR(c,"%6s")) " > " msg "\n", t, ##__VA_ARGS__)
 
 # ifdef IRC_VERBOSE
 #  define IRC_LOG(msg, ...)	_IRC_LOG(YELLOW, "info:", msg, ##__VA_ARGS__)
