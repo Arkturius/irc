@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 11:56:54 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/12 17:55:05 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 22:38:16 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include <unistd.h>
 #include <sys/poll.h>
 #include <Client.h>
+#include <Channel.h>
 
 Client::Client(void) {}
 
@@ -72,3 +73,35 @@ void	Client::readBytes(void)
 // 	for (auto it = _channelMap.begin(); it < _channelMap; ++it)
 // 		(*it).second.channelInfo();
 // }
+
+
+void	Client::joinChannel(Channel *channel)
+{
+	str	channelName = channel->get_name();
+
+	auto s = _channelMap.find(channelName);
+	if (s != _channelMap.end())
+	{
+		//TODO tu est deja dedant..
+	}
+	else
+	{
+		_channelMap[channelName] = channel;
+		//TODO sucefully join the channel;
+	}
+}
+void	Client::leaveChannel(Channel *channel)
+{
+	str	channelName = channel->get_name();
+
+	auto s = _channelMap.find(channelName);
+	if (s != _channelMap.end())
+	{
+		_channelMap.erase(s);
+		//TODO sucefully leave the channel;
+	}
+	else
+	{
+		//TODO tu etais pas dedant ...
+	}
+}

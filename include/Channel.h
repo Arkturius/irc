@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/13 17:33:29 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 22:48:36 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,13 +44,14 @@ class Channel
 		std::vector<int>		_fdClient;
 		std::vector<int>		_fdAdminClient;
 
-		int	get_size() {return _fdAdminClient.size() + _fdClient.size();}
+		int		get_size() {return _fdAdminClient.size() + _fdClient.size();}
+		void	_addClient(int fdClient, int perm);
 	
 	public:
 		Channel(str name, int);
 		~Channel(void);
 
-		void	addClient(int fdClient, int perm);
+		void	addClient(int fdClient, str *password);
 		int		removeClient(int fdClient); //TODO remove call by server, need to check if size == 0 to delete it
 
 		bool	havePerm(int fdClient);
@@ -66,7 +67,7 @@ class Channel
 		SETTER(str, _password);
 		SETTER(bool, _activePassword); //TODO set when set password
 		GETTER_C(bool, _activePassword); //TODO Check when join
-										 //
+
 		GETTER_C(bool, _inviteOnlyChannel);
 		SETTER(bool, _inviteOnlyChannel);
 
@@ -76,6 +77,7 @@ class Channel
 
 		EXCEPTION(InvalidChannelNameException,	"Invalid channel name.");
 		EXCEPTION(ClientNotInChannelException,	"Client not in channel.");
+		EXCEPTION(InvalidChannelKeyException,	"The Channel Key is incorrect");
 };
 
 #endif // CHANNEL_H

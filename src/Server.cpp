@@ -6,12 +6,14 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/13 18:05:25 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 23:27:39 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <Server.h>
 #include <Client.h>
+#include <Channel.h>
+#include <RegexMatch.h>
 
 #include <errno.h>
 #include <arpa/inet.h>
@@ -146,6 +148,25 @@ void	Server::_executeCommand(Client *client, const str &command)
 	UNUSED(client);
 	UNUSED(command);
 	IRC_LOG(BOLD(COLOR(MAGENTA,"command execution : <%s>")), command.c_str());
+
+	int					i;
+	static const char	*regexCommand[1] = {"^(JOIN )"}; //TODO ajouter les autres
+	//TODO les regex parfais
+	//TODO il se passe quoi si 1 channel est incorrect? on y va quand meme?
+
+	for (i = 0; i < 5; i++)
+	{
+		if (regex_match(regexCommand[i], command.c_str()))
+			break ;
+	}
+	switch (i)
+	{
+		case 1:
+			return _join(command, client);
+		default:
+			return ;
+	}
+
 }
 
 void	Server::_handleMessage(Client *client)

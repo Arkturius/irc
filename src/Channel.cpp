@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/13 17:35:36 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 22:49:21 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,14 +30,33 @@ Channel::~Channel(void)
 	IRC_LOG("Channel destructor called.");
 }
 
-void	Channel::addClient(int fdClient, int perm)
+void	Channel::_addClient(int fdClient, int perm)
 {
-	//TODO password here?
-	//TODO check if alraidy in?
 	if (perm)
 		_fdAdminClient.push_back(fdClient);
 	else
 		_fdClient.push_back(fdClient);
+}
+void	Channel::addClient(int fdClient, str *password)
+{
+	//TODO if password given but not needed?
+	//TODO la ca va segfault dans ce cas xd
+	if (_activePassword && *password != _password)
+		throw InvalidChannelKeyException();
+
+	
+	std::vector<int>::iterator	it;
+	for (it = _fdClient.begin(); it != _fdClient.end(); ++it)
+	{
+		if (*it == fdClient)
+			return ;
+	}
+	for (it = _fdAdminClient.begin(); it != _fdAdminClient.end(); ++it)
+	{
+		if (*it == fdClient)
+			return ;
+	}
+	_fdClient.push_back(fdClient);
 }
 
 int	Channel::removeClient(int fdClient)
@@ -84,7 +103,7 @@ void	Channel::givePerm(int userClient, int targetClient)
 		if (havePerm(userClient) && !havePerm(targetClient))
 		{
 			removeClient(targetClient);
-			addClient(targetClient, 1);
+			_addClient(targetClient, 1);
 		}
 	}
 	catch (std::exception &e)
@@ -99,7 +118,7 @@ void	Channel::removePerm(int targetClient)
 		if (havePerm(targetClient))
 		{
 			removeClient(targetClient);
-			addClient(targetClient, 0);
+			_addClient(targetClient, 0);
 		}
 	}
 	catch (std::exception &e)

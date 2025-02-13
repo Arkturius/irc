@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 15:48:43 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/13 17:13:54 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 23:18:42 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,5 +49,8 @@
 
 # define	R_CAPTURE_INT		R_CAPTURE(R_DIGIT R_1_OR_MORE)
 # define	R_CAPTURE_WORD		R_CAPTURE(R_ALPHA R_1_OR_MORE)
+
+//TODO regex join(ect) : JOIN CHANNEL,CHANNEL,CHANNEL KEY,KEY,KEY
+
 
 #endif

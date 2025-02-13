@@ -6,13 +6,15 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/13 16:31:17 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 23:20:06 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
+#include "Channel.h"
+#include <map>
 # include <sys/socket.h>
 # include <irc.h>
 
@@ -76,6 +78,16 @@ class Server
 		EXCEPTION(ServerListenFailedException,	"listen() failed.");
 		EXCEPTION(ServerPollFailedException,	"poll() failed.");
 		EXCEPTION(ServerAcceptFailedException,	"accept() failed.");
+	
+	private:
+		std::map<str, Channel *>	_channelMap;
+		void						_addChannel(str channelName, str *key, Client *);
+
+		void						_join(const str, Client *);
+		void						_kick(const str, Client *);
+		void						_topic(const str, Client *);
+		void						_invite(const str, Client *);
+		void						_mode(const str, Client *);
 };
 
 std::ostream &operator<<(std::ostream &os, const Server &client);
