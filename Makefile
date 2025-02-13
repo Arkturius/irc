@@ -6,7 +6,7 @@
 #    By: rgramati <rgramati@student.42angouleme.fr  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/05 17:09:56 by rgramati          #+#    #+#              #
-#    Updated: 2025/02/11 12:17:27 by rgramati         ###   ########.fr        #
+#    Updated: 2025/02/13 18:05:51 by rgramati         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,7 +39,6 @@ RM			:=	rm -rf
 #
 # Rules
 #
-
 all:			$(NAME)
 
 $(NAME):	 	$(OBJS)

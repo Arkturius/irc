@@ -49,5 +49,39 @@
    "src/Client.cpp"
   ],
   "file": "src/Client.cpp"
+ },
+ {
+  "directory": "/nfs/homes/rgramati/Documents/42cursus/irc",
+  "arguments": [
+   "clang++",
+   "-Wall",
+   "-Wextra",
+   "-Werror",
+   "-std=c++98",
+   "-DIRC_VERBOSE=1",
+   "-Iinclude",
+   "-o",
+   "build/src/Channel.o",
+   "-c",
+   "src/Channel.cpp"
+  ],
+  "file": "src/Channel.cpp"
+ },
+ {
+  "directory": "/nfs/homes/rgramati/Documents/42cursus/irc",
+  "arguments": [
+   "clang++",
+   "-Wall",
+   "-Wextra",
+   "-Werror",
+   "-std=c++98",
+   "-DIRC_VERBOSE=1",
+   "-Iinclude",
+   "-o",
+   "build/src/Regex.o",
+   "-c",
+   "src/Regex.cpp"
+  ],
+  "file": "src/Regex.cpp"
  }
 ]

@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/13 17:15:01 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 18:05:25 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,7 +143,8 @@ struct pollfd	*Server::_acceptClient()
 
 void	Server::_executeCommand(Client *client, const str &command)
 {
-	(void) client;
+	UNUSED(client);
+	UNUSED(command);
 	IRC_LOG(BOLD(COLOR(MAGENTA,"command execution : <%s>")), command.c_str());
 }
 

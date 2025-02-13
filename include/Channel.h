@@ -6,18 +6,26 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/11 14:00:10 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/13 17:33:29 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CHANNEL_H
 # define CHANNEL_H
 
-# include <irc.h>
 # include <vector>
+# include <ircRegex.h>
+# include <irc.h>
 
-# define REGEX_APPROVE_CHANNEL_NAME "[#&].[a-zA-Z]{1,200}"
+# define	R_CHANNEL_PREFIX	R_CHAR_GROUP("&#+")
+# define	R_CHANNEL_ID		"!" R_X_EXACT(R_CHAR_GROUP(R_DIGIT_RANGE R_UPPER_RANGE),5)
+# define	R_CHANNEL_CHAR		R_CHAR_INV_GROUP(" \x07,")
 
+# define	R_CHANNEL_NAME		R_ALTERNATION											\
+								(														\
+									R_CHANNEL_PREFIX	R_1_TO_Y(R_CHANNEL_CHAR, 49),	\
+									R_CHANNEL_ID		R_1_TO_Y(R_CHANNEL_CHAR, 45)	\
+								)
 class Client;
 
 class Channel
@@ -66,9 +74,8 @@ class Channel
 		GETTER_C(str, _name);
 		GETTER_C(std::vector<int>, _fdClient);
 
-
-		EXCEPTION(invalideChannelNameException,	"The Channel Name is Invalide");
-		EXCEPTION(clientNotInChannelException,	"The Client is not in the Channel");
+		EXCEPTION(InvalidChannelNameException,	"Invalid channel name.");
+		EXCEPTION(ClientNotInChannelException,	"Client not in channel.");
 };
 
 #endif // CHANNEL_H

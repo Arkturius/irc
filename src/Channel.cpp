@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/11 16:02:06 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/13 17:35:36 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,8 @@ Channel::Channel(str channelName, int firstClient): _name(channelName), _inviteO
 {
 	IRC_LOG("Channel constructor called.");
 
-	if (!regex_match(REGEX_APPROVE_CHANNEL_NAME, channelName.c_str()))
-		throw invalideChannelNameException();
-
+	if (!regex_match(R_CHANNEL_NAME, channelName.c_str()))
+		throw InvalidChannelNameException();
 	_fdAdminClient.push_back(firstClient);
 }
 
@@ -61,7 +60,7 @@ int	Channel::removeClient(int fdClient)
 			goto end;
 		}
 	}
-	throw clientNotInChannelException();
+	throw ClientNotInChannelException();
 end:
 	return (get_size());
 }
@@ -75,7 +74,7 @@ bool	Channel::havePerm(int fdClient)
 	it = std::find(_fdClient.begin(), _fdClient.end(), fdClient);
 	if (it != _fdClient.end())
 		return false;
-	throw clientNotInChannelException();
+	throw ClientNotInChannelException();
 }
 
 void	Channel::givePerm(int userClient, int targetClient)
@@ -90,7 +89,7 @@ void	Channel::givePerm(int userClient, int targetClient)
 	}
 	catch (std::exception &e)
 	{
-		std::cout << e.what() << std::endl;
+		IRC_ERR("%s", e.what());
 	}
 }
 void	Channel::removePerm(int targetClient)
@@ -105,6 +104,6 @@ void	Channel::removePerm(int targetClient)
 	}
 	catch (std::exception &e)
 	{
-		std::cout << e.what() << std::endl;
+		IRC_ERR("%s", e.what());
 	}
 }
