@@ -6,13 +6,15 @@
 /*   By: yroussea <yroussea@student.42angouleme.fr  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 14:41:59 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/11 16:31:20 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/13 07:39:28 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <Channel.h>
 #include <RegexMatch.h>
+#include <algorithm>
 #include <cstring>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -22,55 +24,56 @@
 //MODE
 //JOIN
 
-#define REGEX_KICK "(KICK)"
-#define REGEX_INVITE "(INVITE)"
-#define REGEX_TOPIC "(TOPIC)"
-#define REGEX_MODE "(MODE)"
-#define REGEX_JOIN "(JOIN)"
+#define REGEX_KICK "(KICK) "
+#define REGEX_INVITE "(INVITE) "
+#define REGEX_TOPIC "(TOPIC) "
+#define REGEX_MODE "(MODE) "
+#define REGEX_JOIN "(JOIN) "
 #define REGEX_CHANNEL "([&#][^\7, ])"
-#define REGEX_KEY "([^ ,])" //TODO verif regex
+#define REGEX_KEY "([^ ,])" //TODO verif regex >> je sais pas bon
 
 void	kick(str command);
 void	invite(str command);
 void	topic(str command);
 void	mode(str command);
 
-str	strldup(char *c, int len) //TODO verif car g pas la fois de ca xd
-{
-	char d = c[len];
-	c[len] = 0;
-	str	result(c);
-	c[len] = d;
-	return result;
-}
-
 void	join(str command)
 {
-	char	*save = strstr((char *)command.c_str(), "JOIN");
-	char	*c = save + 5;
-	//TODO verif que c est bien plasser
+	char	tmp[1000];
+	command += 5;
 
 	regmatch_t	pmatch[2];
 	std::vector<std::pair<str, str *> > vec;
 
-	while (c && *c && regex_find(REGEX_CHANNEL, c, pmatch))
+	while (command.size() && regex_find(REGEX_CHANNEL, command.c_str(), pmatch))
 	{
-		str channel = strldup(c + pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so); //TODO verif len +-1
+		str	channel;
+		if (pmatch[1].rm_eo - pmatch[1].rm_so >= 201)
+			;//TODO PRB
+		command.copy(tmp, pmatch[1].rm_eo - pmatch[1].rm_so, pmatch[1].rm_so);
+		channel = tmp;
 		vec.push_back(std::make_pair(channel, NULL));
+		command += pmatch[1].rm_eo;
 	}
-	c = strchr(save + 5, ' ');
 	int i = 0;
-	while (c && *c && regex_find(REGEX_KEY, c, pmatch))
+	while (command.size() && regex_find(REGEX_KEY, command.c_str(), pmatch) && i < (int)vec.size())
 	{
-		str key = strldup(c + pmatch[1].rm_so, pmatch[1].rm_eo - pmatch[1].rm_so); //TODO verif len +-1
+		str	key;
+		command.copy(tmp, pmatch[1].rm_eo - pmatch[1].rm_so, pmatch[1].rm_so);
+		key = tmp;
 		vec[i].second = &key;
+		command += pmatch[1].rm_eo;
 		i++;
 	}
-	//TODO faire les joins
-	//TODO ne pas oublier ce qu il y a possiblement avant le JOIN
+	if (command.size())
+		; //TODO trop de key dc?
+	for (int j = 0; i < (int)vec.size(); j++)
+	{
+		//TODO server.join_channel(user, vec[j].first, vec[j].second);
+	}
 }
 
-void	channelOperatorCommand(str command)
+void	channelOperatorCommand(str command /* + user*/)
 {
 	int					i;
 	static const str	regexCommand[5] = \
