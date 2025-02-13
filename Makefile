@@ -6,7 +6,7 @@
 #    By: rgramati <rgramati@student.42angouleme.fr  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/05 17:09:56 by rgramati          #+#    #+#              #
-#    Updated: 2025/02/13 18:05:51 by rgramati         ###   ########.fr        #
+#    Updated: 2025/02/13 23:23:19 by rgramati         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,10 +24,12 @@ CC			:=	clang++
 
 CFLAGS		:=	-Wall -Wextra -Werror -std=c++98
 
-ifeq ($(TEMP), 1)
-	CFLAGS	+=	-save-temps
+SAVE_TEMPS	?=	0
+ifeq ($(SAVE_TEMPS), 1)
+	CFLAGS	+=	--save-temps=obj
 endif
 
+VERBOSE		?=	0
 ifeq ($(VERBOSE), 1)
 	CFLAGS	+=	-DIRC_VERBOSE=1
 endif
@@ -51,8 +53,7 @@ $(OBJ_DIR)/%.o: %.cpp
 	@$(CC) $(CFLAGS) $(IFLAGS) -o $@ -c $^
 
 clean:
-	echo " $(RED)$(BOLD)$(ITALIC)■$(RESET)  deleted	$(GRAY)$(BOLD)$(ITALIC)$(OBJS)$(RESET)"
-	$(RM) $(OBJS)
+	echo " $(RED)$(BOLD)$(ITALIC)■$(RESET)  deleted	$(GRAY)$(BOLD)$(ITALIC)$(OBJ_DIR)$(RESET)"
 	$(RM) $(OBJ_DIR)
 
 fclean:			clean

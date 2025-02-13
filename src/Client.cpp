@@ -6,11 +6,10 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 11:56:54 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/13 22:38:16 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/14 00:46:23 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "irc.h"
 #include <unistd.h>
 #include <sys/poll.h>
 #include <Client.h>
@@ -22,7 +21,7 @@ Client::~Client(void) {}
 
 Client::Client(struct pollfd *pfd): _flag(IRC_CLIENT_CONNECTED), _pfd(pfd) {}
 
-void	Client::updateBuffer(str buffer) { _buffer = buffer; IRC_FLAG_DEL(_flag, IRC_CLIENT_EOT); }
+void	Client::resetBuffer(void) { _buffer = ""; IRC_FLAG_DEL(_flag, IRC_CLIENT_EOT); }
 
 size_t	Client::_readToBuffer(void)
 {
@@ -41,6 +40,7 @@ size_t	Client::_readToBuffer(void)
 void	Client::disconnect()
 {
 	IRC_LOG("client "BOLD(COLOR(GRAY,"[%d]"))" disconnected.", _pfd->fd);
+	close(_pfd->fd);
 	_pfd->fd = -1;
 	_pfd->events = 0;
 }
@@ -52,7 +52,7 @@ void	Client::readBytes(void)
 	bytes = _readToBuffer();
 	if (bytes == 0 || _buffer.length() == 0)
 	{
-		disconnect();
+		IRC_FLAG_SET(_flag, IRC_CLIENT_EOF);
 		return ;
 	}
 	if (_buffer.find("\n") != std::string::npos)

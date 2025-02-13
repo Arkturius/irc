@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:04:01 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/13 17:06:54 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/13 23:39:09 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,17 +35,18 @@ typedef std::string str;
 # define 	RESET				"\033[0m"
 # define 	COLOR(C, X)			C X RESET
 
-# define _IRC_LOG(c, t, msg, ...)	printf(BOLD(COLOR(c,"%6s")) " > " msg "\n", t, ##__VA_ARGS__)
+# define _IRC_LOG(c, t, msg, ...)	printf(BOLD(COLOR(c,"%8s")) " > " msg "\n", t, ##__VA_ARGS__)
 
 # ifdef IRC_VERBOSE
-#  define IRC_LOG(msg, ...)	_IRC_LOG(YELLOW, "info:", msg, ##__VA_ARGS__)
-#  define IRC_OK(msg, ...)	_IRC_LOG(GREEN,	 "done:", msg, ##__VA_ARGS__)
+#  define IRC_LOG(msg, ...)		_IRC_LOG(CYAN,       "log:", msg, ##__VA_ARGS__)
+#  define IRC_WARN(msg, ...)	_IRC_LOG(YELLOW, "warning:", msg, ##__VA_ARGS__)
+#  define IRC_OK(msg, ...)		_IRC_LOG(GREEN,	    "done:", msg, ##__VA_ARGS__)
 # else
 #  define IRC_LOG(msg, ...)
 #  define IRC_OK(msg, ...)
 #endif
 
-# define IRC_ERR(msg, ...)	_IRC_LOG(RED,	 "error:", msg, ##__VA_ARGS__)
+# define IRC_ERR(msg, ...)		_IRC_LOG(RED,	   "error:", msg, ##__VA_ARGS__)
 
 # define IRC_FLAG_SET(w, f)	(w) = ((w) | (f))
 # define IRC_FLAG_DEL(w, f)	(w) = ((w) & ~(f))

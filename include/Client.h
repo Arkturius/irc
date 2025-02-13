@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 11:56:54 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/13 22:38:14 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/14 00:47:03 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ typedef enum:	uint32_t
 {
 	IRC_CLIENT_CONNECTED	=	1U,
 	IRC_CLIENT_EOT			=	1U << 1,
-	IRC_CLIENT_OPERATOR		=	1U << 2,
+	IRC_CLIENT_EOF			=	1U << 2,
 }	clientFlag;
 
 #define COMMA	,
@@ -47,7 +47,7 @@ class Client
 		~Client(void);
 
 		void	readBytes(void);
-		void	updateBuffer(str buffer);
+		void	resetBuffer(void);
 
 		void	disconnect(void);
 		void	joinChannel(Channel *);

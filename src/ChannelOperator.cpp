@@ -6,15 +6,17 @@
 /*   By: yroussea <yroussea@student.42angouleme.fr  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 14:41:59 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/13 23:37:39 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/14 00:47:30 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <poll.h>
-#include <RegexMatch.h>
-#include <Client.h>
-#include <Server.h>
 #include <vector>
+
+#include <Server.h>
+#include <Client.h>
+#include <Channel.h>
+#include <RegexMatch.h>
 
 void	Server::_join(const str command, Client *client)
 {

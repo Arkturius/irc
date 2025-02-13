@@ -6,19 +6,20 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/13 23:20:06 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/14 00:45:35 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-#include "Channel.h"
-#include <map>
 # include <sys/socket.h>
+# include <map>
+# include <vector>
+
 # include <irc.h>
 
-# include <vector>
+# define COMMA	,
 
 typedef enum:	uint32_t
 {
@@ -27,6 +28,7 @@ typedef enum:	uint32_t
 }	serverFlag;
 
 class	Client;
+class	Channel;
 
 class Server
 {
@@ -38,6 +40,7 @@ class Server
 		str		_password;
 
 		std::vector<struct pollfd>	_pollSet;
+		std::map<int, Client>		_clients;
 
 // 		Client	_clients[IRC_CLIENT_CAP];
 
@@ -47,6 +50,8 @@ class Server
 		bool			_updatePollSet();
 
 		struct pollfd	*_acceptClient();
+		void			_connectClient(int fd);
+		void			_disconnectClient(Client *client);
 
 		void			_handleMessage(Client *client);
 		str				_extractCommand(str *source);
@@ -56,7 +61,7 @@ class Server
 		Server(int port, str password);
 		~Server(void);
 
-		void	initSocket();
+		void	init();
 		void	start();
 
 		void	serverInfo() const;
@@ -64,10 +69,12 @@ class Server
 		GETTER(uint32_t, _flag);
 		GETTER(int, _port);
 		GETTER(int, _sockfd);
+		GETTER(std::map<int COMMA Client>, _clients);
 
 		GETTER_C(uint32_t, _flag);
 		GETTER_C(int, _port);
 		GETTER_C(int, _sockfd);
+		GETTER_C(std::map<int COMMA Client>, _clients);
 
 		SETTER(uint32_t, _flag);
 		SETTER(int, _port);
@@ -89,7 +96,5 @@ class Server
 		void						_invite(const str, Client *);
 		void						_mode(const str, Client *);
 };
-
-std::ostream &operator<<(std::ostream &os, const Server &client);
 
 #endif // SERVER_HPP
