@@ -6,7 +6,7 @@
 /*   By: yroussea <yroussea@student.42angouleme.fr  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 14:41:59 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/14 16:18:45 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/14 16:38:25 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,9 @@
 
 void	Server::_join(const str command, Client *client)
 {
+	//JOIN channel,channel key,key
 	str		cmd = command;
-	char	tmp[1000]; //TODO max(channel size, key size)
+	char	tmp[50]; //TODO max(channel size, key size)
 
 	cmd += 5; //TODO ptet donner apres le JOIN?
 	regmatch_t	pmatch[2];
@@ -35,14 +36,16 @@ void	Server::_join(const str command, Client *client)
 		channel = tmp;
 		vecChannel.push_back(channel);
 		cmd += pmatch[1].rm_eo;
+		//TODO if *cmd != "," => prb sauf si *cmd = " " => break
 	}
-	while (cmd.size() && regex_find(R_CHANNEL_NAME, cmd.c_str(), pmatch))
+	while (cmd.size() && regex_find(R_CHANNEL_NAME, cmd.c_str(), pmatch)) //TODO key not channel
 	{
 		str	key;
 		cmd.copy(tmp, pmatch[1].rm_eo - pmatch[1].rm_so, pmatch[1].rm_so);
 		key = tmp;
 		vecPassword.push_back(key);
 		cmd += pmatch[1].rm_eo;
+		//TODO if *cmd != "," => prb sauf si *cmd = 0 = break;
 	}
 	if (vecPassword.size() > vecChannel.size())
 		; //TODO trop de key => throw()
