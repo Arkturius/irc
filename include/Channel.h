@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/14 17:16:26 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/14 18:59:20 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class Client;
 
 class Channel
 {
+	//TODO pour l instant tous est public =
 	private:
 		str						_name;
 		bool					_inviteOnlyChannel;
@@ -61,22 +62,28 @@ class Channel
 		void	givePerm(int userClient, int targetClient);
 		void	removePerm(int targetClient);
 
-		SETTER(int, _userLimit);
+		GETTER(str, _name);
+		GETTER(str, _topic);
+		GETTER(bool, _topicPermNeeded);
+		GETTER(bool, _activePassword); //TODO Check when join
+		GETTER(bool, _inviteOnlyChannel);
+		GETTER(std::vector<int>, _fdClient);
+		GETTER(std::vector<int>, _fdAdminClient);
 
+		GETTER_C(str, _name);
+		GETTER_C(str, _topic);
+		GETTER_C(bool, _topicPermNeeded);
+		GETTER_C(bool, _activePassword); //TODO Check when join
+		GETTER_C(bool, _inviteOnlyChannel);
+		GETTER_C(std::vector<int>, _fdClient);
+		GETTER_C(std::vector<int>, _fdAdminClient);
+
+		SETTER(int, _userLimit);
 		SETTER(str, _topic);
 		SETTER(bool, _topicPermNeeded);
-		GETTER_C(bool, _topicPermNeeded);
-
 		SETTER(str, _password);
 		SETTER(bool, _activePassword); //TODO set when set password
-		GETTER_C(bool, _activePassword); //TODO Check when join
-
-		GETTER_C(bool, _inviteOnlyChannel);
 		SETTER(bool, _inviteOnlyChannel);
-
-		GETTER_C(str, _topic);
-		GETTER_C(str, _name);
-		GETTER_C(std::vector<int>, _fdClient);
 
 		EXCEPTION(InvalidChannelNameException,	"Invalid channel name.");
 		EXCEPTION(ClientNotInChannelException,	"Client not in channel.");
