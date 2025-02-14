@@ -6,10 +6,11 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 11:56:54 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 00:46:23 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/14 15:48:54 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <map>
 #include <unistd.h>
 #include <sys/poll.h>
 #include <Client.h>
@@ -92,9 +93,13 @@ void	Client::joinChannel(Channel *channel)
 }
 void	Client::leaveChannel(Channel *channel)
 {
-	str	channelName = channel->get_name();
+	std::map<str, Channel * >::iterator s;
+	str									channelName; 
 
-	auto s = _channelMap.find(channelName);
+	if (!channel)
+		goto channelDoesntExist;
+	channelName = channel->get_name();
+	s = _channelMap.find(channelName);
 	if (s != _channelMap.end())
 	{
 		_channelMap.erase(s);
@@ -102,6 +107,30 @@ void	Client::leaveChannel(Channel *channel)
 	}
 	else
 	{
+channelDoesntExist:
+		;
+		//TODO tu etais pas dedant ...
+	}
+}
+void	Client::leaveChannel(Channel *channel, str comment)
+{
+	std::map<str, Channel * >::iterator s;
+	str									channelName; 
+
+	if (!channel)
+		goto channelDoesntExist;
+	channelName = channel->get_name();
+	s = _channelMap.find(channelName);
+	if (s != _channelMap.end())
+	{
+		_channelMap.erase(s);
+		//TODO sucefully leave the channel;
+		(void)comment;
+	}
+	else
+	{
+channelDoesntExist:
+		;
 		//TODO tu etais pas dedant ...
 	}
 }

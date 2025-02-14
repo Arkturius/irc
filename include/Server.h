@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 00:45:35 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/14 17:08:42 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,8 @@ class Server
 	private:
 		std::map<str, Channel *>	_channelMap;
 		void						_addChannel(str channelName, str *key, Client *);
+		void						_removeChannel(str channelName, Client *);
+		void						_kickChannel(str channelName, Client *admin, Client *kicked, str *comment);
 
 		void						_join(const str, Client *);
 		void						_kick(const str, Client *);
