@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/14 19:03:26 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/14 20:18:41 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <RParser.h>
 #include <Channel.h>
 
-Channel::Channel(str channelName, int firstClient): _name(channelName), _inviteOnlyChannel(true), _userLimit(100)
+Channel::Channel(str channelName, int firstClient): _name(channelName), _inviteOnlyChannel(true), _activePassword(0), _userLimit(100)
 {
 	IRC_LOG("Channel constructor called.");
 
@@ -26,6 +26,8 @@ Channel::Channel(str channelName, int firstClient): _name(channelName), _inviteO
 	if (parser.match(channelName.c_str()))
 		throw InvalidChannelNameException();
 	_fdAdminClient.push_back(firstClient);
+
+	IRC_LOG("Channel Succesfully created");
 }
 
 Channel::~Channel(void)
@@ -42,12 +44,11 @@ void	Channel::_addClient(int fdClient, int perm)
 }
 void	Channel::addClient(int fdClient, str *password)
 {
-	//TODO if password given but not needed?
+	//TODO if password given but not needed? et l inverse
 	//TODO la ca va segfault dans ce cas xd
 	if (_activePassword && *password != _password)
 		throw InvalidChannelKeyException();
 
-	
 	std::vector<int>::iterator	it;
 	for (it = _fdClient.begin(); it != _fdClient.end(); ++it)
 	{

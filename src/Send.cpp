@@ -31,10 +31,10 @@ void	Server::_send_join(Client *client, Channel *channel)
 	}
 	RplGenerator	rpl(clientName, clientName, topic, clientList);
 
-	rpl.rpl_join();
-	rpl.rpl_topic();
-	rpl.rpl_namreply();
-	rpl.rpl_endofnames();
+	_send(client, rpl.rpl_join());
+	_send(client, rpl.rpl_topic());
+	_send(client, rpl.rpl_namreply());
+	_send(client, rpl.rpl_endofnames());
 }
 
 void	Server::_send(Client *client, const str &string)

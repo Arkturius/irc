@@ -1,16 +1,6 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ChannelOperator.cpp                                :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: yroussea <yroussea@student.42angouleme.fr  +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/11 14:41:59 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/14 19:05:03 by rgramati         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
+#include <cstddef>
 #include <poll.h>
+#include <string>
 #include <vector>
 
 #include <Server.h>
@@ -18,50 +8,40 @@
 #include <Channel.h>
 #include <RParser.h>
 
-void	Server::_join(const str command, Client *client)
+void	Server::_join(const str cmd, Client *client)
 {
-	UNUSED(command);
-	UNUSED(client);
-// 	//JOIN channel,channel key,key
-// 	str		cmd = command;
-// 	char	tmp[50]; //TODO max(channel size, key size)
-// 
-// 	cmd += 5; //TODO ptet donner apres le JOIN? //TODO j ai pas le droit xd
-// 	std::vector<str> vecChannel;
-// 	std::vector<str> vecPassword;
-// 
-// 	while (cmd.size() && regex_find(R_CHANNEL_NAME, cmd.c_str(), pmatch))
-// 	{
-// 		str	channel;
-// 		cmd.copy(tmp, pmatch[1].rm_eo - pmatch[1].rm_so, pmatch[1].rm_so);
-// 		channel = tmp;
-// 		vecChannel.push_back(channel);
-// 		cmd += pmatch[1].rm_eo; //TODO j ai pas le droit xd
-// 		//TODO if *cmd != "," => prb sauf si *cmd = " " => break
-// 	}
-// 	while (cmd.size() && regex_find(R_CHANNEL_NAME, cmd.c_str(), pmatch)) //TODO key not channel
-// 	{
-// 		str	key;
-// 		cmd.copy(tmp, pmatch[1].rm_eo - pmatch[1].rm_so, pmatch[1].rm_so);
-// 		key = tmp;
-// 		vecPassword.push_back(key);
-// 		cmd += pmatch[1].rm_eo; //TODO j ai pas le droit xd
-// 		//TODO if *cmd != "," => prb sauf si *cmd = 0 = break;
-// 	}
-// 	if (vecPassword.size() > vecChannel.size())
-// 		; //TODO trop de key => throw()
-// 	int j;
-// 	for (j = 0; j < (int)vecPassword.size(); j++)
-// 	{
-// 		str	*tmp = NULL;
-// 		*tmp = vecPassword[j]; //TODO verif, je suis trop fatiguer pour essaye de penser;
-// 							   //y a un monde on ca marche pas dutout xd
-// 		_addChannel(vecChannel[j], tmp, client);
-// 	}
-// 	for (; j < (int)vecChannel.size(); j++)
-// 	{
-// 		_addChannel(vecChannel[j], NULL, client);
-// 	}
+	str	command = cmd.substr(5, cmd.size());
+	std::vector<str>	vecChannel;
+	std::vector<str>	vecPassword;
+	uint				vecKeyLen = 0;
+	uint				j = 0;
+
+	RParser	rparserChannel(R_CAPTURE_CHANNEL_NAME);
+	RParser	rparserKey(R_CAPTURE_CHANNEL_KEY);
+
+	rparserChannel.findall(command);
+	vecChannel = rparserChannel.get_matches();
+	
+	size_t spaceIndex = command.find(" ");
+	if (spaceIndex != std::string::npos)
+	{
+		command = command.substr(spaceIndex, cmd.size());
+		rparserKey.findall(command);
+		vecPassword = rparserKey.get_matches();
+		vecKeyLen = vecPassword.size();
+	}
+
+	if (vecKeyLen > vecChannel.size())
+		; //TODO prb
+	for (; j < vecKeyLen; j++)
+	{
+		str	a = vecPassword[j];
+		_addChannel(vecChannel[j], &a, client);
+	}
+	for (; j < vecChannel.size(); j++)
+	{
+		_addChannel(vecChannel[j], NULL, client);
+	}
 }
 
 void	Server::_kick(const str command, Client *client)
@@ -101,11 +81,13 @@ void	Server::_addChannel(str channelName, str *channelKey, Client *client)
 	}
 	else
 	{
-		*c = Channel(channelName, pfd->fd);
+		Channel	channel(channelName, pfd->fd);
+		c = &channel;
 		_channelMap[channelName] = c;
 		c->addClient(pfd->fd, channelKey);
 	}
 	client->joinChannel(c);
+	_send_join(client, c);
 }
 
 void	Server::_removeChannel(str channelName, Client *client)
