@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 17:08:42 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/14 18:30:22 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,9 @@ class Server
 		void			_handleMessage(Client *client);
 		str				_extractCommand(str *source);
 		void			_executeCommand(Client *client, const str &command);
+		void			_send(Client *client, const str &string);
+
+		void			_send_join(Client *client, Channel *channel);
 
 	public:
 		Server(int port, str password);
