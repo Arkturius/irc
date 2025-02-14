@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 11:56:54 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 15:48:54 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/14 19:08:43 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ void	Client::readBytes(void)
 // 		"\tfrom file descriptor      "BOLD(COLOR(GRAY,"[%d]"))"\n"
 // 		"\tchannels :"
 // 	);
-// 	for (auto it = _channelMap.begin(); it < _channelMap; ++it)
+// 	for (IRC_AUTO it = _channelMap.begin(); it < _channelMap; ++it)
 // 		(*it).second.channelInfo();
 // }
 
@@ -80,7 +80,7 @@ void	Client::joinChannel(Channel *channel)
 {
 	str	channelName = channel->get_name();
 
-	auto s = _channelMap.find(channelName);
+	IRC_AUTO s = _channelMap.find(channelName);
 	if (s != _channelMap.end())
 	{
 		//TODO tu est deja dedant..

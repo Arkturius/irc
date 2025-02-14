@@ -6,14 +6,13 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 18:58:25 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/14 19:09:21 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <Server.h>
 #include <Client.h>
 #include <Channel.h>
-#include <RegexMatch.h>
 
 #include <errno.h>
 #include <arpa/inet.h>
@@ -158,34 +157,32 @@ void	Server::_executeCommand(Client *client, const str &command)
 	UNUSED(client);
 	UNUSED(command);
 
-	int					i;
-	static const char	*regexCommand[1] = {"^(JOIN )"}; //TODO ajouter les autres
 	//TODO les regex parfais
 	//TODO il se passe quoi si 1 channel est incorrect? on y va quand meme?
 
 	IRC_LOG(BOLD(COLOR(CYAN,"command execution : <%s>")), command.c_str());
-	for (i = 0; i < 1; i++)
-	{
-		if (regex_match(regexCommand[i], command.c_str()))
-			break ;
-	}
-	IRC_LOG("i = %d", i);
-	switch (i)
-	{
-		case 0:
-		{
-			IRC_LOG("JOIN CALL");
-			int fd = client->get_pfd()->fd;
-
-			write(fd, ":rgramati JOIN test\r\n", 21);
-			write(fd, "332 test :caca\r\n", 16);
-			write(fd, "353 rgramati = test :rgramati\r\n", 31);
-			write(fd, "366 rgramati test\r\n", 19);
-			break ;
-		}
-		default:
-			return ;
-	}
+// 	for (i = 0; i < 1; i++)
+// 	{
+// 		if ((regexCommand[i], command.c_str()))
+// 			break ;
+// 	}
+// 	IRC_LOG("i = %d", i);
+// 	switch (i)
+// 	{
+// 		case 0:
+// 		{
+// 			IRC_LOG("JOIN CALL");
+// 			int fd = client->get_pfd()->fd;
+// 
+// 			write(fd, ":rgramati JOIN test\r\n", 21);
+// 			write(fd, "332 test :caca\r\n", 16);
+// 			write(fd, "353 rgramati = test :rgramati\r\n", 31);
+// 			write(fd, "366 rgramati test\r\n", 19);
+// 			break ;
+// 		}
+// 		default:
+// 			return ;
+// 	}
 
 }
 
@@ -245,10 +242,7 @@ void	Server::start()
 
 					client->readBytes();
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOT))
-					{
-						IRC_ERR("GOT MESSAGE <%s>", client->get_buffer().c_str());
 						_handleMessage(client);
-					}
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOF))
 						_disconnectClient(client);
 				}

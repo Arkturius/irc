@@ -6,13 +6,13 @@
 #    By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/08 16:01:29 by rgramati          #+#    #+#              #
-#    Updated: 2025/02/14 18:32:58 by yroussea         ###   ########.fr        #
+#    Updated: 2025/02/14 19:01:23 by rgramati         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 SRCS	:=	ircserv.cpp	\
+			RParser.cpp	\
 			Server.cpp	\
-			Regex.cpp	\
 			Client.cpp	\
 			Channel.cpp	\
 			Send.cpp	\

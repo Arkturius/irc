@@ -14,18 +14,18 @@ void	Server::_send_join(Client *client, Channel *channel)
 	str clientList = clientName; // prefix
 	std::vector<int> fdClientList;
 	fdClientList = channel->get_fdClient();
-	for (auto it = fdClientList.begin(); it != fdClientList.end(); ++it)
+	for (IRC_AUTO it = fdClientList.begin(); it != fdClientList.end(); ++it)
 	{
 		int fdClient = *it;
-		auto s = _clients.find(fdClient);
+		IRC_AUTO s = _clients.find(fdClient);
 		if (s != _clients.end())
 			clientList += " " + s->second.get_nickname();
 	}
 	fdClientList = channel->get_fdAdminClient();
-	for (auto it = fdClientList.begin(); it != fdClientList.end(); ++it)
+	for (IRC_AUTO it = fdClientList.begin(); it != fdClientList.end(); ++it)
 	{
 		int fdClient = *it;
-		auto s = _clients.find(fdClient);
+		IRC_AUTO s = _clients.find(fdClient);
 		if (s != _clients.end())
 			clientList += " " + s->second.get_nickname();
 	}
