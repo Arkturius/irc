@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/14 16:18:56 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/14 17:16:26 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,9 @@
 									R_CHANNEL_PREFIX	R_1_TO_Y(R_CHANNEL_CHAR, 49),	\
 									R_CHANNEL_ID		R_1_TO_Y(R_CHANNEL_CHAR, 45)	\
 								)
+
+# define	R_CAPTURE_CHANNEL_NAME	R_CAPTURE(R_CHANNEL_NAME)
+
 class Client;
 
 class Channel

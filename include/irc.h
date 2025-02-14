@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:04:01 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/13 23:39:09 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/14 18:23:05 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,6 @@ typedef std::string str;
 
 # define SETTER(t, x)		inline void set##x(t other) { this->x = other ; }
 
-# define auto __auto_type
+# define IRC_AUTO __auto_type
 
 #endif
