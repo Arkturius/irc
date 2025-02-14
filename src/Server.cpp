@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 00:47:41 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/14 15:11:31 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,6 +168,7 @@ void	Server::_executeCommand(Client *client, const str &command)
 // 		if (regex_match(regexCommand[i], command.c_str()))
 // 			break ;
 // 	}
+// 	//TODO try catch
 // 	switch (i)
 // 	{
 // 		case 1:

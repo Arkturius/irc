@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 11:56:54 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 00:47:03 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/14 15:48:40 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ class Client
 		void	disconnect(void);
 		void	joinChannel(Channel *);
 		void	leaveChannel(Channel *);
+		void	leaveChannel(Channel *, str);
 		
 		GETTER(uint32_t, _flag);
 		GETTER(str, _username);
