@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 00:47:41 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/14 17:02:37 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,25 +158,35 @@ void	Server::_executeCommand(Client *client, const str &command)
 	UNUSED(client);
 	UNUSED(command);
 
-//	int					i;
-//	static const char	*regexCommand[1] = {"^(JOIN )"}; //TODO ajouter les autres
+	int					i;
+	static const char	*regexCommand[1] = {"^(JOIN )"}; //TODO ajouter les autres
 	//TODO les regex parfais
 	//TODO il se passe quoi si 1 channel est incorrect? on y va quand meme?
 
-// 	for (i = 0; i < 5; i++)
-// 	{
-// 		if (regex_match(regexCommand[i], command.c_str()))
-// 			break ;
-// 	}
-// 	switch (i)
-// 	{
-// 		case 1:
-// 			return _join(command, client);
-// 		default:
-// 			return ;
-// 	}
-
 	IRC_LOG(BOLD(COLOR(CYAN,"command execution : <%s>")), command.c_str());
+	for (i = 0; i < 1; i++)
+	{
+		if (regex_match(regexCommand[i], command.c_str()))
+			break ;
+	}
+	IRC_LOG("i = %d", i);
+	switch (i)
+	{
+		case 0:
+		{
+			IRC_LOG("JOIN CALL");
+			int fd = client->get_pfd()->fd;
+
+			write(fd, ":rgramati JOIN test\r\n", 21);
+			write(fd, "332 test :caca\r\n", 16);
+			write(fd, "353 rgramati = test :rgramati\r\n", 31);
+			write(fd, "366 rgramati test\r\n", 19);
+			break ;
+		}
+		default:
+			return ;
+	}
+
 }
 
 void	Server::_handleMessage(Client *client)
