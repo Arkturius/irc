@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 18:59:41 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/16 18:43:04 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,12 @@ typedef enum:	uint32_t
 
 class	Client;
 class	Channel;
+class	Server;
+
+#define	IRC_COMMAND_DECL(mnemonic)	void	_command##mnemonic(Client *client, const str &command)
+#define	IRC_COMMAND_DEF(mnemonic)	void	Server::_command##mnemonic(Client *client, const str &command)
+
+typedef	void	(Server::*IRC_COMMAND_F)(Client *, const str &command);
 
 class Server
 {
@@ -39,8 +45,10 @@ class Server
 		int		_sockfd;
 		str		_password;
 
-		std::vector<struct pollfd>	_pollSet;
-		std::map<int, Client>		_clients;
+		std::vector<struct pollfd>		_pollSet;
+		std::map<int, Client>			_clients;
+
+		std::map<str, IRC_COMMAND_F>	_commandFuncs;
 
 		void			_bindSocket() const;
 		void			_listenSocket() const;
@@ -53,10 +61,19 @@ class Server
 
 		void			_handleMessage(Client *client);
 		str				_extractCommand(str *source);
-		void			_executeCommand(Client *client, const str &command);
-		void			_send(Client *client, const str &string);
 
+		void			_executeCommand(Client *client, const str &command);
+
+		void			_send(Client *client, const str &string);
 		void			_send_join(Client *client, Channel *channel);
+
+		IRC_COMMAND_DECL(CAP);
+		IRC_COMMAND_DECL(PASS);
+		IRC_COMMAND_DECL(USER);
+		IRC_COMMAND_DECL(NICK);
+		IRC_COMMAND_DECL(JOIN);
+		IRC_COMMAND_DECL(MODE);
+		IRC_COMMAND_DECL(QUIT);
 
 	public:
 		Server(int port, str password);

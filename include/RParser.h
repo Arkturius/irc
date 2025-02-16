@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/14 17:47:39 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 18:18:11 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/16 17:35:13 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 # include <regex.h>
 # include <ircRegex.h>
-#include <vector>
+# include <vector>
 
 class RParser
 {

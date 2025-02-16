@@ -6,18 +6,23 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 19:09:21 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/16 19:13:46 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <Server.h>
-#include <Client.h>
-#include <Channel.h>
+#include <poll.h>
 
 #include <errno.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
+#include <Client.h>
+#include <RParser.h>
+#include <Channel.h>
+#include <Server.h>
+
+#define	SET_COMMAND_FUNC(m, f)	_commandFuncs[m] = &Server::_command##f;
 
 Server::Server(int port, str password): _flag(IRC_STATUS_OK), _port(port), _password(password) 
 {
@@ -27,6 +32,14 @@ Server::Server(int port, str password): _flag(IRC_STATUS_OK), _port(port), _pass
 	if (_sockfd == -1)
 		throw ServerSocketFailedException();
 	
+	SET_COMMAND_FUNC("CAP", CAP);
+	SET_COMMAND_FUNC("PASS", PASS);
+	SET_COMMAND_FUNC("NICK", NICK);
+	SET_COMMAND_FUNC("USER", USER);
+	SET_COMMAND_FUNC("JOIN", JOIN);
+	SET_COMMAND_FUNC("MODE", MODE);
+	SET_COMMAND_FUNC("QUIT", QUIT);
+
 	IRC_OK("socket opened on fd "BOLD(COLOR(GRAY,"[%d]")), _sockfd);
 }
 
@@ -75,8 +88,6 @@ void	Server::init()
 	_listenSocket();
 	IRC_FLAG_SET(_flag, IRC_STATUS_OK);
 }
-
-#include <poll.h>
 
 bool	Server::_updatePollSet()
 {
@@ -150,45 +161,55 @@ struct pollfd	*Server::_acceptClient()
 	return (&_pollSet[_pollSet.size() - 1]);
 }
 
-//typedef void	*(*IRC_COMMAND_F)(str, ...);
+#define	R_IRC_ACCEPTED_COMMANDS	R_START_STRING R_CAPTURE\
+	(\
+		R_ALTERNATION("CAP",\
+		R_ALTERNATION("PASS",\
+		R_ALTERNATION("USER",\
+		R_ALTERNATION("NICK",\
+		R_ALTERNATION("JOIN",\
+		R_ALTERNATION("MODE",""))))))\
+	)
+
+IRC_COMMAND_DEF(PASS)
+{
+	uint32_t const	*flag;
+
+	// Already registered, so error.
+	if (IRC_FLAG_GET(*flag, IRC_CLIENT_AUTH))
+	// replace last password for verification, only last is used
+	//
+	// iIRC_CLIENT_AUTH -> ERR_ALREADYREGISTERED(client.get_nickname())
+	//
+	//
+}
 
 void	Server::_executeCommand(Client *client, const str &command)
 {
-	UNUSED(client);
-	UNUSED(command);
+	RParser		decompose(R_CAPTURE(R_1_OR_MORE(R_CHAR_INV_GROUP(" \x07"))));
+	decompose.findall(command);
 
-	//TODO les regex parfais
-	//TODO il se passe quoi si 1 channel est incorrect? on y va quand meme?
+	const std::vector<str>	&argv = decompose.get_matches();
+	if (argv.size() < 1)
+		return ;
+
+	const str	mnemo = argv[0];
+	RParser		filter(R_START_STRING R_CAPTURE(R_IRC_ACCEPTED_COMMANDS));
+
+	if (!filter.match(command))
+		return ;
+
+	(this->*_commandFuncs[mnemo])(client, command.substr(mnemo.length(), command.length()));
 
 	IRC_LOG(BOLD(COLOR(CYAN,"command execution : <%s>")), command.c_str());
-// 	for (i = 0; i < 1; i++)
-// 	{
-// 		if ((regexCommand[i], command.c_str()))
-// 			break ;
-// 	}
-// 	IRC_LOG("i = %d", i);
-// 	switch (i)
-// 	{
-// 		case 0:
-// 		{
-// 			IRC_LOG("JOIN CALL");
-// 			int fd = client->get_pfd()->fd;
-// 
-// 			write(fd, ":rgramati JOIN test\r\n", 21);
-// 			write(fd, "332 test :caca\r\n", 16);
-// 			write(fd, "353 rgramati = test :rgramati\r\n", 31);
-// 			write(fd, "366 rgramati test\r\n", 19);
-// 			break ;
-// 		}
-// 		default:
-// 			return ;
-// 	}
-
 }
 
+#include <RParser.h>
 void	Server::_handleMessage(Client *client)
 {
-	str	buffer = client->get_buffer();
+	str					buffer = client->get_buffer();
+	std::vector<str>	commands;
+	RParser				noAuth(R_START_STRING R_CAPTURE("CAP|PASS|USER|NICK"));
 
 	while (true)
 	{
@@ -197,12 +218,20 @@ void	Server::_handleMessage(Client *client)
 			break ;
 		const size_t	crlf = (buffer.at(linefeed - 1) == '\r');
 		const str		command = buffer.substr(0, linefeed - crlf);
-
-		_executeCommand(client, command);	
+	
+		commands.push_back(command);
 
 		buffer = buffer.substr(linefeed + 1, buffer.length());
 	}
 	client->resetBuffer();
+
+	bool	isAuth = IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH);
+	for (IRC_AUTO it = commands.begin(); it != commands.end(); ++it)
+	{
+		if (!isAuth && !noAuth.match(*it))
+			continue ;
+		_executeCommand(client, *it);
+	}
 }
 
 void	Server::start()
@@ -234,7 +263,7 @@ void	Server::start()
 
 					if (!client_pfd)
 						continue ;
-					_clients[client_pfd->fd] = Client(client_pfd);
+					_clients[client_pfd->fd] = Client(client_pfd, 0);
 				}
 				else
 				{
@@ -243,6 +272,8 @@ void	Server::start()
 					client->readBytes();
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOT))
 						_handleMessage(client);
+					if (!IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH))
+						continue ;
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOF))
 						_disconnectClient(client);
 				}

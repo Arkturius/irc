@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 11:56:54 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 15:48:40 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/16 17:40:57 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,9 +20,9 @@ class Channel;
 
 typedef enum:	uint32_t
 {
-	IRC_CLIENT_CONNECTED	=	1U,
-	IRC_CLIENT_EOT			=	1U << 1,
-	IRC_CLIENT_EOF			=	1U << 2,
+	IRC_CLIENT_AUTH		=	1U,
+	IRC_CLIENT_EOT		=	1U << 1,
+	IRC_CLIENT_EOF		=	1U << 2,
 }	clientFlag;
 
 #define COMMA	,
@@ -43,7 +43,7 @@ class Client
 
 	public:
 		Client(void);
-		Client(struct pollfd *pfd);
+		Client(struct pollfd *pfd, uint32_t flag);
 		~Client(void);
 
 		void	readBytes(void);

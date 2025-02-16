@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 11:56:54 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 19:08:43 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/16 17:40:09 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ Client::Client(void) {}
 
 Client::~Client(void) {}
 
-Client::Client(struct pollfd *pfd): _flag(IRC_CLIENT_CONNECTED), _pfd(pfd) {}
+Client::Client(struct pollfd *pfd, uint32_t flag): _flag(flag), _username(""), _nickname(""), _pfd(pfd) {}
 
 void	Client::resetBuffer(void) { _buffer = ""; IRC_FLAG_DEL(_flag, IRC_CLIENT_EOT); }
 
