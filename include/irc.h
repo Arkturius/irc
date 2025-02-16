@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:04:01 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/14 18:23:05 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/17 00:03:04 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ typedef std::string str;
 #  define IRC_OK(msg, ...)		_IRC_LOG(GREEN,	    "done:", msg, ##__VA_ARGS__)
 # else
 #  define IRC_LOG(msg, ...)
+#  define IRC_WARN(msg, ...)
 #  define IRC_OK(msg, ...)
 #endif
 

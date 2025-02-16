@@ -17,18 +17,18 @@ typedef enum
 	RPL_CODE_LAST				=	909
 }	IRCReplyCode;
 
-#define	RPL_WELCOME(pre, ...)			generate(p, RPL_CODE_WELCOME, ##__VA_ARGS__)		
-#define	RPL_YOUHOST(pre, ...)			generate(p, RPL_CODE_YOUHOST, ##__VA_ARGS__)		
-#define	RPL_CREATED(pre, ...)			generate(p, RPL_CODE_CREATED, ##__VA_ARGS__)		
-#define	RPL_MYINFO(pre, ...)			generate(p, RPL_CODE_MYINFO, ##__VA_ARGS__)		
-#define	RPL_ISUPPORT(pre, ...)			generate(p, RPL_CODE_ISUPPORT, ##__VA_ARGS__)	
-#define	RPL_TOPIC(pre, ...)				generate(p, RPL_CODE_TOPIC, ##__VA_ARGS__)		
-#define	RPL_NAMREPLY(pre, ...)			generate(p, RPL_CODE_NAMREPLY, ##__VA_ARGS__)	
-#define	RPL_ENDOFNAMES(pre, ...)		generate(p, RPL_CODE_ENDOFNAMES, ##__VA_ARGS__)
+#define	RPL_WELCOME(p, ...)				generate(p, RPL_CODE_WELCOME, ##__VA_ARGS__)		
+#define	RPL_YOUHOST(p, ...)				generate(p, RPL_CODE_YOUHOST, ##__VA_ARGS__)		
+#define	RPL_CREATED(p, ...)				generate(p, RPL_CODE_CREATED, ##__VA_ARGS__)		
+#define	RPL_MYINFO(p, ...)				generate(p, RPL_CODE_MYINFO, ##__VA_ARGS__)		
+#define	RPL_ISUPPORT(p, ...)			generate(p, RPL_CODE_ISUPPORT, ##__VA_ARGS__)	
+#define	RPL_TOPIC(p, ...)				generate(p, RPL_CODE_TOPIC, ##__VA_ARGS__)		
+#define	RPL_NAMREPLY(p, ...)			generate(p, RPL_CODE_NAMREPLY, ##__VA_ARGS__)	
+#define	RPL_ENDOFNAMES(p, ...)			generate(p, RPL_CODE_ENDOFNAMES, ##__VA_ARGS__)
 
-#define ERR_NEEDMOREPARAMS(pre, ...)	generate(p, ERR_NEEDMOREPARAMS, ##__VA_ARGS__)
-#define ERR_ALREADYREGISTERED(pre, ...)	generate(p, ERR_ALREADYREGISTERED, ##__VA_ARGS__)
-#define ERR_PASSWDMISMATCH(pre, ...)	generate(p, ERR_PASSWDMISMATCH, ##__VA_ARGS__)
+#define ERR_NEEDMOREPARAMS(p, ...)		generate(p, ERR_CODE_NEEDMOREPARAMS, ##__VA_ARGS__)
+#define ERR_ALREADYREGISTERED(p, ...)	generate(p, ERR_CODE_ALREADYREGISTERED, ##__VA_ARGS__)
+#define ERR_PASSWDMISMATCH(p, ...)		generate(p, ERR_CODE_PASSWDMISMATCH, ##__VA_ARGS__)
 
 class RplGenerator
 {
@@ -39,6 +39,7 @@ class RplGenerator
 		str _clientList;
 
 	public:
+		RplGenerator(void);
 		RplGenerator(str client, str channel, str topic, str clientList);
 		str	generate(str prefix, IRCReplyCode code, uint32_t paramCount, ...);
 		str rpl_join();

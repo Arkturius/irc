@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/14 17:47:39 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/16 17:35:13 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/16 23:46:29 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,15 +29,20 @@ class RParser
 		size_t				_matchCount;
 		std::vector<str>	_matches;
 
-		void				_findNext(const str &source);
+		void				_reset(void);
+
+		void				_findNext(const str &source, size_t nmatch);
 
 	public:
+		void	rebuild(const str &pattern);
 
 		bool	match(const str &source);
+		void	capture(const str &source, size_t n);
 		void	findall(const str &source);
 
-		RParser(const str &pattern);
+		RParser(void);
 		~RParser(void);
+		RParser(const str &pattern);
 
 		GETTER(size_t, _matchIndex);
 		GETTER(size_t, _matchCount);
@@ -48,6 +53,7 @@ class RParser
 		GETTER_C(std::vector<str>, _matches);
 
 	EXCEPTION(InvalidPatternException, "invalid REGEX pattern.");
+	EXCEPTION(EmptyPatternException, "empty pattern.");
 };
 
 #endif // RPARSER_HPP

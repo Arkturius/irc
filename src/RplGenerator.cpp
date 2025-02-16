@@ -2,6 +2,7 @@
 #include <RplGenerator.h>
 #include <cstdarg>
 
+RplGenerator::RplGenerator() {}
 
 RplGenerator::RplGenerator(str client, str channel, str topic, str clientList):
 	_client(client), _channel(channel), _topic(topic), _clientList(clientList)
@@ -17,7 +18,7 @@ str	RplGenerator::generate(str prefix, IRCReplyCode code, uint32_t paramCount, .
 	va_list				list;
 
 	reply += prefix;
-	stream << std::setfill('0') << std::setw(4) << code;
+	stream << std::setfill('0') << std::setw(3) << code;
 	reply += stream.str();
 	va_start(list, paramCount);
 	for (size_t i = 0; i < paramCount; ++i)

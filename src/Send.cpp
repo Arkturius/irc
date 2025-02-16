@@ -41,5 +41,6 @@ void	Server::_send(Client *client, const str &string)
 {
 	struct pollfd	*pollfd = client->get_pfd();
 
+	IRC_LOG("sending reply " BOLD(COLOR(RED,"%s")), string.c_str());
 	write(pollfd->fd, (string + "\r\n").c_str(), string.size() + 2);
 }

@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 11:56:54 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/16 17:40:57 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/16 23:01:38 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ class Client
 		str			_nickname;
 
 		str			_buffer;
+		str			_lastPass;
 
 		struct pollfd				*_pfd;
 		std::map<str, Channel *>	_channelMap;

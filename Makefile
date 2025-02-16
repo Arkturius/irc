@@ -6,7 +6,7 @@
 #    By: rgramati <rgramati@student.42angouleme.fr  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/05 17:09:56 by rgramati          #+#    #+#              #
-#    Updated: 2025/02/13 23:23:19 by rgramati         ###   ########.fr        #
+#    Updated: 2025/02/16 23:28:53 by rgramati         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,7 @@ OBJS 		:=	$(addprefix $(OBJ_DIR)/, $(SRCS:%.cpp=%.o))
 
 CC			:=	clang++
 
-CFLAGS		:=	-Wall -Wextra -Werror -std=c++98
+CFLAGS		:=	-Wall -Wextra -Werror -gdwarf-2 -std=c++98
 
 SAVE_TEMPS	?=	0
 ifeq ($(SAVE_TEMPS), 1)

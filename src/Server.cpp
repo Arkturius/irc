@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/16 19:13:46 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/17 00:41:12 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,9 @@ Server::Server(int port, str password): _flag(IRC_STATUS_OK), _port(port), _pass
 	_sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 	if (_sockfd == -1)
 		throw ServerSocketFailedException();
-	
+
+	_seeker.rebuild("");
+
 	SET_COMMAND_FUNC("CAP", CAP);
 	SET_COMMAND_FUNC("PASS", PASS);
 	SET_COMMAND_FUNC("NICK", NICK);
@@ -47,6 +49,12 @@ Server::~Server(void)
 {
 	IRC_LOG("Server destructor called.");
 
+	for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
+	{
+		if (it == _clients.begin())
+			continue ;
+		((*it).second).disconnect();
+	}
 	close(_sockfd);
 
 	IRC_OK("closed socket on fd "BOLD(COLOR(GRAY,"[%d]")), _sockfd);
@@ -161,22 +169,46 @@ struct pollfd	*Server::_acceptClient()
 	return (&_pollSet[_pollSet.size() - 1]);
 }
 
-#define	R_IRC_ACCEPTED_COMMANDS	R_START_STRING R_CAPTURE\
-	(\
-		R_ALTERNATION("CAP",\
-		R_ALTERNATION("PASS",\
-		R_ALTERNATION("USER",\
-		R_ALTERNATION("NICK",\
-		R_ALTERNATION("JOIN",\
-		R_ALTERNATION("MODE",""))))))\
-	)
+#define R_NOAUTH_COMMANDS		R_START_STRING R_CAPTURE("CAP|PASS|USER|NICK|QUIT")
+#define	R_IRC_ACCEPTED_COMMANDS	R_NOAUTH_COMMANDS "|" R_START_STRING R_CAPTURE("JOIN|MODE")
 
+#define R_IRC_NOSPCRLFCL	R_CHAR_INV_GROUP(" \r\n:")
+#define R_COMMAND_PASS		R_START_STRING R_1_OR_MORE(" ") R_CAPTURE(R_1_OR_MORE(R_IRC_NOSPCRLFCL))
+
+#include <RplGenerator.h>
+
+/**
+ * @brief	PASS command
+ *
+ * can reply 461 462 or 463  
+ */
 IRC_COMMAND_DEF(PASS)
 {
-	uint32_t const	*flag;
+	UNUSED(command);
+	uint32_t const	*flag = &client->get_flag();
+
+	_seeker.rebuild(R_COMMAND_PASS);
+	_seeker.capture(command, 1);
+
+// 	RplGenerator		gen;
+// 	std::vector<str>	&argv = _seeker.get_matches();
+// 
+// 	if (argv.size() == 0)
+// 	{
+// 		_send(client, gen.ERR_NEEDMOREPARAMS("", 2, "PASS", "Not enough parameters."));
+// 		return ;
+// 	}
+// 	if (argv[1] != _password)
+// 	{
+// 		_send(client, gen.ERR_PASSWDMISMATCH("", 1, "Password incorrect."));
+// 		return ;
+// 	}
 
 	// Already registered, so error.
 	if (IRC_FLAG_GET(*flag, IRC_CLIENT_AUTH))
+		;
+
+
 	// replace last password for verification, only last is used
 	//
 	// iIRC_CLIENT_AUTH -> ERR_ALREADYREGISTERED(client.get_nickname())
@@ -184,32 +216,72 @@ IRC_COMMAND_DEF(PASS)
 	//
 }
 
+
+IRC_COMMAND_DEF(CAP)
+{
+	UNUSED(command);
+	UNUSED(client);
+}
+
+IRC_COMMAND_DEF(NICK)
+{
+	UNUSED(command);
+	UNUSED(client);
+
+//	_send(client, "NICK rgramati");
+}
+
+IRC_COMMAND_DEF(USER)
+{
+	UNUSED(command);
+	UNUSED(client);
+}
+
+IRC_COMMAND_DEF(JOIN)
+{
+	UNUSED(command);
+	UNUSED(client);
+}
+
+IRC_COMMAND_DEF(MODE)
+{
+	UNUSED(command);
+	UNUSED(client);
+}
+
+IRC_COMMAND_DEF(QUIT)
+{
+	UNUSED(command);
+	UNUSED(client);
+	client->disconnect();
+}
+
+#define R_COMMAND_SPLIT	R_CAPTURE(R_1_OR_MORE(R_IRC_NOSPCRLFCL))
+
 void	Server::_executeCommand(Client *client, const str &command)
 {
-	RParser		decompose(R_CAPTURE(R_1_OR_MORE(R_CHAR_INV_GROUP(" \x07"))));
-	decompose.findall(command);
+	_seeker.rebuild(R_COMMAND_SPLIT);
+	_seeker.findall(command);
 
-	const std::vector<str>	&argv = decompose.get_matches();
+	const std::vector<str>	&argv = _seeker.get_matches();
 	if (argv.size() < 1)
 		return ;
 
-	const str	mnemo = argv[0];
-	RParser		filter(R_START_STRING R_CAPTURE(R_IRC_ACCEPTED_COMMANDS));
+	_seeker.rebuild(R_IRC_ACCEPTED_COMMANDS);
 
-	if (!filter.match(command))
+	if (!_seeker.match(command))
 		return ;
 
-	(this->*_commandFuncs[mnemo])(client, command.substr(mnemo.length(), command.length()));
-
 	IRC_LOG(BOLD(COLOR(CYAN,"command execution : <%s>")), command.c_str());
+
+	const str	mnemo = argv[0];
+	(this->*_commandFuncs[mnemo])(client, command.substr(mnemo.length(), command.length()));
 }
 
-#include <RParser.h>
 void	Server::_handleMessage(Client *client)
 {
 	str					buffer = client->get_buffer();
 	std::vector<str>	commands;
-	RParser				noAuth(R_START_STRING R_CAPTURE("CAP|PASS|USER|NICK"));
 
 	while (true)
 	{
@@ -226,9 +298,12 @@ void	Server::_handleMessage(Client *client)
 	client->resetBuffer();
 
 	bool	isAuth = IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH);
+
+	_seeker.rebuild(R_NOAUTH_COMMANDS);
 	for (IRC_AUTO it = commands.begin(); it != commands.end(); ++it)
 	{
-		if (!isAuth && !noAuth.match(*it))
+		IRC_WARN("Calling execution on " BOLD(COLOR(YELLOW, "%s")), (*it).c_str());
+		if (!isAuth && !_seeker.match(*it))
 			continue ;
 		_executeCommand(client, *it);
 	}
@@ -271,7 +346,10 @@ void	Server::start()
 
 					client->readBytes();
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOT))
+					{
+						IRC_WARN("Total message = \n" BOLD(COLOR(RED,"%s")), client->get_buffer().c_str());
 						_handleMessage(client);
+					}
 					if (!IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH))
 						continue ;
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOF))
