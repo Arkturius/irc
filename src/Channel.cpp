@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/17 13:36:03 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/17 15:45:12 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,31 +101,17 @@ bool	Channel::havePerm(int fdClient)
 
 void	Channel::givePerm(int userClient, int targetClient)
 {
-	try
+	if (havePerm(userClient) && !havePerm(targetClient))
 	{
-		if (havePerm(userClient) && !havePerm(targetClient))
-		{
-			removeClient(targetClient);
-			_addClient(targetClient, 1);
-		}
-	}
-	catch (std::exception &e)
-	{
-		IRC_ERR("%s", e.what());
+		removeClient(targetClient);
+		_addClient(targetClient, 1);
 	}
 }
 void	Channel::removePerm(int targetClient)
 {
-	try
+	if (havePerm(targetClient))
 	{
-		if (havePerm(targetClient))
-		{
-			removeClient(targetClient);
-			_addClient(targetClient, 0);
-		}
-	}
-	catch (std::exception &e)
-	{
-		IRC_ERR("%s", e.what());
+		removeClient(targetClient);
+		_addClient(targetClient, 0);
 	}
 }
