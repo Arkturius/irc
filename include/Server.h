@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.h                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/17 16:49:55 by rgramati         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
@@ -119,6 +107,7 @@ class Server
 		void						_topic(const str, Client *);
 		void						_invite(const str, Client *);
 		void						_mode(const str, Client *);
+		void						_individualMode(bool, char, const str &, Channel *, Client *);
 		Client						*_getClientByName(const str);
 		Channel						*_getChannelByName(const str);
 };

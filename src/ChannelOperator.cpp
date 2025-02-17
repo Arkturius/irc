@@ -1,3 +1,6 @@
+#include <climits>
+#include <cstddef>
+#include <cstdlib>
 #include <exception>
 #include <poll.h>
 #include <string>
@@ -144,9 +147,79 @@ void	Server::_topic(const str command, Client *client)
 
 	}
 }
+
+
+void	Server::_individualMode(bool plus, char mode, const str &modeArguments, Channel *target, Client *client)
+{
+	Client	*userTarget;
+	if (mode == 'o')
+	{
+		try
+		{
+			if (plus)
+				target->givePerm(client->get_pfd()->fd, userTarget->get_pfd()->fd);
+			else
+				target->removePerm(client->get_pfd()->fd, userTarget->get_pfd()->fd);
+		}
+		catch (std::exception())
+		{
+			//ERR_USERNOTINCHANNEL
+		}
+	}
+	if (mode == 'i')
+		target->set_inviteOnlyChannel(plus);
+	if (mode == 't')
+		target->set_topicPermNeeded(plus);
+	if (mode == 'k')
+	{
+		if (!plus && target->get_password() == modeArguments)
+			target->set_activePassword(0);
+		else if (!plus)
+		{
+			//TODO regex pour verif que modeArguments est valide => ERR_INVALIDMODEPARAM
+			target->set_password(modeArguments);
+			target->set_activePassword(1);
+		}
+		else
+			;	//ERR_INVALIDMODEPARAM
+	}
+	if (mode == 'l')
+	{
+		//regex nombre xd
+		if (plus)
+			target->set_userLimit(std::atoi(modeArguments.c_str()));
+		else
+			target->set_userLimit(INT_MAX);
+	}
+}
+
 void	Server::_mode(const str command, Client *client)
 {
+	//<target> [<modestring> [<mode arguments>...]]
 	(void)command;(void)client;
+	str		targetName;
+	str		modeString;
+	Channel	*target;
+	bool	giveModeString = 0;
+
+
+	target = _getChannelByName(targetName);
+	if (!target)
+		;//ERR_NOSUCHNICK
+	if (!giveModeString)
+		goto getModeOfChannel;
+	try {
+		if (target->havePerm(client->get_pfd()->fd) == 0)
+			; // ERR_CHANOPRIVSNEEDED
+	}
+	catch (std::exception &e)
+	{
+		// ERR_NOTINCHANNEL
+	}
+	// _individualMode(bool plus, char mode, const str &modeArguments, Channel *target, Client *client)
+
+getModeOfChannel:
+	; // RPL_CHANNELMODEIS
 }
 void	Server::_invite(const str command, Client *client)
 {
@@ -161,7 +234,7 @@ void	Server::_invite(const str command, Client *client)
 	if (!channel)
 		;//ERR_NOSUCHCHANNEL
 	if (!target)
-		;//y a pas de code xd
+		; // ERR_NOSUCHNICK
 	bool			perm = 0;
 	try
 	{
@@ -198,6 +271,8 @@ void	Server::_addChannel(str channelName, str *channelKey, Client *client)
 			; //ERR_INVITEONLYCHAN
 		try
 		{
+			if (c->get_size() == c->get_userLimit())
+				; //ERR_CHANNELISFULL 
 			c->addClient(pfd->fd, channelKey);
 		}
 		catch (std::exception &e)
