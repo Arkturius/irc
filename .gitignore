@@ -4,3 +4,4 @@ ircserv
 *.o
 *.json
 *.py
+payload

@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:04:01 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/17 00:03:04 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/17 17:23:24 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,9 @@ typedef std::string str;
 # define IRC_FLAG_GET(w, f)	((w) & (f))
 
 # define EXCEPTION(n, m)	class n:public std::exception { inline const char *what() const throw() { return (m) ; } ; }
+
+# define IRC_CATCH			catch (std::exception &e) { IRC_ERR("%s", e.what()); }
+# define IRC_TRY_CATCH(X)	try { (X) } IRC_CATCH
 
 # define GETTER(t, x)		inline t &get##x() { return this->x ; }
 # define GETTER_C(t, x)		inline const t &get##x() const { return this->x ; }

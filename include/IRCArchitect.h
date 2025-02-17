@@ -1,4 +1,10 @@
+#ifndef IRCARCHITECT_H
+# define IRCARCHITECT_H
+
 #include <irc.h>
+#include <cstdarg>
+#include <sstream>
+#include <iomanip>
 
 typedef enum
 {
@@ -12,6 +18,7 @@ typedef enum
 	RPL_CODE_TOPICWHOTIME		=	333,
 	RPL_CODE_NAMREPLY			=	353,
 	RPL_CODE_ENDOFNAMES			=	366,
+
 	ERR_CODE_NOSUCHCHANNEL		=	403,
 	ERR_CODE_USERNOTINCHANNEL	=	441,
 	ERR_CODE_NOTONCHANNEL		=	442,
@@ -41,18 +48,42 @@ typedef enum
 #define ERR_USERNOTINCHANNEL(p, ...)	generate(p, ERR_CODE_USERNOTINCHANNEL, ##__VA_ARGS__)
 #define ERR_NOTONCHANNEL(p, ...)		generate(p, ERR_CODE_NOTONCHANNEL, ##__VA_ARGS__)
 #define ERR_USERONCHANNEL(p, ...)		generate(p, ERR_CODE_USERONCHANNEL, ##__VA_ARGS__)
-#define ERR_INVITEONLYCHAN(p, ...)		generate(p, ERR_CODE_INVITEONLYCHAN, ##__VA_ARGS__)
-#define ERR_BADCHANNELKEY(p, ...)		generate(p, ERR_BADCHANNELKEY, ##__VA_ARGS__)
-
 #define ERR_NEEDMOREPARAMS(p, ...)		generate(p, ERR_CODE_NEEDMOREPARAMS, ##__VA_ARGS__)
 #define ERR_ALREADYREGISTERED(p, ...)	generate(p, ERR_CODE_ALREADYREGISTERED, ##__VA_ARGS__)
 #define ERR_PASSWDMISMATCH(p, ...)		generate(p, ERR_CODE_PASSWDMISMATCH, ##__VA_ARGS__)
+#define ERR_INVITEONLYCHAN(p, ...)		generate(p, ERR_CODE_INVITEONLYCHAN, ##__VA_ARGS__)
+#define ERR_BADCHANNELKEY(p, ...)		generate(p, ERR_BADCHANNELKEY, ##__VA_ARGS__)
 
-class RplGenerator
+class IRCArchitect
 {
 	private:
 
 	public:
-		RplGenerator(void);
-		str	generate(str prefix, IRCReplyCode code, uint32_t paramCount, ...);
+		IRCArchitect(void) {}
+		~IRCArchitect(void) {}
+
+		const str	generate(const str &prefix, IRCReplyCode code, uint32_t paramCount, ...) const
+		{
+			std::stringstream	stream;
+			str					reply = "";
+			va_list				list;
+
+			reply += prefix;
+			stream << std::setfill('0') << std::setw(3) << code;
+			reply += stream.str();
+			va_start(list, paramCount);
+			for (size_t i = 0; i < paramCount; ++i)
+			{
+				const str	param = va_arg(list, char *);
+
+				reply += " ";
+				if (param.find(" ") != str::npos || param.find(":") != str::npos || i == paramCount)
+					reply += ":";
+				reply += param;
+			}
+			va_end(list);
+			return (reply);
+		}
 };
+
+#endif	//	IRCARCHITECT_H

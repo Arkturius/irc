@@ -1,4 +1,3 @@
-#include <cstddef>
 #include <exception>
 #include <poll.h>
 #include <string>
@@ -7,7 +6,6 @@
 #include <Server.h>
 #include <Client.h>
 #include <Channel.h>
-#include <RParser.h>
 
 Client	*Server::_getClientByName(const str userName)
 {
@@ -18,6 +16,7 @@ Client	*Server::_getClientByName(const str userName)
 	}
 	return NULL;
 }
+
 Channel	*Server::_getChannelByName(const str Name)
 {
 	IRC_AUTO it = _channelMap.find(Name);
@@ -25,7 +24,6 @@ Channel	*Server::_getChannelByName(const str Name)
 		return it->second;
 	return NULL;
 }
-
 
 void	Server::_join(const str cmd, Client *client)
 {
@@ -35,8 +33,8 @@ void	Server::_join(const str cmd, Client *client)
 	uint				vecKeyLen = 0;
 	uint				j = 0;
 
-	RParser	rparserChannel(R_CAPTURE_CHANNEL_NAME);
-	RParser	rparserKey(R_CAPTURE_CHANNEL_KEY);
+	IRCSeeker	rparserChannel(R_CAPTURE_CHANNEL_NAME);
+	IRCSeeker	rparserKey(R_CAPTURE_CHANNEL_KEY);
 
 	rparserChannel.findall(command);
 	vecChannel = rparserChannel.get_matches();

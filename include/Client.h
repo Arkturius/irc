@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/11 11:56:54 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/16 23:01:38 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/17 16:23:07 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,7 @@ class Client
 		SETTER(uint32_t, _flag);
 		SETTER(str, _username);
 		SETTER(str, _nickname);
+		SETTER(str, _lastPass);
 };
 
 #endif // CLIENT_HPP

@@ -1,9 +1,9 @@
-#include <Client.h>
-#include <Channel.h>
 #include <poll.h>
 #include <unistd.h>
+
+#include <Client.h>
+#include <Channel.h>
 #include <Server.h>
-#include <RplGenerator.h>
 
 void	Server::_send_join(Client *client, Channel *channel)
 {
@@ -29,7 +29,7 @@ void	Server::_send_join(Client *client, Channel *channel)
 		if (s != _clients.end())
 			clientList += " " + s->second.get_nickname();
 	}
-	RplGenerator	rpl;
+	IRCArchitect	rpl;
 
 	_send(client, ":" + clientName + " JOIN " + channelName);
 	_send(client, rpl.RPL_TOPIC("", 3, clientName.c_str(), channelName.c_str(), topic.c_str()));

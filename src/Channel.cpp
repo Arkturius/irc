@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/17 13:36:03 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/17 16:56:30 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,14 +14,14 @@
 #include <exception>
 #include <vector>
 
-#include <RParser.h>
+#include <IRCSeeker.h>
 #include <Channel.h>
 
 Channel::Channel(str channelName, int firstClient): _name(channelName), _inviteOnlyChannel(true), _activePassword(0), _userLimit(100), _topicIsSet(0)
 {
 	IRC_LOG("Channel constructor called.");
 
-	RParser	parser(R_CHANNEL_NAME);
+	IRCSeeker	parser(R_CHANNEL_NAME);
 
 	if (parser.match(channelName.c_str()))
 		throw InvalidChannelNameException();

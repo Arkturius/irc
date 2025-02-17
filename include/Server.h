@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/17 13:35:59 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/17 16:49:55 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,8 @@
 # include <vector>
 
 # include <irc.h>
-# include <RParser.h>
+# include <IRCSeeker.h>
+# include <IRCArchitect.h>
 
 # define COMMA	,
 
@@ -50,7 +51,8 @@ class Server
 		std::map<int, Client>			_clients;
 
 		std::map<str, IRC_COMMAND_F>	_commandFuncs;
-		RParser							_seeker;
+		IRCSeeker						_seeker;
+		IRCArchitect					_architect;
 
 		void			_bindSocket() const;
 		void			_listenSocket() const;
