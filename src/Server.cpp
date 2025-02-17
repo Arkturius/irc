@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/17 00:41:12 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/17 13:35:58 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,7 +170,8 @@ struct pollfd	*Server::_acceptClient()
 }
 
 #define R_NOAUTH_COMMANDS		R_START_STRING R_CAPTURE("CAP|PASS|USER|NICK|QUIT")
-#define	R_IRC_ACCEPTED_COMMANDS	R_NOAUTH_COMMANDS "|" R_START_STRING R_CAPTURE("JOIN|MODE")
+#define R_CHANNEL_COMMANDS		R_START_STRING R_CAPTURE("JOIN|MODE")
+#define	R_IRC_ACCEPTED_COMMANDS	R_NOAUTH_COMMANDS "|" R_CHANNEL_COMMANDS
 
 #define R_IRC_NOSPCRLFCL	R_CHAR_INV_GROUP(" \r\n:")
 #define R_COMMAND_PASS		R_START_STRING R_1_OR_MORE(" ") R_CAPTURE(R_1_OR_MORE(R_IRC_NOSPCRLFCL))

@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/16 23:07:25 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/17 13:35:59 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,6 +117,8 @@ class Server
 		void						_topic(const str, Client *);
 		void						_invite(const str, Client *);
 		void						_mode(const str, Client *);
+		Client						*_getClientByName(const str);
+		Channel						*_getChannelByName(const str);
 };
 
 #endif // SERVER_HPP

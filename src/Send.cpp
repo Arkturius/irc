@@ -29,12 +29,12 @@ void	Server::_send_join(Client *client, Channel *channel)
 		if (s != _clients.end())
 			clientList += " " + s->second.get_nickname();
 	}
-	RplGenerator	rpl(clientName, clientName, topic, clientList);
+	RplGenerator	rpl;
 
-	rpl.rpl_join();
-	rpl.rpl_topic();
-	rpl.rpl_namreply();
-	rpl.rpl_endofnames();
+	_send(client, ":" + clientName + " JOIN " + channelName);
+	_send(client, rpl.RPL_TOPIC("", 3, clientName.c_str(), channelName.c_str(), topic.c_str()));
+	_send(client, rpl.RPL_NAMREPLY("", 3, clientName.c_str(), channelName.c_str(), clientList.c_str()));
+	_send(client, rpl.RPL_ENDOFNAMES("", 2, clientName.c_str(), channelName.c_str()));
 }
 
 void	Server::_send(Client *client, const str &string)
@@ -43,4 +43,15 @@ void	Server::_send(Client *client, const str &string)
 
 	IRC_LOG("sending reply " BOLD(COLOR(RED,"%s")), string.c_str());
 	write(pollfd->fd, (string + "\r\n").c_str(), string.size() + 2);
+}
+
+void	Channel::_send(const str &string)
+{
+	IRC_AUTO	it = _fdClient.begin();
+
+	IRC_LOG("Channel Brodcast " BOLD(COLOR(YELLOW,"%s")), string.c_str());
+	for (; it != _fdClient.end(); ++it)
+		write(*it, (string + "\r\n").c_str(), string.size() + 2);
+	for (; it != _fdAdminClient.end(); ++it)
+		write(*it, (string + "\r\n").c_str(), string.size() + 2);
 }
