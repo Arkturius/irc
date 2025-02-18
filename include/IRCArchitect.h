@@ -17,6 +17,7 @@ typedef enum
 	RPL_CODE_NOTOPIC			=	331,
 	RPL_CODE_TOPIC				=	332,
 	RPL_CODE_TOPICWHOTIME		=	333,
+	RPL_CODE_INVITING			=	341,
 	RPL_CODE_NAMREPLY			=	353,
 	RPL_CODE_ENDOFNAMES			=	366,
 
@@ -50,6 +51,7 @@ typedef enum
 
 #define RPL_NOTOPIC(p, ...)				generate(p, RPL_CODE_NOTOPIC, ##__VA_ARGS__)
 #define RPL_TOPICWHOTIME(p, ...)		generate(p, RPL_CODE_TOPICWHOTIME, ##__VA_ARGS__)
+#define RPL_INVITING(p, ...)			generate(p, RPL_CODE_INVITING, ##__VA_ARGS__)
 #define ERR_NOSUCHNICK(p, ...)			generate(p, ERR_CODE_NOSUCHNICK, ##__VA_ARGS__)
 #define ERR_NOSUCHCHANNEL(p, ...)		generate(p, ERR_CODE_NOSUCHCHANNEL, ##__VA_ARGS__)
 #define ERR_USERNOTINCHANNEL(p, ...)	generate(p, ERR_CODE_USERNOTINCHANNEL, ##__VA_ARGS__)

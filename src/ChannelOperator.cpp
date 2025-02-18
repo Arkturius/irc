@@ -53,7 +53,7 @@ void	Server::_join(const str cmd, Client *client)
 	}
 
 	if (vecKeyLen > vecChannel.size())
-		; //TODO ERR_NEEDMOREPARAMS ?
+		return _send(client, _architect.ERR_NEEDMOREPARAMS("", 3, client->get_nickname().c_str(), command.c_str(), "Not enough parameters"));
 	for (; j < vecKeyLen; j++)
 	{
 		str	a = vecPassword[j];
@@ -87,7 +87,7 @@ void	Server::_kick(const str command, Client *client)
 		}
 	}
 	else
-		; //TODO erreur param
+		_send(client, _architect.ERR_NEEDMOREPARAMS("", 3, client->get_nickname().c_str(), command.c_str(), "Not enough parameters"));
 	
 
 	(void)command;(void)client;
@@ -172,7 +172,10 @@ bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Cha
 				return target->set_activePassword(0), 0;
 			else if (plus)
 			{
-				//regex mot de pass => INVALIDEMODEPARAM
+				_seeker.rebuild(R_CHANNEL_KEY);
+				_seeker.capture(modeArguments, 1);
+				if (_seeker.get_matchCount() == 0)
+					return _send(client, _architect.ERR_INVALIDMODEPARAM("", 5, client->get_nickname().c_str(), target->get_name().c_str(), "k", modeArguments.c_str(), "invalid input password")), 1;
 				target->set_password(modeArguments);
 				target->set_activePassword(1);
 				return 0;
@@ -257,8 +260,8 @@ void	Server::_invite(const str command, Client *client)
 	}
 	catch (std::exception &e)
 	{
-		//RPL_INVITING
-		//+ envoie msg d invitation a target
+		return _send(client, _architect.RPL_INVITING("", 3, client->get_nickname().c_str(), target->get_nickname().c_str(), channelName.c_str()));
+		//+ envoie msg d invitation a target ; il est sencer join  instant, ou etre sur liste d invitation?
 	}
 	(void)command;
 }
