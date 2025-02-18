@@ -43,7 +43,6 @@ void	Channel::addClient(int fdClient, str *password)
 		return ;
 addClientLabel:
 	_fdClient.push_back(fdClient);
-	_send("fuck a cette endroit g plus le nom.."" as JOIN " + _name);
 }
 
 int	Channel::removeClient(int fdClient)
