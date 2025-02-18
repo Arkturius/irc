@@ -119,7 +119,7 @@ void	Server::_topic(const str command, Client *client)
 			channel->set_topicSetterNickName(client->get_nickname());
 			channel->set_topicSetTime(time(NULL));
 			_sendTopic(client, channel);
-			channel->_send(_architect.RPL_TOPIC("", 3, client->get_nickname().c_str(), channelName.c_str(), topic.c_str()));
+			channel->_send("TOPIC " + channelName + " :" + topic);
 		}
 	}
 	else
