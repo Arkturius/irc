@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/08 16:17:28 by yroussea          #+#    #+#             */
-/*   Updated: 2025/02/17 16:28:40 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/18 13:09:41 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 # include <vector>
 # include <ircRegex.h>
 # include <irc.h>
+# include <time.h>
 
 # define	R_CHANNEL_PREFIX	R_CHAR_GROUP("&#+")
 # define	R_CHANNEL_ID		"!" R_X_EXACT(R_CHAR_GROUP(R_DIGIT_RANGE R_UPPER_RANGE),5)
@@ -48,6 +49,8 @@ class Channel
 
 		int						_userLimit;
 		str						_topic;
+		time_t					_topicSetTime;
+		str						_topicSetterNickName;
 		//topicSetterNickName
 		//topicSetTime
 		bool					_topicIsSet;
@@ -76,6 +79,8 @@ class Channel
 		GETTER(str, _topic);
 		GETTER(bool, _topicPermNeeded);
 		GETTER(bool, _topicIsSet);
+		GETTER(time_t, _topicSetTime);
+		GETTER(str, _topicSetterNickName);
 		GETTER(str, _password);
 		GETTER(bool, _activePassword);
 		GETTER(bool, _inviteOnlyChannel);
@@ -87,6 +92,8 @@ class Channel
 		GETTER_C(str, _topic);
 		GETTER_C(bool, _topicPermNeeded);
 		GETTER_C(bool, _topicIsSet);
+		GETTER_C(time_t, _topicSetTime);
+		GETTER_C(str, _topicSetterNickName);
 		GETTER_C(str, _password);
 		GETTER_C(bool, _activePassword);
 		GETTER_C(bool, _inviteOnlyChannel);
@@ -97,6 +104,8 @@ class Channel
 		SETTER(str, _topic);
 		SETTER(bool, _topicPermNeeded);
 		SETTER(bool, _topicIsSet);
+		SETTER(time_t, _topicSetTime);
+		SETTER(str, _topicSetterNickName);
 		SETTER(str, _password);
 		SETTER(bool, _activePassword);
 		SETTER(bool, _inviteOnlyChannel);

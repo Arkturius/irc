@@ -1,3 +1,4 @@
+#include <cerrno>
 #include <climits>
 #include <cstddef>
 #include <cstdlib>
@@ -72,19 +73,17 @@ void	Server::_kick(const str command, Client *client)
 	std::vector<str>	vecUser;
 	str					*comment = NULL;
 	Client				*target;
-	//parsing
+	//TODO parsing
 	
 	if (vecChannel.size() == 1)
 	{
-		target = _getClientByName(vecUser[0]);
-		_kickChannel(vecChannel[0], client, target, comment);
+		_kickChannel(vecChannel[0], client, vecUser[0], comment);
 	}
 	else if (vecChannel.size() == vecUser.size())
 	{
 		for (size_t i = 0; i < vecUser.size(); i++)
 		{
-			target = _getClientByName(vecUser[i]);
-			_kickChannel(vecChannel[i], client, target, comment);
+			_kickChannel(vecChannel[i], client, vecUser[i], comment);
 		}
 	}
 	else
@@ -99,22 +98,17 @@ void	Server::_topic(const str command, Client *client)
 	//TOPIC channel : => clear 
 	//TOPIC channel : topicContent => rempli
 
-	//do all the parsing
+	//TODO parsing
 	(void)command;(void)client;
 	str		channelName;
 	Channel	*channel = _getChannelByName(channelName);
 	int		perm = 0;
 	if (!channel)
-	{
-		//ERR_NOSUCHCHANNEL 
-	}
-	try
-	{
-		perm = channel->havePerm(client->get_pfd()->fd);
-	}
+		return _send(client, _architect.ERR_NOSUCHCHANNEL("", 3, client->get_nickname().c_str(), channelName.c_str(), "No such channel"));
+	try { perm = channel->havePerm(client->get_pfd()->fd); }
 	catch (std::exception &e)
 	{
-		//ERR_NOTONCHANNEL
+		return _send(client, _architect.ERR_NOTONCHANNEL("", 3, client->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
 	}
 	bool	newTopic = 1;
 	if (newTopic)
@@ -122,14 +116,15 @@ void	Server::_topic(const str command, Client *client)
 		str	topic;
 		
 		if (!perm && channel->get_topicPermNeeded())
-			;	//ERR_CHANOPRIVSNEEDED 
+			return _send(client, _architect.ERR_CHANOPRIVSNEEDED("", 3, client->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
 		else
 		{
 			channel->set_topic(topic);
 			channel->set_topicIsSet(1);
-			//RPL_TOPIC 
-			//RPL_TOPICWHOTIME
-			// + envoyer a TOUS(meme source) LES MEMBRE DU CHANNEL UNE UPDATE (uniquement <topic>)
+			channel->set_topicSetterNickName(client->get_nickname());
+			channel->set_topicSetTime(time(NULL));
+			_sendTopic(client, channel);
+			channel->_send(_architect.RPL_TOPIC("", 3, client->get_nickname().c_str(), channelName.c_str(), topic.c_str()));
 		}
 	}
 	else
@@ -137,60 +132,70 @@ void	Server::_topic(const str command, Client *client)
 		if (channel->get_topicIsSet())
 		{
 			str	topic = channel->get_topic();
-			//RPL_TOPIC 
-			//RPL_TOPICWHOTIME
+			_sendTopic(client, channel);
 		}
 		else
-		{
-			//RPL_NOTOPIC
-		}
-
+			return _send(client, _architect.RPL_NOTOPIC("", 3, client->get_nickname().c_str(), channelName.c_str(), "No topic is set"));
 	}
 }
 
 
-void	Server::_individualMode(bool plus, char mode, const str &modeArguments, Channel *target, Client *client)
+bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Channel *target, Client *client)
 {
-	Client	*userTarget;
-	if (mode == 'o')
+	switch (mode)
 	{
-		try
+		case ('o'):
 		{
-			if (plus)
-				target->givePerm(client->get_pfd()->fd, userTarget->get_pfd()->fd);
+			Client	*userTarget = NULL;
+			try
+			{
+				if (!userTarget)
+					throw UnexpectedErrorException();
+				if (plus)
+					target->givePerm(client->get_pfd()->fd, userTarget->get_pfd()->fd);
+				else
+					target->removePerm(userTarget->get_pfd()->fd);
+				return 0;
+			}
+			catch (std::exception &e)
+			{
+				return _send(client, _architect.ERR_USERNOTINCHANNEL("", 4, client->get_nickname().c_str(), userTarget->get_nickname().c_str(), target->get_name().c_str(), "They aren't on that channel")), 1;
+			}
+		}
+		case ('i'):
+			return target->set_inviteOnlyChannel(plus), 0;
+		case ('t'):
+			return target->set_topicPermNeeded(plus), 0;
+		case ('k'):
+		{
+			if (!plus && target->get_password() == modeArguments)
+				return target->set_activePassword(0), 0;
+			else if (plus)
+			{
+				//regex mot de pass => INVALIDEMODEPARAM
+				target->set_password(modeArguments);
+				target->set_activePassword(1);
+				return 0;
+			}
 			else
-				target->removePerm(client->get_pfd()->fd, userTarget->get_pfd()->fd);
+				return _send(client, _architect.ERR_INVALIDMODEPARAM("", 5, client->get_nickname().c_str(), target->get_name().c_str(), "k", modeArguments.c_str(), "To disable the password you need to enter the correct password")), 1;
 		}
-		catch (std::exception())
+		case ('l'):
 		{
-			//ERR_USERNOTINCHANNEL
+			long	ele;
+			char	*tmp;
+
+			ele = strtol(modeArguments.c_str(), &tmp, 10);
+			if (errno == ERANGE || ele < 0 || ele > INT_MAX || *tmp)
+				return _send(client, _architect.ERR_INVALIDMODEPARAM("", 5, client->get_nickname().c_str(), target->get_name().c_str(), "l", modeArguments.c_str(), "The limite sould be a possitiv integer")), 1;
+			if (plus)
+				target->set_userLimit(ele);
+			else
+				target->set_userLimit(INT_MAX);
+			return 0;
 		}
 	}
-	if (mode == 'i')
-		target->set_inviteOnlyChannel(plus);
-	if (mode == 't')
-		target->set_topicPermNeeded(plus);
-	if (mode == 'k')
-	{
-		if (!plus && target->get_password() == modeArguments)
-			target->set_activePassword(0);
-		else if (!plus)
-		{
-			//TODO regex pour verif que modeArguments est valide => ERR_INVALIDMODEPARAM
-			target->set_password(modeArguments);
-			target->set_activePassword(1);
-		}
-		else
-			;	//ERR_INVALIDMODEPARAM
-	}
-	if (mode == 'l')
-	{
-		//regex nombre xd
-		if (plus)
-			target->set_userLimit(std::atoi(modeArguments.c_str()));
-		else
-			target->set_userLimit(INT_MAX);
-	}
+	return _send(client, _architect.ERR_UNKNOWNMODE("", 3, client->get_nickname().c_str(), mode, "is unknown mode char to me")), 1;
 }
 
 void	Server::_mode(const str command, Client *client)
@@ -201,25 +206,26 @@ void	Server::_mode(const str command, Client *client)
 	str		modeString;
 	Channel	*target;
 	bool	giveModeString = 0;
-
+	//TODO parsing
 
 	target = _getChannelByName(targetName);
 	if (!target)
-		;//ERR_NOSUCHNICK
+		return _send(client, _architect.ERR_NOSUCHNICK("", 3, client->get_nickname().c_str(), targetName.c_str(), "No such nick/channel"));
 	if (!giveModeString)
 		goto getModeOfChannel;
 	try {
 		if (target->havePerm(client->get_pfd()->fd) == 0)
-			; // ERR_CHANOPRIVSNEEDED
+			return _send(client, _architect.ERR_CHANOPRIVSNEEDED("", 3, client->get_nickname().c_str(), targetName.c_str(), "You're not channel operator"));
 	}
 	catch (std::exception &e)
 	{
-		// ERR_NOTINCHANNEL
+		return _send(client, _architect.ERR_NOTONCHANNEL("", 3, client->get_nickname().c_str(), targetName.c_str(), "You're not on that channel"));
 	}
+	// while (return == 0)
 	// _individualMode(bool plus, char mode, const str &modeArguments, Channel *target, Client *client)
 
 getModeOfChannel:
-	; // RPL_CHANNELMODEIS
+	_sendModeIs(client, target);
 }
 void	Server::_invite(const str command, Client *client)
 {
@@ -230,27 +236,24 @@ void	Server::_invite(const str command, Client *client)
 
 	Channel *channel = _getChannelByName(channelName);
 	Client	*target = _getClientByName(nickName);
+	//TODO parsing
 
 	if (!channel)
-		;//ERR_NOSUCHCHANNEL
+		return _send(client, _architect.ERR_NOSUCHCHANNEL("", 3, client->get_nickname().c_str(), channelName.c_str(), "No such channel"));
 	if (!target)
-		; // ERR_NOSUCHNICK
+		return _send(client, _architect.ERR_NOSUCHNICK("", 3, client->get_nickname().c_str(), nickName.c_str(), "No such nick/channel"));
 	bool			perm = 0;
-	try
-	{
-		perm = channel->havePerm(client->get_pfd()->fd);
-	}
+	try { perm = channel->havePerm(client->get_pfd()->fd); }
 	catch (std::exception &e)
 	{
-		//ERR_NOTONCHANNEL
+		return _send(client, _architect.ERR_NOTONCHANNEL("", 3, client->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
 	}
 	if (!perm && channel->get_inviteOnlyChannel())
-		;//ERR_CHANOPRIVSNEEDED
-	
+		return _send(client, _architect.ERR_CHANOPRIVSNEEDED("", 3, client->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
 	try
 	{
 		channel->havePerm(target->get_pfd()->fd);
-		// ERR_USERONCHANNEL 
+		return _send(client, _architect.ERR_USERONCHANNEL("", 4, client->get_nickname().c_str(), target->get_nickname().c_str(), channelName.c_str(), "is already on channel"));
 	}
 	catch (std::exception &e)
 	{
@@ -268,16 +271,16 @@ void	Server::_addChannel(str channelName, str *channelKey, Client *client)
 	if (c)
 	{
 		if (c->get_inviteOnlyChannel())
-			; //ERR_INVITEONLYCHAN
+			return _send(client, _architect.ERR_INVITEONLYCHAN("", 3, client->get_nickname().c_str(), channelName.c_str(), "Cannot join channel (+i)"));
 		try
 		{
 			if (c->get_size() == c->get_userLimit())
-				; //ERR_CHANNELISFULL 
+				return _send(client, _architect.ERR_CHANNELISFULL("", 3, client->get_nickname().c_str(), channelName.c_str(), "Cannot join channel (+l)"));
 			c->addClient(pfd->fd, channelKey);
 		}
 		catch (std::exception &e)
 		{
-			//ERR_BADCHANNELKEY 
+			return _send(client, _architect.ERR_BADCHANNELKEY("", 3, client->get_nickname().c_str(), channelName.c_str(), "Cannot join channel (+k)"));
 		}
 	}
 	else
@@ -288,7 +291,7 @@ void	Server::_addChannel(str channelName, str *channelKey, Client *client)
 		c->addClient(pfd->fd, channelKey);
 	}
 	client->joinChannel(c);
-	_send_join(client, c);
+	_sendJoin(client, c);
 }
 
 void	Server::_removeChannel(str channelName, Client *client)
@@ -307,8 +310,9 @@ void	Server::_removeChannel(str channelName, Client *client)
 	client->leaveChannel(c);
 }
 
-void	Server::_kickChannel(str channelName, Client *admin, Client *kicked, str *comment)
+void	Server::_kickChannel(str channelName, Client *admin, str kickedName, str *comment)
 {
+	Client	*kicked = _getClientByName(kickedName);
 	IRC_AUTO		s = _channelMap.find(channelName);
 	struct pollfd	*pfdAdmin;
 	struct pollfd	*pfdKicked;
@@ -341,13 +345,11 @@ void	Server::_kickChannel(str channelName, Client *admin, Client *kicked, str *c
 			kicked->leaveChannel(c);
 	}
 	else
-	{
-		//ERR_NOSUCHCHANNEL
-	}
+		return _send(admin, _architect.ERR_NOSUCHCHANNEL("", 3, admin->get_nickname().c_str(), channelName.c_str(), "No such channel"));
 clientDontHaveThePerm:
-	; //ERR_CHANOPRIVSNEEDED
+	return _send(admin, _architect.ERR_CHANOPRIVSNEEDED("", 3, admin->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
 targetDontExist:
-	; //ERR_USERNOTINCHANNEL
+	return _send(admin, _architect.ERR_USERNOTINCHANNEL("", 4, admin->get_nickname().c_str(), kickedName.c_str(),channelName.c_str(), "They aren't on that channel"));
 adminNotInChannel:
-	; // ERR_NOTONCHANNEL
+	return _send(admin, _architect.ERR_NOTONCHANNEL("", 3, admin->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
 }

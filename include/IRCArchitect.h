@@ -13,6 +13,7 @@ typedef enum
 	RPL_CODE_CREATED			=	3,
 	RPL_CODE_MYINFO				=	4,
 	RPL_CODE_ISUPPORT			=	5,
+	RPL_CODE_CHANNELMODEIS		=	324,
 	RPL_CODE_NOTOPIC			=	331,
 	RPL_CODE_TOPIC				=	332,
 	RPL_CODE_TOPICWHOTIME		=	333,
@@ -27,9 +28,12 @@ typedef enum
 	ERR_CODE_NEEDMOREPARAMS		=	461,
 	ERR_CODE_ALREADYREGISTERED	=	462,
 	ERR_CODE_PASSWDMISMATCH		=	463,
+	ERR_CODE_CHANNELISFULL		=	471,
+	ERR_CODE_UNKNOWNMODE		=	472,
 	ERR_CODE_INVITEONLYCHAN		=	473,
 	ERR_CODE_BADCHANNELKEY		=	475,
 	ERR_CODE_CHANOPRIVSNEEDED	=	482,
+	ERR_CODE_INVALIDMODEPARAM	=	696,
 
 	RPL_CODE_LAST				=	909
 }	IRCReplyCode;
@@ -39,6 +43,7 @@ typedef enum
 #define	RPL_CREATED(p, ...)				generate(p, RPL_CODE_CREATED, ##__VA_ARGS__)		
 #define	RPL_MYINFO(p, ...)				generate(p, RPL_CODE_MYINFO, ##__VA_ARGS__)		
 #define	RPL_ISUPPORT(p, ...)			generate(p, RPL_CODE_ISUPPORT, ##__VA_ARGS__)	
+#define RPL_CHANNELMODEIS(p, ...)		generate(p, RPL_CODE_CHANNELMODEIS, ##__VA_ARGS__)
 #define	RPL_TOPIC(p, ...)				generate(p, RPL_CODE_TOPIC, ##__VA_ARGS__)		
 #define	RPL_NAMREPLY(p, ...)			generate(p, RPL_CODE_NAMREPLY, ##__VA_ARGS__)	
 #define	RPL_ENDOFNAMES(p, ...)			generate(p, RPL_CODE_ENDOFNAMES, ##__VA_ARGS__)
@@ -53,8 +58,12 @@ typedef enum
 #define ERR_NEEDMOREPARAMS(p, ...)		generate(p, ERR_CODE_NEEDMOREPARAMS, ##__VA_ARGS__)
 #define ERR_ALREADYREGISTERED(p, ...)	generate(p, ERR_CODE_ALREADYREGISTERED, ##__VA_ARGS__)
 #define ERR_PASSWDMISMATCH(p, ...)		generate(p, ERR_CODE_PASSWDMISMATCH, ##__VA_ARGS__)
+#define ERR_CHANNELISFULL(p, ...)		generate(p, ERR_CODE_CHANNELISFULL, ##__VA_ARGS__)
+#define ERR_UNKNOWNMODE(p, ...)			generate(p, ERR_CODE_UNKNOWNMODE, ##__VA_ARGS__)
 #define ERR_INVITEONLYCHAN(p, ...)		generate(p, ERR_CODE_INVITEONLYCHAN, ##__VA_ARGS__)
-#define ERR_BADCHANNELKEY(p, ...)		generate(p, ERR_BADCHANNELKEY, ##__VA_ARGS__)
+#define ERR_BADCHANNELKEY(p, ...)		generate(p, ERR_CODE_BADCHANNELKEY, ##__VA_ARGS__)
+#define ERR_CHANOPRIVSNEEDED(p, ...)	generate(p, ERR_CODE_CHANOPRIVSNEEDED, ##__VA_ARGS__)
+#define ERR_INVALIDMODEPARAM(p, ...)	generate(p, ERR_CODE_INVALIDMODEPARAM, ##__VA_ARGS__)
 
 class IRCArchitect
 {

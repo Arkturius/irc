@@ -1,11 +1,14 @@
+#include <climits>
 #include <poll.h>
+#include <sstream>
 #include <unistd.h>
 
 #include <Client.h>
+#include <time.h>
 #include <Channel.h>
 #include <Server.h>
 
-void	Server::_send_join(Client *client, Channel *channel)
+void	Server::_sendJoin(Client *client, Channel *channel)
 {
 	str	clientName = client->get_nickname();
 	str channelName = channel->get_name();
@@ -29,12 +32,38 @@ void	Server::_send_join(Client *client, Channel *channel)
 		if (s != _clients.end())
 			clientList += " " + s->second.get_nickname();
 	}
-	IRCArchitect	rpl;
 
 	_send(client, ":" + clientName + " JOIN " + channelName);
-	_send(client, rpl.RPL_TOPIC("", 3, clientName.c_str(), channelName.c_str(), topic.c_str()));
-	_send(client, rpl.RPL_NAMREPLY("", 3, clientName.c_str(), channelName.c_str(), clientList.c_str()));
-	_send(client, rpl.RPL_ENDOFNAMES("", 2, clientName.c_str(), channelName.c_str()));
+	_send(client, _architect.RPL_TOPIC("", 3, clientName.c_str(), channelName.c_str(), topic.c_str()));
+	_send(client, _architect.RPL_NAMREPLY("", 3, clientName.c_str(), channelName.c_str(), clientList.c_str()));
+	_send(client, _architect.RPL_ENDOFNAMES("", 2, clientName.c_str(), channelName.c_str()));
+}
+
+void	Server::_sendTopic(Client *client, Channel *channel)
+{
+	_send(client, _architect.RPL_TOPIC("", 3, client->get_nickname().c_str(), channel->get_name().c_str(), channel->get_topic().c_str()));
+	_send(client, _architect.RPL_TOPICWHOTIME("", 4, client->get_nickname().c_str(), channel->get_name().c_str(), channel->get_topicSetterNickName().c_str(), channel->get_topicSetTime()));
+}
+
+void	Server::_sendModeIs(Client *client, Channel *channel)
+{
+	std::stringstream	ss;
+	const int			userLimit = channel->get_userLimit();
+	str					modeis = "+";
+
+	if (channel->get_inviteOnlyChannel())
+		modeis += "i";
+	if (channel->get_topicPermNeeded())
+		modeis += "t";
+	if (channel->get_activePassword())
+		modeis += "k";
+	if (userLimit != INT_MAX)
+	{
+		ss << userLimit;
+		modeis += "l " + ss.str();
+	}
+	
+	_send(client, _architect.RPL_CHANNELMODEIS("", 3, client->get_nickname().c_str(), channel->get_name().c_str(), modeis.c_str()));
 }
 
 void	Server::_send(Client *client, const str &string)
@@ -55,3 +84,4 @@ void	Channel::_send(const str &string)
 	for (; it != _fdAdminClient.end(); ++it)
 		write(*it, (string + "\r\n").c_str(), string.size() + 2);
 }
+

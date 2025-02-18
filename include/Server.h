@@ -57,7 +57,9 @@ class Server
 		void			_executeCommand(Client *client, const str &command);
 
 		void			_send(Client *client, const str &string);
-		void			_send_join(Client *client, Channel *channel);
+		void			_sendJoin(Client *client, Channel *channel);
+		void			_sendTopic(Client *client, Channel *channel);
+		void			_sendModeIs(Client *client, Channel *channel);
 
 		IRC_COMMAND_DECL(CAP);
 		IRC_COMMAND_DECL(PASS);
@@ -100,16 +102,17 @@ class Server
 		std::map<str, Channel *>	_channelMap;
 		void						_addChannel(str channelName, str *key, Client *);
 		void						_removeChannel(str channelName, Client *);
-		void						_kickChannel(str channelName, Client *admin, Client *kicked, str *comment);
+		void						_kickChannel(str channelName, Client *admin, str kicked, str *comment);
 
 		void						_join(const str, Client *);
 		void						_kick(const str, Client *);
 		void						_topic(const str, Client *);
 		void						_invite(const str, Client *);
 		void						_mode(const str, Client *);
-		void						_individualMode(bool, char, const str &, Channel *, Client *);
+		bool						_individualMode(bool, char, const str &, Channel *, Client *);
 		Client						*_getClientByName(const str);
 		Channel						*_getChannelByName(const str);
+		EXCEPTION(UnexpectedErrorException,	"oops");
 };
 
 #endif // SERVER_HPP
