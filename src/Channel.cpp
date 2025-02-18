@@ -28,7 +28,7 @@ void	Channel::_addClient(int fdClient, int perm)
 	else
 		_fdClient.push_back(fdClient);
 }
-void	Channel::addClient(int fdClient, str *password)
+void	Channel::addClient(int fdClient, const str *password)
 {
 	//TODO if password given but not needed? if l inverse
 	//TODO la ca va segfault dans ce cas xd
