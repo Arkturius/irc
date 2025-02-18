@@ -31,7 +31,7 @@ Channel	*Server::_getChannelByName(const str Name)
 
 void	Server::_join(const str cmd, Client *client)
 {
-	str	command = cmd.substr(5, cmd.size());
+	str	command = cmd.substr(1, cmd.size()); //TODO PRB CA DEPEND COMMENT  EST ENVOYER CMD
 	std::vector<str>	vecChannel;
 	std::vector<str>	vecPassword;
 	uint				vecKeyLen = 0;
@@ -60,9 +60,7 @@ void	Server::_join(const str cmd, Client *client)
 		_addChannel(vecChannel[j], &a, client);
 	}
 	for (; j < vecChannel.size(); j++)
-	{
 		_addChannel(vecChannel[j], NULL, client);
-	}
 }
 
 void	Server::_kick(const str command, Client *client)
@@ -75,16 +73,13 @@ void	Server::_kick(const str command, Client *client)
 	Client				*target;
 	//TODO parsing
 	
+	//la regex ne doit pas depasser l'espace 
 	if (vecChannel.size() == 1)
-	{
 		_kickChannel(vecChannel[0], client, vecUser[0], comment);
-	}
 	else if (vecChannel.size() == vecUser.size())
 	{
 		for (size_t i = 0; i < vecUser.size(); i++)
-		{
 			_kickChannel(vecChannel[i], client, vecUser[i], comment);
-		}
 	}
 	else
 		_send(client, _architect.ERR_NEEDMOREPARAMS("", 3, client->get_nickname().c_str(), command.c_str(), "Not enough parameters"));
