@@ -47,6 +47,7 @@ void	Server::_sendTopic(Client *client, Channel *channel)
 
 void	Server::_sendModeIs(Client *client, Channel *channel)
 {
+	str					modeArgs = "";
 	std::stringstream	ss;
 	const int			userLimit = channel->get_userLimit();
 	str					modeis = "+";
@@ -60,10 +61,11 @@ void	Server::_sendModeIs(Client *client, Channel *channel)
 	if (userLimit != INT_MAX)
 	{
 		ss << userLimit;
-		modeis += "l " + ss.str();
+		modeis += "l";
+		modeArgs += ss.str();
 	}
 	
-	_send(client, _architect.RPL_CHANNELMODEIS("", 3, client->get_nickname().c_str(), channel->get_name().c_str(), modeis.c_str()));
+	_send(client, _architect.RPL_CHANNELMODEIS("", 4, client->get_nickname().c_str(), channel->get_name().c_str(), modeis.c_str(), modeArgs.c_str()));
 }
 
 void	Server::_send(Client *client, const str &string)

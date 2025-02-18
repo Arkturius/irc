@@ -200,16 +200,16 @@ void	Server::_mode(const str command, Client *client)
 {
 	//<target> [<modestring> [<mode arguments>...]]
 	(void)command;(void)client;
-	str		targetName;
-	str		modeString;
-	Channel	*target;
-	bool	giveModeString = 0;
+	str					targetName;
+	str					modeString;
+	std::vector<str>	modeArgs;
+	Channel				*target;
 	//TODO parsing
 
 	target = _getChannelByName(targetName);
 	if (!target)
 		return _send(client, _architect.ERR_NOSUCHNICK("", 3, client->get_nickname().c_str(), targetName.c_str(), "No such nick/channel"));
-	if (!giveModeString)
+	if (modeString.size() == 0)
 		goto getModeOfChannel;
 	try {
 		if (target->havePerm(client->get_pfd()->fd) == 0)
@@ -219,14 +219,22 @@ void	Server::_mode(const str command, Client *client)
 	{
 		return _send(client, _architect.ERR_NOTONCHANNEL("", 3, client->get_nickname().c_str(), targetName.c_str(), "You're not on that channel"));
 	}
-	// while (return == 0)
-	// _individualMode(bool plus, char mode, const str &modeArguments, Channel *target, Client *client)
+
+	//  +ab argsA argsB
+	//  on ne melange pas les - et les + !
+	for (size_t i = 1; i < modeString.size(); i++)
+	{
+		str	modeArguments = modeArgs[i - 1];
+		if (_individualMode(modeString.c_str()[0] == '+', modeString.c_str()[i], modeArguments, target, client))
+			return ;
+	}
 
 getModeOfChannel:
 	_sendModeIs(client, target);
 }
 void	Server::_invite(const str command, Client *client)
 {
+	UNUSED(command);
 	//<nickname> <channel>
 	
 	str	nickName;
@@ -255,10 +263,10 @@ void	Server::_invite(const str command, Client *client)
 	}
 	catch (std::exception &e)
 	{
-		return _send(client, _architect.RPL_INVITING("", 3, client->get_nickname().c_str(), target->get_nickname().c_str(), channelName.c_str()));
-		//+ envoie msg d invitation a target ; il est sencer join  instant, ou etre sur liste d invitation?
+		_send(client, _architect.RPL_INVITING("", 3, client->get_nickname().c_str(), target->get_nickname().c_str(), channelName.c_str()));
+		channel->invite(target->get_pfd()->fd);
+		_send(target, client->get_nickname() + " invited you to channel " + channelName);
 	}
-	(void)command;
 }
 
 void	Server::_addChannel(str channelName, str *channelKey, Client *client)
@@ -268,7 +276,7 @@ void	Server::_addChannel(str channelName, str *channelKey, Client *client)
 
 	if (c)
 	{
-		if (c->get_inviteOnlyChannel())
+		if (c->get_inviteOnlyChannel() && !c->isInvited(pfd->fd))
 			return _send(client, _architect.ERR_INVITEONLYCHAN("", 3, client->get_nickname().c_str(), channelName.c_str(), "Cannot join channel (+i)"));
 		try
 		{

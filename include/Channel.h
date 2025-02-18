@@ -25,6 +25,34 @@
 
 class Client;
 
+bool	intInVector(std::vector<int> &v, int x)
+{
+	std::vector<int>::iterator	it;
+	for (it = v.begin(); it != v.end(); ++it)
+	{
+		if (*it == x)
+			return 1;
+	}
+	return 0;
+}
+bool	removeIfVector(std::vector<int> &v, int x)
+{
+	bool returnValue = 0;
+	std::vector<int>::iterator	it;
+	for (it = v.begin(); it != v.end(); ++it)
+	{
+		if (*it == x)
+		{
+			v.erase(it);
+			returnValue = 1;
+		}
+	}
+	return returnValue;
+}
+
+
+
+
 class Channel
 {
 	//TODO pour l instant tous est public =
@@ -39,13 +67,14 @@ class Channel
 		str						_topic;
 		time_t					_topicSetTime;
 		str						_topicSetterNickName;
-		//topicSetterNickName
-		//topicSetTime
+
 		bool					_topicIsSet;
 		bool					_topicPermNeeded;
 
 		std::vector<int>		_fdClient;
 		std::vector<int>		_fdAdminClient;
+
+		std::vector<int>		_invitedClient;		
 
 		void	_addClient(int fdClient, int perm);
 	
@@ -54,6 +83,8 @@ class Channel
 		~Channel(void);
 
 		int		get_size() {return _fdAdminClient.size() + _fdClient.size();}
+		void	invite(int fdClient) {_invitedClient.push_back(fdClient);}
+		bool	isInvited(int fdClient) {return intInVector(_invitedClient, fdClient);}
 		void	addClient(int fdClient, str *password);
 		int		removeClient(int fdClient); //TODO remove call by server, need to check if size == 0 to delete it
 
@@ -74,6 +105,7 @@ class Channel
 		GETTER(bool, _inviteOnlyChannel);
 		GETTER(std::vector<int>, _fdClient);
 		GETTER(std::vector<int>, _fdAdminClient);
+		GETTER(std::vector<int>, _invitedClient);
 
 		GETTER_C(int, _userLimit);
 		GETTER_C(str, _name);
@@ -87,6 +119,7 @@ class Channel
 		GETTER_C(bool, _inviteOnlyChannel);
 		GETTER_C(std::vector<int>, _fdClient);
 		GETTER_C(std::vector<int>, _fdAdminClient);
+		GETTER_C(std::vector<int>, _invitedClient);
 
 		SETTER(int, _userLimit);
 		SETTER(str, _topic);
@@ -97,6 +130,7 @@ class Channel
 		SETTER(str, _password);
 		SETTER(bool, _activePassword);
 		SETTER(bool, _inviteOnlyChannel);
+		SETTER(std::vector<int>, _invitedClient);
 
 		EXCEPTION(InvalidChannelNameException,	"Invalid channel name.");
 		EXCEPTION(ClientNotInChannelException,	"Client not in channel.");

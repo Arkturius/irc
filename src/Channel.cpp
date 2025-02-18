@@ -32,20 +32,16 @@ void	Channel::addClient(int fdClient, str *password)
 {
 	//TODO if password given but not needed? if l inverse
 	//TODO la ca va segfault dans ce cas xd
+	if (removeIfVector(_invitedClient, fdClient))
+		goto addClientLabel;
 	if (_activePassword && *password != _password)
 		throw InvalidChannelKeyException();
 	
-	std::vector<int>::iterator	it;
-	for (it = _fdClient.begin(); it != _fdClient.end(); ++it)
-	{
-		if (*it == fdClient)
-			return ;
-	}
-	for (it = _fdAdminClient.begin(); it != _fdAdminClient.end(); ++it)
-	{
-		if (*it == fdClient)
-			return ;
-	}
+	if (intInVector(_fdClient, fdClient))
+		return ;
+	if (intInVector(_fdAdminClient, fdClient))
+		return ;
+addClientLabel:
 	_fdClient.push_back(fdClient);
 	_send("fuck a cette endroit g plus le nom.."" as JOIN " + _name);
 }
@@ -54,22 +50,10 @@ int	Channel::removeClient(int fdClient)
 {
 	std::vector<int>::iterator	it;
 
-	for (it = _fdClient.begin(); it != _fdClient.end(); ++it)
-	{
-		if (*it == fdClient)
-		{
-			_fdClient.erase(it);
-			goto end;
-		}
-	}
-	for (it = _fdAdminClient.begin(); it != _fdClient.end(); ++it)
-	{
-		if (*it == fdClient)
-		{
-			_fdAdminClient.erase(it);
-			goto end;
-		}
-	}
+	if (removeIfVector(_fdClient, fdClient))
+		goto end;
+	if (removeIfVector(_fdAdminClient, fdClient))
+		goto end;
 	throw ClientNotInChannelException();
 end:
 	return (get_size());
