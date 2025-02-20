@@ -42,36 +42,31 @@ typedef enum
 	RPL_CODE_LAST				=	909
 }	IRCReplyCode;
 
-#define	RPL_WELCOME(p, ...)				generate(p, RPL_CODE_WELCOME, ##__VA_ARGS__)		
-#define	RPL_YOUHOST(p, ...)				generate(p, RPL_CODE_YOUHOST, ##__VA_ARGS__)		
-#define	RPL_CREATED(p, ...)				generate(p, RPL_CODE_CREATED, ##__VA_ARGS__)		
-#define	RPL_MYINFO(p, ...)				generate(p, RPL_CODE_MYINFO, ##__VA_ARGS__)		
-#define	RPL_ISUPPORT(p, ...)			generate(p, RPL_CODE_ISUPPORT, ##__VA_ARGS__)	
-#define RPL_CHANNELMODEIS(p, ...)		generate(p, RPL_CODE_CHANNELMODEIS, ##__VA_ARGS__)
-#define	RPL_TOPIC(p, ...)				generate(p, RPL_CODE_TOPIC, ##__VA_ARGS__)		
-#define	RPL_NAMREPLY(p, ...)			generate(p, RPL_CODE_NAMREPLY, ##__VA_ARGS__)	
-#define	RPL_ENDOFNAMES(p, ...)			generate(p, RPL_CODE_ENDOFNAMES, ##__VA_ARGS__)
+#define CMD_TOPIC(source, ...)		generate(source, " TOPIC ", ##__VA_ARGS__)
+#define CMD_JOIN(source, ...)		generate(source, " JOIN ", ##__VA_ARGS__)
+#define CMD_MODE(source, ...)		generate(source, " MODE ", ##__VA_ARGS__)
+#define CMD_KICK(source, ...)		generate(source, " KICK ", ##__VA_ARGS__)
 
-#define RPL_NOTOPIC(p, ...)				generate(p, RPL_CODE_NOTOPIC, ##__VA_ARGS__)
-#define RPL_TOPICWHOTIME(p, ...)		generate(p, RPL_CODE_TOPICWHOTIME, ##__VA_ARGS__)
-#define RPL_INVITING(p, ...)			generate(p, RPL_CODE_INVITING, ##__VA_ARGS__)
-#define ERR_NOSUCHNICK(p, ...)			generate(p, ERR_CODE_NOSUCHNICK, ##__VA_ARGS__)
-#define ERR_NOSUCHCHANNEL(p, ...)		generate(p, ERR_CODE_NOSUCHCHANNEL, ##__VA_ARGS__)
-#define ERR_NONICKNAMEGIVEN(p, ...)		generate(p, ERR_CODE_NONICKNAMEGIVEN, ##__VA_ARGS__)
-#define ERR_ERRONEUSNICKNAME(p, ...)	generate(p, ERR_CODE_ERRONEUSNICKNAME, ##__VA_ARGS__)
-#define ERR_NICKNAMEINUSE(p, ...)		generate(p, ERR_CODE_NICKNAMEINUSE, ##__VA_ARGS__)
-#define ERR_USERNOTINCHANNEL(p, ...)	generate(p, ERR_CODE_USERNOTINCHANNEL, ##__VA_ARGS__)
-#define ERR_NOTONCHANNEL(p, ...)		generate(p, ERR_CODE_NOTONCHANNEL, ##__VA_ARGS__)
-#define ERR_USERONCHANNEL(p, ...)		generate(p, ERR_CODE_USERONCHANNEL, ##__VA_ARGS__)
-#define ERR_NEEDMOREPARAMS(p, ...)		generate(p, ERR_CODE_NEEDMOREPARAMS, ##__VA_ARGS__)
-#define ERR_ALREADYREGISTERED(p, ...)	generate(p, ERR_CODE_ALREADYREGISTERED, ##__VA_ARGS__)
-#define ERR_PASSWDMISMATCH(p, ...)		generate(p, ERR_CODE_PASSWDMISMATCH, ##__VA_ARGS__)
-#define ERR_CHANNELISFULL(p, ...)		generate(p, ERR_CODE_CHANNELISFULL, ##__VA_ARGS__)
-#define ERR_UNKNOWNMODE(p, ...)			generate(p, ERR_CODE_UNKNOWNMODE, ##__VA_ARGS__)
-#define ERR_INVITEONLYCHAN(p, ...)		generate(p, ERR_CODE_INVITEONLYCHAN, ##__VA_ARGS__)
-#define ERR_BADCHANNELKEY(p, ...)		generate(p, ERR_CODE_BADCHANNELKEY, ##__VA_ARGS__)
-#define ERR_CHANOPRIVSNEEDED(p, ...)	generate(p, ERR_CODE_CHANOPRIVSNEEDED, ##__VA_ARGS__)
-#define ERR_INVALIDMODEPARAM(p, ...)	generate(p, ERR_CODE_INVALIDMODEPARAM, ##__VA_ARGS__)
+#define RPL_NOTOPIC(...)			generate(RPL_CODE_NOTOPIC, ##__VA_ARGS__)
+#define RPL_TOPICWHOTIME(...)		generate(RPL_CODE_TOPICWHOTIME, ##__VA_ARGS__)
+#define RPL_INVITING(...)			generate(RPL_CODE_INVITING, ##__VA_ARGS__)
+#define ERR_NOSUCHNICK(...)			generate(ERR_CODE_NOSUCHNICK, ##__VA_ARGS__)
+#define ERR_NOSUCHCHANNEL(...)		generate(ERR_CODE_NOSUCHCHANNEL, ##__VA_ARGS__)
+#define ERR_NONICKNAMEGIVEN(...)	generate(ERR_CODE_NONICKNAMEGIVEN, ##__VA_ARGS__)
+#define ERR_ERRONEUSNICKNAME(...)	generate(ERR_CODE_ERRONEUSNICKNAME, ##__VA_ARGS__)
+#define ERR_NICKNAMEINUSE(...)		generate(ERR_CODE_NICKNAMEINUSE, ##__VA_ARGS__)
+#define ERR_USERNOTINCHANNEL(...)	generate(ERR_CODE_USERNOTINCHANNEL, ##__VA_ARGS__)
+#define ERR_NOTONCHANNEL(...)		generate(ERR_CODE_NOTONCHANNEL, ##__VA_ARGS__)
+#define ERR_USERONCHANNEL(...)		generate(ERR_CODE_USERONCHANNEL, ##__VA_ARGS__)
+#define ERR_NEEDMOREPARAMS(...)		generate(ERR_CODE_NEEDMOREPARAMS, ##__VA_ARGS__)
+#define ERR_ALREADYREGISTERED(...)	generate(ERR_CODE_ALREADYREGISTERED, ##__VA_ARGS__)
+#define ERR_PASSWDMISMATCH(...)		generate(ERR_CODE_PASSWDMISMATCH, ##__VA_ARGS__)
+#define ERR_CHANNELISFULL(...)		generate(ERR_CODE_CHANNELISFULL, ##__VA_ARGS__)
+#define ERR_UNKNOWNMODE(...)		generate(ERR_CODE_UNKNOWNMODE, ##__VA_ARGS__)
+#define ERR_INVITEONLYCHAN(...)		generate(ERR_CODE_INVITEONLYCHAN, ##__VA_ARGS__)
+#define ERR_BADCHANNELKEY(...)		generate(ERR_CODE_BADCHANNELKEY, ##__VA_ARGS__)
+#define ERR_CHANOPRIVSNEEDED(...)	generate(ERR_CODE_CHANOPRIVSNEEDED, ##__VA_ARGS__)
+#define ERR_INVALIDMODEPARAM(...)	generate(ERR_CODE_INVALIDMODEPARAM, ##__VA_ARGS__)
 
 #include <IRCSeeker.h>
 
@@ -84,13 +79,12 @@ class IRCArchitect
 		IRCArchitect(void) {}
 		~IRCArchitect(void) {}
 
-		const str	generate(const str &prefix, IRCReplyCode code, uint32_t paramCount, ...)
+		const str	generate(IRCReplyCode code, uint32_t paramCount, ...)
 		{
 			std::stringstream	stream;
 			str					reply = "";
 			va_list				list;
 
-			reply += prefix;
 			stream << std::setfill('0') << std::setw(3) << code;
 			reply += stream.str();
 			va_start(list, paramCount);

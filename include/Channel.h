@@ -80,10 +80,10 @@ class Channel
 		Channel(str name, int);
 		~Channel(void);
 
-		int		get_size() {return _fdAdminClient.size() + _fdClient.size();}
+		int		get_size() const {return _fdAdminClient.size() + _fdClient.size();}
 		void	invite(int fdClient) {_invitedClient.push_back(fdClient);}
 		bool	isInvited(int fdClient) {return intInVector(_invitedClient, fdClient);}
-		void	addClient(int fdClient, str *password);
+		void	addClient(int fdClient, const str *password);
 		int		removeClient(int fdClient); //TODO remove call by server, need to check if size == 0 to delete it
 
 		bool	havePerm(int fdClient);
