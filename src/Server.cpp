@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/20 20:04:51 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/20 20:07:18 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/20 20:15:28 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,7 +200,7 @@ IRC_COMMAND_DEF(PASS)
 		_send(client, 
 		_architect.ERR_NEEDMOREPARAMS
 		(
-			IRC_NO_PREFIX, 3,
+			3,
 			client->get_nickname().c_str(),
 			"PASS",
 			"Not enough parameters"
@@ -213,7 +213,7 @@ IRC_COMMAND_DEF(PASS)
 		_send(client, 
 		_architect.ERR_ALREADYREGISTERED
 		(
-			IRC_NO_PREFIX, 2,
+			2,
 			client->get_nickname().c_str(),
 			"You may not reregister"
 		));
@@ -246,7 +246,7 @@ IRC_COMMAND_DEF(NICK)
 		_send(client, 
 		_architect.ERR_NONICKNAMEGIVEN 
 		(
-			IRC_NO_PREFIX, 2,
+			2,
 			client->get_nickname().c_str(),
 			"No nickname given"
 		));
@@ -262,7 +262,7 @@ IRC_COMMAND_DEF(NICK)
 		_send(client,
 		_architect.ERR_ERRONEUSNICKNAME
 		(
-			IRC_NO_PREFIX, 3,
+			3,
 			client->get_nickname().c_str(),
 			newNick.c_str(),
 			"Erroneus nickname"
@@ -277,7 +277,7 @@ IRC_COMMAND_DEF(NICK)
 			_send(client,
 			_architect.ERR_NICKNAMEINUSE
 			(
-				IRC_NO_PREFIX, 3,
+				3,
 				client->get_nickname().c_str(),
 				newNick.c_str(),
 				"Nickname is already in use"
@@ -305,7 +305,7 @@ void	Server::_registerClient(Client *client)
 		_send(client,
 		_architect.ERR_PASSWDMISMATCH
 		(
-			IRC_NO_PREFIX, 2,
+			2,
 			client->get_nickname().c_str(),
 			"Password incorrect"
 		));
@@ -327,7 +327,7 @@ IRC_COMMAND_DEF(USER)
 		_send(client, 
 		_architect.ERR_NEEDMOREPARAMS
 		(
-			IRC_NO_PREFIX, 3,
+			3,
 			client->get_nickname().c_str(),
 			"USER",
 			"Not enough parameters"
@@ -340,7 +340,7 @@ IRC_COMMAND_DEF(USER)
 		_send(client, 
 		_architect.ERR_ALREADYREGISTERED
 		(
-			IRC_NO_PREFIX, 2,
+			2,
 			client->get_nickname().c_str(),
 			"You may not reregister"
 		));
@@ -356,7 +356,7 @@ IRC_COMMAND_DEF(USER)
 		_send(client,
 		_architect.ERR_NEEDMOREPARAMS
 		(
-			IRC_NO_PREFIX, 3,
+			3,
 			client->get_nickname().c_str(),
 			"USER",
 			"Not enough parameters"
