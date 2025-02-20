@@ -6,6 +6,7 @@
    "-Wall",
    "-Wextra",
    "-Werror",
+   "-gdwarf-2",
    "-std=c++98",
    "-DIRC_VERBOSE=1",
    "-Iinclude",
@@ -23,6 +24,7 @@
    "-Wall",
    "-Wextra",
    "-Werror",
+   "-gdwarf-2",
    "-std=c++98",
    "-DIRC_VERBOSE=1",
    "-Iinclude",
@@ -40,6 +42,7 @@
    "-Wall",
    "-Wextra",
    "-Werror",
+   "-gdwarf-2",
    "-std=c++98",
    "-DIRC_VERBOSE=1",
    "-Iinclude",
@@ -74,14 +77,15 @@
    "-Wall",
    "-Wextra",
    "-Werror",
+   "-gdwarf-2",
    "-std=c++98",
    "-DIRC_VERBOSE=1",
    "-Iinclude",
    "-o",
-   "build/src/Regex.o",
+   "build/src/Send.o",
    "-c",
-   "src/Regex.cpp"
+   "src/Send.cpp"
   ],
-  "file": "src/Regex.cpp"
+  "file": "src/Send.cpp"
  }
 ]

@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <exception>
 #include <vector>
 
 #include <IRCSeeker.h>
@@ -11,7 +10,8 @@ Channel::Channel(str channelName, int firstClient): _name(channelName), _inviteO
 
 	IRCSeeker	parser(R_CHANNEL_NAME);
 
-	if (parser.match(channelName.c_str()))
+	parser.feedString(channelName.c_str());
+	if (!parser.match())
 		throw InvalidChannelNameException();
 	_fdAdminClient.push_back(firstClient);
 }

@@ -1,6 +1,7 @@
 #ifndef IRCSEEKER_HPP
 # define IRCSEEKER_HPP
 
+#include <cstring>
 # include <irc.h>
 
 # include <regex.h>
@@ -8,130 +9,96 @@
 # include <vector>
 
 # define COLUMN	;
+# define IRC_SEEKER_GROUP_MAX	126
+
+# define IRC_BZERO(X)	std::memset(&(X), 0, sizeof(X))
 
 class IRCSeeker
 {
 	private:
 		regex_t				_expr;
 		str					_pattern;
+		str					_string;
+		bool				_didMatch;
 
 		size_t				_matchIndex;
 		size_t				_matchCount;
 		std::vector<str>	_matches;
+		regmatch_t			_hold[IRC_SEEKER_GROUP_MAX + 2];
 
-		void	_reset(void)
+		void	_crop(void)			{ _string = _string.substr(_matchIndex, _string.length()); _matchIndex = 0; }
+		void	_resetMatches(void)	{ _matchIndex = 0; _matchCount = 0; _matches.clear(); }
+
+		void	_rebuild(const str &pattern)
 		{
-			_pattern = "";
-			_matchCount = 0;
-			_matchIndex = -1U;
-			_matches.clear();
+			if (pattern == "")		{ throw EmptyPatternException(); }
 			regfree(&_expr);
+ 			if (_expr.allocated)	{ regfree(&_expr); }
+
+			if (regcomp(&_expr, pattern.c_str(), REG_EXTENDED))
+				throw InvalidPatternException();
+
+			_pattern = pattern;
+			_resetMatches();
 		}
 
-		void	_findNext(const str &source, size_t nmatch)
+		void	_find(void)
 		{
-			if (_pattern == "")
-				throw EmptyPatternException();
-			if (_matchIndex == -1U)
-				return ;
+			_didMatch = !regexec(&_expr, _string.c_str() + _matchIndex, IRC_SEEKER_GROUP_MAX + 2, _hold, 0);
 
-			regmatch_t	*hold = new regmatch_t[nmatch + 2];
-			const str	crop = source.substr(_matchIndex, source.length());
+			if (_matchIndex == _string.length())	{_didMatch = false; IRC_WARN("_string fully consumed, aborting."); return; }
+			if (!_didMatch)							{ throw RegExecFailedException(); }
+			if (_hold[1].rm_so == -1)				{ _didMatch = false; IRC_WARN("0 length match, aborting."); return; }
 
-			const int	err = regexec(&_expr, crop.c_str(), nmatch + 2, hold, 0);
-			int			start = hold[1].rm_so;
-			int			end = hold[1].rm_eo;
+			const str	match = _string.substr(_hold[1].rm_so + _matchIndex, _hold[1].rm_eo - _hold[1].rm_so);
+			IRC_OK("match found at %d - %d = [" BOLD(COLOR(GREEN,"%s")) "]", _hold[1].rm_so, _hold[1].rm_eo, match.c_str());
 
-			if (err)
-			{
-				delete[] hold;
-				_matchIndex = -1U;
-				return ;
-			}
-			for (size_t i = 0; i < nmatch; ++i)
-			{
-				start = hold[i + 1].rm_so;
-				end = hold[i + 1].rm_eo;
-
-				if (start == -1 || end == -1)
-				{
-					_matchIndex = -1U;
-					break ;
-				}
-
-				str match = crop.substr(start, end - start);
-				//IRC_LOG("Matched group at %d-%d : " BOLD(COLOR(RED,"%s")), start, end, match.c_str());
-				_matches.push_back(match);
-				_matchIndex += end;
-				_matchCount++;
-			}
-
-			delete[] hold;
+			_matches.push_back(match);
+			_matchIndex += _hold[1].rm_eo;
+			_matchCount++;
 		}
 
 	public:
-		IRCSeeker(void): _pattern(""), _matchIndex(0), _matchCount(0) {}
+		IRCSeeker(void): _pattern(""), _string(""), _matchIndex(0), _matchCount(0) { IRC_BZERO(_expr); }
 		~IRCSeeker(void) { regfree(&_expr); }
-		IRCSeeker(const str &pattern): _pattern(pattern), _matchIndex(0), _matchCount(0)
+
+		IRCSeeker(const str &pattern): _pattern(pattern), _string(""), _matchIndex(0), _matchCount(0)
 		{
 			const int err = regcomp(&_expr, pattern.c_str(), REG_EXTENDED);
 			if (err)
 				throw InvalidPatternException();
 		}
 
-		void	rebuild(const str &pattern)
-		{
-			if (_pattern != "")
-				_reset();
+		void	rebuild(const str &pattern)		{ try { _rebuild(pattern); } IRC_CATCH }
 
-			const int	err = regcomp(&_expr, pattern.c_str(), REG_EXTENDED);
-			if (err)
-				throw InvalidPatternException();
+		void	feedString(const str &string)	{ _string = string; }
 
-			_pattern = pattern;
-			_matchIndex = 0;
-		}
+		void	findall(void)					{ _didMatch = true; try { while(_didMatch) { _find(); } } IRC_CATCH }
 
-		bool	match(const str &source)
-		{
-			try { _findNext(source, 1); }
-			IRC_CATCH
+		bool	match(void)						{ try { _find(); } IRC_CATCH return (_didMatch); }
 
-			IRC_WARN("After match, mindex = %lu", _matchIndex);
-			if (_matchIndex == -1U)
-				return (false);
-			_matchCount = 0;
-			_matchIndex = 0;
-			_matches.clear();
-			return (true);
-		}
+		bool	consume(void)					{ try { _find(); _crop(); } IRC_CATCH return (_didMatch); }
+		
+		void	consumeMany(void)				{ _didMatch = true; try { while(_didMatch) { _find(); _crop(); } } IRC_CATCH }
 
-		void	capture(const str &source, size_t n)
-		{
-			try { _findNext(source, n); }
-			IRC_CATCH
-
-			_matchIndex = -1U;
-		}
-
-		void	findall(const str &source)
-		{
-			try { while (_matchIndex != -1U) _findNext(source, 1); }
-			IRC_CATCH
-
-			_matchIndex = -1U;
-		}
-
+		GETTER(str, _pattern);
+		GETTER(str, _string);
+		GETTER(bool, _didMatch);
 		GETTER(size_t, _matchIndex);
 		GETTER(size_t, _matchCount);
 		GETTER(std::vector<str>, _matches);
 
+		GETTER_C(str, _pattern);
+		GETTER_C(str, _string);
+		GETTER_C(bool, _didMatch);
 		GETTER_C(size_t, _matchIndex);
 		GETTER_C(size_t, _matchCount);
 		GETTER_C(std::vector<str>, _matches);
 
-	EXCEPTION(InvalidPatternException,	"invalid REGEX pattern.");
-	EXCEPTION(EmptyPatternException,	"empty pattern.");
+	EXCEPTION(InvalidPatternException,		"invalid REGEX pattern.");
+	EXCEPTION(EmptyPatternException,		"empty pattern.");
+	EXCEPTION(InvalidGroupCountException,	"group count not in range 1 - 126.");
+	EXCEPTION(RegExecFailedException,		"regexec() failed.");
 };
 
 #endif // IRCSEEKER_HPP

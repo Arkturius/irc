@@ -9,8 +9,10 @@ class Channel;
 typedef enum:	uint32_t
 {
 	IRC_CLIENT_AUTH		=	1U,
-	IRC_CLIENT_EOT		=	1U << 1,
-	IRC_CLIENT_EOF		=	1U << 2,
+	IRC_CLIENT_REGISTER	=	1U << 1,
+	IRC_CLIENT_PINGED	=	1U << 2,
+	IRC_CLIENT_EOT		=	1U << 30,
+	IRC_CLIENT_EOF		=	1U << 31,
 }	clientFlag;
 
 #define COMMA	,
@@ -47,6 +49,7 @@ class Client
 		GETTER(str, _username);
 		GETTER(str, _nickname);
 		GETTER(str, _buffer);
+		GETTER(str, _lastPass);
 		GETTER(struct pollfd *, _pfd);
 		GETTER(std::map<str COMMA Channel *>, _channelMap);
 		
@@ -54,6 +57,7 @@ class Client
 		GETTER_C(str, _username);
 		GETTER_C(str, _nickname);
 		GETTER_C(str, _buffer);
+		GETTER_C(str, _lastPass);
  		GETTER_C(std::map<str COMMA Channel *>, _channelMap);
 
 		SETTER(uint32_t, _flag);

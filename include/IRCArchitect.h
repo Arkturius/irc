@@ -23,6 +23,9 @@ typedef enum
 
 	ERR_CODE_NOSUCHNICK			=	401,
 	ERR_CODE_NOSUCHCHANNEL		=	403,
+	ERR_CODE_NONICKNAMEGIVEN	=	431,
+	ERR_CODE_ERRONEUSNICKNAME	=	432,
+	ERR_CODE_NICKNAMEINUSE		=	433,
 	ERR_CODE_USERNOTINCHANNEL	=	441,
 	ERR_CODE_NOTONCHANNEL		=	442,
 	ERR_CODE_USERONCHANNEL		=	443,
@@ -54,6 +57,9 @@ typedef enum
 #define RPL_INVITING(p, ...)			generate(p, RPL_CODE_INVITING, ##__VA_ARGS__)
 #define ERR_NOSUCHNICK(p, ...)			generate(p, ERR_CODE_NOSUCHNICK, ##__VA_ARGS__)
 #define ERR_NOSUCHCHANNEL(p, ...)		generate(p, ERR_CODE_NOSUCHCHANNEL, ##__VA_ARGS__)
+#define ERR_NONICKNAMEGIVEN(p, ...)		generate(p, ERR_CODE_NONICKNAMEGIVEN, ##__VA_ARGS__)
+#define ERR_ERRONEUSNICKNAME(p, ...)	generate(p, ERR_CODE_ERRONEUSNICKNAME, ##__VA_ARGS__)
+#define ERR_NICKNAMEINUSE(p, ...)		generate(p, ERR_CODE_NICKNAMEINUSE, ##__VA_ARGS__)
 #define ERR_USERNOTINCHANNEL(p, ...)	generate(p, ERR_CODE_USERNOTINCHANNEL, ##__VA_ARGS__)
 #define ERR_NOTONCHANNEL(p, ...)		generate(p, ERR_CODE_NOTONCHANNEL, ##__VA_ARGS__)
 #define ERR_USERONCHANNEL(p, ...)		generate(p, ERR_CODE_USERONCHANNEL, ##__VA_ARGS__)
@@ -67,15 +73,18 @@ typedef enum
 #define ERR_CHANOPRIVSNEEDED(p, ...)	generate(p, ERR_CODE_CHANOPRIVSNEEDED, ##__VA_ARGS__)
 #define ERR_INVALIDMODEPARAM(p, ...)	generate(p, ERR_CODE_INVALIDMODEPARAM, ##__VA_ARGS__)
 
+#include <IRCSeeker.h>
+
 class IRCArchitect
 {
 	private:
+		IRCSeeker	_seeker;
 
 	public:
 		IRCArchitect(void) {}
 		~IRCArchitect(void) {}
 
-		const str	generate(const str &prefix, IRCReplyCode code, uint32_t paramCount, ...) const
+		const str	generate(const str &prefix, IRCReplyCode code, uint32_t paramCount, ...)
 		{
 			std::stringstream	stream;
 			str					reply = "";
@@ -89,14 +98,27 @@ class IRCArchitect
 			{
 				const str	param = va_arg(list, char *);
 
+				if (param.empty())
+					continue ;
 				reply += " ";
-				if (param.find(" ") != str::npos || param.find(":") != str::npos || i == paramCount)
+
+				if (i != paramCount - 1)
+				{
+					_seeker.feedString(param);
+					_seeker.rebuild(R_CAPTURE(R_CHAR_INV_GROUP(" ") "*"));
+					if (!_seeker.match())
+						throw InvalidReplyParameterException();
+				}
+				else
 					reply += ":";
+
 				reply += param;
 			}
 			va_end(list);
 			return (reply);
 		}
+	
+	EXCEPTION(InvalidReplyParameterException, "Invalid reply parameter.");
 };
 
 #endif	//	IRCARCHITECT_H

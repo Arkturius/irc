@@ -35,6 +35,7 @@ bool	intInVector(std::vector<int> &v, int x)
 	}
 	return 0;
 }
+
 bool	removeIfVector(std::vector<int> &v, int x)
 {
 	bool returnValue = 0;
@@ -49,9 +50,6 @@ bool	removeIfVector(std::vector<int> &v, int x)
 	}
 	return returnValue;
 }
-
-
-
 
 class Channel
 {

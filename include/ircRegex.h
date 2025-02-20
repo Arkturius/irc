@@ -32,23 +32,9 @@
 # define	R_ANY				"."
 # define	R_START_STRING		"^"
 # define	R_END_STRING		"$"
+# define	R_FULL_MATCH(s)		R_START_STRING s R_END_STRING
 # define	R_ESCAPE(c)			"\\" c
 # define	R_BACKREF(n)		"\\"#n
-
-# define R_REPEAT2(t) t t
-# define R_REPEAT3(t) t t t
-# define R_REPEAT4(t) t t t t
-# define R_REPEAT5(t) t t t t t
-# define R_REPEAT6(t) t t t t t t
-# define R_REPEAT7(t) t t t t t t t
-# define R_REPEAT8(t) t t t t t t t t
-# define R_REPEAT9(t) t t t t t t t t t
-# define R_REPEAT10(t) t t t t t t t t t t
-# define R_REPEAT11(t) t t t t t t t t t t t
-# define R_REPEAT12(t) t t t t t t t t t t t t
-# define R_REPEAT13(t) t t t t t t t t t t t t t
-# define R_REPEAT14(t) t t t t t t t t t t t t t t
-# define R_REPEAT15(t) t t t t t t t t t t t t t t t
 
 # define	R_CAPTURE_INT		R_CAPTURE(R_1_OR_MORE(R_DIGIT))
 # define	R_CAPTURE_WORD		R_CAPTURE(R_1_OR_MORE(R_ALPHA))

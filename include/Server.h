@@ -49,11 +49,12 @@ class Server
 
 		struct pollfd	*_acceptClient();
 		void			_connectClient(int fd);
+		void			_registerClient(Client *client);
+		void			_welcomeRoutine(void);
 		void			_disconnectClient(Client *client);
 
 		void			_handleMessage(Client *client);
 		str				_extractCommand(str *source);
-
 		void			_executeCommand(Client *client, const str &command);
 
 		void			_send(Client *client, const str &string);
@@ -61,10 +62,11 @@ class Server
 		void			_sendTopic(Client *client, Channel *channel);
 		void			_sendModeIs(Client *client, Channel *channel);
 
-		IRC_COMMAND_DECL(CAP);
 		IRC_COMMAND_DECL(PASS);
-		IRC_COMMAND_DECL(USER);
 		IRC_COMMAND_DECL(NICK);
+		IRC_COMMAND_DECL(USER);
+		IRC_COMMAND_DECL(PONG);
+
 		IRC_COMMAND_DECL(JOIN);
 		IRC_COMMAND_DECL(MODE);
 		IRC_COMMAND_DECL(QUIT);
