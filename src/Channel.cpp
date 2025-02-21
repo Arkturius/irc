@@ -4,6 +4,34 @@
 #include <IRCSeeker.h>
 #include <Channel.h>
 
+bool	intInVector(std::vector<int> &v, int x)
+{
+	std::vector<int>::iterator	it;
+	for (it = v.begin(); it != v.end(); ++it)
+	{
+		if (*it == x)
+			return 1;
+	}
+	return 0;
+}
+
+bool	removeIfVector(std::vector<int> &v, int x)
+{
+	bool returnValue = 0;
+	std::vector<int>::iterator	it;
+	for (it = v.begin(); it != v.end(); ++it)
+	{
+		if (*it == x)
+		{
+			v.erase(it);
+			returnValue = 1;
+		}
+	}
+	return returnValue;
+}
+
+bool	Channel::isInvited(int fdClient) {return intInVector(_invitedClient, fdClient);}
+
 Channel::Channel(str channelName, int firstClient): _name(channelName), _inviteOnlyChannel(true), _activePassword(0), _userLimit(100), _topicIsSet(0)
 {
 	IRC_LOG("Channel constructor called.");

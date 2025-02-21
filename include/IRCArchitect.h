@@ -122,21 +122,42 @@ class IRCArchitect
 			}
 			return (reply);
 		}
-		const str	generate(const str &source, const str &command, uint32_t paramCount, ...) const
+
+		const str	build(const str &source, const char *command, ...)
 		{
-			str					reply = ": ";
 			va_list				list;
-
-			reply += source + command;
-			va_start(list, paramCount);
-			for (size_t i = 0; i < paramCount; ++i)
+			char				*curr;
+			std::vector<str>	params;
+			
+			va_start(list, command);
+			while (true)
 			{
-				const str	param = va_arg(list, char *);
-
-				reply += " ";
-				reply += param;
+				curr = va_arg(list, char *);
+				if (!curr) { break ; }
+				params.push_back(str(curr));
 			}
 			va_end(list);
+
+			str					reply = ": " + source + command;
+
+			for (size_t i = 0; i < params.size(); ++i)
+			{
+				const str	param = params[i];
+
+				if (param.empty())	{ continue ; }
+
+				reply += " ";
+				if (i != params.size() - 1)
+				{
+					_seeker.feedString(param);
+					_seeker.rebuild(R_CAPTURE(R_CHAR_INV_GROUP(" ") "*"));
+					if (!_seeker.match())
+						throw InvalidReplyParameterException();
+				}
+				else { reply += ":"; }
+
+				reply += param;
+			}
 			return (reply);
 		}
 	

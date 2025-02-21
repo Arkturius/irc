@@ -11,6 +11,9 @@
 
 #define	SET_COMMAND_FUNC(m, f)	_commandFuncs[m] = &Server::_command##f;
 
+#include <ircCommands.h>
+#include <ChannelJoin.h>
+
 Server::Server(int port, str password): _flag(IRC_STATUS_OK), _port(port), _password(password) 
 {
 	IRC_LOG("Server constructor called.");
@@ -24,7 +27,7 @@ Server::Server(int port, str password): _flag(IRC_STATUS_OK), _port(port), _pass
 	SET_COMMAND_FUNC("USER", USER);
 	SET_COMMAND_FUNC("PONG", PONG);
 	SET_COMMAND_FUNC("JOIN", JOIN);
-	SET_COMMAND_FUNC("MODE", MODE);
+	// SET_COMMAND_FUNC("MODE", MODE);
 	SET_COMMAND_FUNC("QUIT", QUIT);
 
 	IRC_OK("socket opened on fd "BOLD(COLOR(GRAY,"[%d]")), _sockfd);
@@ -159,30 +162,6 @@ void	Server::_welcomeClient(void)
 
 }
 
-#define	R_SPACE				" "
-#define R_NOCRLF			R_CHAR_INV_GROUP("\r\n")
-#define R_NOSPCRLFCL		R_CHAR_INV_GROUP("\r\n :")
-
-#define R_MIDDLE			R_NOSPCRLFCL R_0_OR_MORE(R_CAPTURE(":|" R_NOSPCRLFCL))
-#define R_MIDDLE_PARAM		R_SPACE R_0_OR_1(R_CAPTURE(R_MIDDLE))
-
-#define R_TRAILING			R_0_OR_MORE(R_NOCRLF)
-#define R_TRAILING_PARAM	R_SPACE	R_0_OR_1(R_CAPTURE(R_TRAILING))
-
-#define	ARCHITECT(c)		
-
-#define	NICKNAME_CHAR		" ,\\*\\?!@#"
-#define NICKNAME_START		NICKNAME_CHAR ":$"
-
-#define R_NICKNAME			R_FULL_MATCH											\
-							(														\
-								R_CAPTURE											\
-								(													\
-									R_CHAR_INV_GROUP(NICKNAME_START)				\
-									R_X_TO_Y(R_CHAR_INV_GROUP(NICKNAME_CHAR),0,8)	\
-								)													\
-							)
-
 IRC_COMMAND_DEF(NICK)
 {
 	_seeker.feedString(command);
@@ -239,14 +218,6 @@ IRC_COMMAND_DEF(NICK)
 		client->set_username(newNick);
 }
 
-#define R_USERNAME	R_FULL_MATCH										\
-					(													\
-						R_CAPTURE										\
-						(												\
-							R_1_OR_MORE(R_CHAR_INV_GROUP("\r\n @"))		\
-						)												\
-					)
-
 void	Server::_registerClient(Client *client)
 {
 	if (client->get_lastPass() != _password)
@@ -264,116 +235,7 @@ void	Server::_registerClient(Client *client)
 	client->set_flag(client->get_flag() | IRC_CLIENT_PINGED);
 }
 
-IRC_COMMAND_DEF(USER)
-{
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.findall();
-	std::vector<str>	&argv = _seeker.get_matches();
 
-	if (argv.size() != 3)
-	{
-		_send(client, 
-		_architect.ERR_NEEDMOREPARAMS
-		(
-			3,
-			client->get_nickname().c_str(),
-			"USER",
-			"Not enough parameters"
-		));
-		return ;
-	}
-
-	if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH))
-	{
-		_send(client, 
-		_architect.ERR_ALREADYREGISTERED
-		(
-			2,
-			client->get_nickname().c_str(),
-			"You may not reregister"
-		));
-		return ;
-	}
-
-	const str	&newUser = argv[0];
-
-	_seeker.feedString(newUser);
-	_seeker.rebuild(R_USERNAME);
-	if (!_seeker.consume())
-	{
-		_send(client,
-		_architect.ERR_NEEDMOREPARAMS
-		(
-			3,
-			client->get_nickname().c_str(),
-			"USER",
-			"Not enough parameters"
-		));
-		return ;
-	}
-	client->set_username(newUser);
-	_registerClient(client);
-}
-
-IRC_COMMAND_DEF(JOIN)
-{
-	UNUSED(command);
-	UNUSED(client);
-}
-
-IRC_COMMAND_DEF(MODE)
-{
-	UNUSED(command);
-	UNUSED(client);
-}
-
-IRC_COMMAND_DEF(QUIT)
-{
-	UNUSED(command);
-	UNUSED(client);
-	client->disconnect();
-}
-
-#define IRC_CAN_PONG	(IRC_CLIENT_PINGED | IRC_CLIENT_REGISTER)
-
-IRC_COMMAND_DEF(PONG)
-{
-	if ((client->get_flag() & IRC_CAN_PONG) != IRC_CAN_PONG)
-		return ;
-	client->set_flag(client->get_flag() & ~(IRC_CLIENT_PINGED));
-
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	if (!_seeker.consume())
-		return ;
-
-	IRC_LOG("parameter found");
-
-	const std::vector<str>	&argv = _seeker.get_matches();
-	if (argv.size() != 1)
-		return ;
-	
-	IRC_LOG("1 argument");
-
-	if (argv[0] != "ft_irc")
-		return ;
-
-	IRC_LOG("good token");
-	
-	client->set_flag(client->get_flag() | IRC_CLIENT_AUTH);
-	client->set_flag(client->get_flag() & ~(IRC_CLIENT_REGISTER));
-
-	_welcomeClient();
-}
-
-#define R_COMMAND_MNEMO			R_CAPTURE_WORD
-
-#define IRC_NOAUTH_COMMANDS		"PASS|NICK|USER|PONG|QUIT"
-#define IRC_VALID_COMMANDS		IRC_NOAUTH_COMMANDS "|JOIN|MODE"
-
-#define R_IRC_NOAUTH_COMMANDS	R_FULL_MATCH(R_CAPTURE(IRC_NOAUTH_COMMANDS))
-#define R_IRC_VALID_COMMANDS	R_FULL_MATCH(R_CAPTURE(IRC_VALID_COMMANDS))
 
 void	Server::_executeCommand(Client *client, const str &command)
 {

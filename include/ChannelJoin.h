@@ -6,6 +6,12 @@
 # include <Client.h>
 # include <poll.h>
 
+IRC_COMMAND_DEF(JOIN)
+{
+	UNUSED(command);
+	UNUSED(client);
+}
+
 void	Server::_joinAddAllChannel
 (std::vector<str> &vecChannel, std::vector<str> &vecKey, Client *client)
 {

@@ -1,5 +1,5 @@
 #ifndef IRC_REGEX_H
-# define IRC_REGEX_H
+# define	IRC_REGEX_H
 
 # define	R_CHAR_RANGE(s, e)	s "-" e
 # define	R_CHAR_GROUP(g)		"[" g "]"
@@ -39,7 +39,64 @@
 # define	R_CAPTURE_INT		R_CAPTURE(R_1_OR_MORE(R_DIGIT))
 # define	R_CAPTURE_WORD		R_CAPTURE(R_1_OR_MORE(R_ALPHA))
 
-//TODO regex join(ect) : JOIN CHANNEL,CHANNEL,CHANNEL KEY,KEY,KEY
+# define	R_SPACE				" "
+# define	R_NOCRLF			R_CHAR_INV_GROUP("\r\n")
+# define	R_NOSPCRLFCL		R_CHAR_INV_GROUP("\r\n :")
 
+
+# define	IRC_NOAUTH_COMMANDS		"PASS|NICK|USER|PONG|QUIT"
+# define	IRC_VALID_COMMANDS		IRC_NOAUTH_COMMANDS "|JOIN|MODE"
+
+# define	R_IRC_NOAUTH_COMMANDS	R_FULL_MATCH(R_CAPTURE(IRC_NOAUTH_COMMANDS))
+# define	R_IRC_VALID_COMMANDS	R_FULL_MATCH(R_CAPTURE(IRC_VALID_COMMANDS))
+
+
+# define	R_MIDDLE			R_NOSPCRLFCL R_0_OR_MORE(R_CAPTURE(":|" R_NOSPCRLFCL))
+# define	R_MIDDLE_PARAM		R_SPACE R_0_OR_1(R_CAPTURE(R_MIDDLE))
+
+# define	R_TRAILING			R_0_OR_MORE(R_NOCRLF)
+# define	R_TRAILING_PARAM	R_SPACE	R_0_OR_1(R_CAPTURE(R_TRAILING))
+
+
+# define	NICKNAME_CHAR		" ,\\*\\?!@#"
+# define	NICKNAME_START		NICKNAME_CHAR ":$"
+
+# define	R_NICKNAME			R_FULL_MATCH											\
+							(														\
+								R_CAPTURE											\
+								(													\
+									R_CHAR_INV_GROUP(NICKNAME_START)				\
+									R_X_TO_Y(R_CHAR_INV_GROUP(NICKNAME_CHAR),0,8)	\
+								)													\
+							)
+
+# define	R_USERNAME	R_FULL_MATCH										\
+					(													\
+						R_CAPTURE										\
+						(												\
+							R_1_OR_MORE(R_CHAR_INV_GROUP("\r\n @"))		\
+						)												\
+					)
+
+
+# define	R_COMMAND_MNEMO			R_CAPTURE_WORD
+
+
+# define	R_CHANNEL_PREFIX	R_CHAR_GROUP("&#+")
+# define	R_CHANNEL_ID		"!" R_X_EXACT(R_CHAR_GROUP(R_DIGIT_RANGE R_UPPER_RANGE),5)
+# define	R_CHANNEL_CHAR		R_CHAR_INV_GROUP(" \x07,")
+
+# define	R_CHANNEL_NAME		R_ALTERNATION											\
+								(														\
+									R_CHANNEL_PREFIX	R_1_TO_Y(R_CHANNEL_CHAR, 49),	\
+									R_CHANNEL_ID		R_1_TO_Y(R_CHANNEL_CHAR, 45)	\
+								)
+
+# define	R_CHANNEL_KEY_CHAR	R_CHAR_INV_GROUP(" \x09\x10\x11\x12\x13")
+
+# define	R_CHANNEL_KEY		R_1_TO_Y(R_CHANNEL_KEY_CHAR, 23)
+
+# define	R_CAPTURE_CHANNEL_NAME	R_CAPTURE(R_CHANNEL_NAME)
+# define	R_CAPTURE_CHANNEL_KEY	R_CAPTURE(R_CHANNEL_KEY)
 
 #endif

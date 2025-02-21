@@ -6,50 +6,11 @@
 # include <irc.h>
 # include <time.h>
 
-# define	R_CHANNEL_PREFIX	R_CHAR_GROUP("&#+")
-# define	R_CHANNEL_ID		"!" R_X_EXACT(R_CHAR_GROUP(R_DIGIT_RANGE R_UPPER_RANGE),5)
-# define	R_CHANNEL_CHAR		R_CHAR_INV_GROUP(" \x07,")
 
-# define	R_CHANNEL_NAME		R_ALTERNATION											\
-								(														\
-									R_CHANNEL_PREFIX	R_1_TO_Y(R_CHANNEL_CHAR, 49),	\
-									R_CHANNEL_ID		R_1_TO_Y(R_CHANNEL_CHAR, 45)	\
-								)
-
-# define	R_CHANNEL_KEY_CHAR	R_CHAR_INV_GROUP(" \x09\x10\x11\x12\x13")
-
-# define	R_CHANNEL_KEY		R_1_TO_Y(R_CHANNEL_KEY_CHAR, 23)
-
-# define	R_CAPTURE_CHANNEL_NAME	R_CAPTURE(R_CHANNEL_NAME)
-# define	R_CAPTURE_CHANNEL_KEY	R_CAPTURE(R_CHANNEL_KEY)
 
 class Client;
 
-bool	intInVector(std::vector<int> &v, int x)
-{
-	std::vector<int>::iterator	it;
-	for (it = v.begin(); it != v.end(); ++it)
-	{
-		if (*it == x)
-			return 1;
-	}
-	return 0;
-}
 
-bool	removeIfVector(std::vector<int> &v, int x)
-{
-	bool returnValue = 0;
-	std::vector<int>::iterator	it;
-	for (it = v.begin(); it != v.end(); ++it)
-	{
-		if (*it == x)
-		{
-			v.erase(it);
-			returnValue = 1;
-		}
-	}
-	return returnValue;
-}
 
 class Channel
 {
@@ -82,7 +43,7 @@ class Channel
 
 		int		get_size() const {return _fdAdminClient.size() + _fdClient.size();}
 		void	invite(int fdClient) {_invitedClient.push_back(fdClient);}
-		bool	isInvited(int fdClient) {return intInVector(_invitedClient, fdClient);}
+		bool	isInvited(int fdClient);
 		void	addClient(int fdClient, const str *password);
 		int		removeClient(int fdClient); //TODO remove call by server, need to check if size == 0 to delete it
 

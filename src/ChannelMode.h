@@ -9,6 +9,12 @@
 # include <errno.h>
 # include <climits>
 
+IRC_COMMAND_DEF(MODE)
+{
+	UNUSED(command);
+	UNUSED(client);
+}
+
 bool	Server::modePassword(bool plus, const str &modeArguments, Channel *target, Client *client)
 {
 	if (!plus && target->get_password() == modeArguments)
