@@ -102,7 +102,7 @@ class Server
 	
 	private:
 		std::map<str, Channel *>	_channelMap;
-		void						_joinAddAllChannel(std::vector<str>, std::vector<str>, Client *);
+		void						_joinAddAllChannel(std::vector<str> &, std::vector<str> &, Client *);
 		void						_addChannel(const str &channelName, const str *key, Client *);
 		void						_removeChannel(str channelName, Client *);
 		void						_kickChannel(str channelName, Client *admin, str kicked, str *comment);

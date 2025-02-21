@@ -111,6 +111,23 @@ class IRCArchitect
 			va_end(list);
 			return (reply);
 		}
+		const str	generate(const str &source, const str &command, uint32_t paramCount, ...) const
+		{
+			str					reply = ": ";
+			va_list				list;
+
+			reply += source + command;
+			va_start(list, paramCount);
+			for (size_t i = 0; i < paramCount; ++i)
+			{
+				const str	param = va_arg(list, char *);
+
+				reply += " ";
+				reply += param;
+			}
+			va_end(list);
+			return (reply);
+		}
 	
 	EXCEPTION(InvalidReplyParameterException, "Invalid reply parameter.");
 };

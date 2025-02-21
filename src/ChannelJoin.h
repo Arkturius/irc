@@ -7,7 +7,7 @@
 # include <poll.h>
 
 void	Server::_joinAddAllChannel
-(std::vector<str> vecChannel, std::vector<str> vecKey, Client *client)
+(std::vector<str> &vecChannel, std::vector<str> &vecKey, Client *client)
 {
 	size_t	j;
 	if (vecKey.size() > vecChannel.size())
@@ -24,12 +24,33 @@ needMoreParam:
 
 void	Server::_join(const str &command, Client *client)
 {
-	//TODO parsing
-	std::vector<str>	vecChannel;
-	std::vector<str>	vecPassword;
-	UNUSED(command);
+	_seeker.feedString(command);
+	_seeker.rebuild(R_MIDDLE_PARAM);
+	_seeker.findall();
+	std::vector<str>	&argv = _seeker.get_matches();
+	if (argv.size() == 0)
+		return _send(client, _architect.ERR_NEEDMOREPARAMS(3, client->get_nickname().c_str(), "JOIN", "Not enough parameters"));
+	
+	_seeker.feedString(argv[0]);
+	_seeker.rebuild(R_CAPTURE_CHANNEL_NAME);
+	_seeker.findall();
+	std::vector<str>	&vecChannel = _seeker.get_matches();
 
-	_joinAddAllChannel(vecChannel, vecPassword, client);
+	if (argv.size() == 1)
+	{
+		for (size_t j = 0; j < vecChannel.size(); j++)
+			_addChannel(vecChannel[j], NULL, client);
+		return ;
+	}
+	if (argv.size() == 2)
+	{
+		_seeker.feedString(argv[1]);
+		_seeker.rebuild(R_CAPTURE_CHANNEL_KEY);
+		_seeker.findall();
+		std::vector<str>	&vecPassword = _seeker.get_matches();
+		_joinAddAllChannel(vecChannel, vecPassword, client);
+		return ;
+	}
 }
 
 void	Server::_addChannel(const str &channelName, const str *channelKey, Client *client)
