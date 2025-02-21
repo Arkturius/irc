@@ -51,7 +51,7 @@ setNewTopic:
 	channel->set_topicSetterNickName(client->get_nickname());
 	channel->set_topicSetTime(time(NULL));
 	_sendTopic(client, channel);
-	channel->_send(_architect.CMD_TOPIC(client->get_nickname().c_str(), 1, channelName.c_str()));
+	channel->_broadcast(_architect.CMD_TOPIC(client->get_nickname().c_str(), 1, channelName.c_str()));
 	return ;
 errorNotOnChannel:
 	_send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), channelName.c_str()));

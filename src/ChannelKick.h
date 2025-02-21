@@ -81,7 +81,7 @@ void	Server::_kickChannel(str channelName, Client *admin, str kickedName, str *c
 	}
 
 succesfullKick:
-	c->_send(_architect.CMD_KICK(admin->get_nickname().c_str(), 1, c->get_name().c_str()));
+	c->_broadcast(_architect.CMD_KICK(admin->get_nickname().c_str(), 1, c->get_name().c_str()));
 	if (size == 0)
 		_channelMap.erase(s);
 	if (comment)
