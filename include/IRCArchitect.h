@@ -53,7 +53,7 @@ typedef enum
 #define RPL_MSG_TOPIC				""
 #define RPL_TOPIC(...)				build(RPL_CODE_TOPIC, ##__VA_ARGS__, RPL_MSG_TOPIC, NULL)
 
-#define RPL_MSG_NOTOPIC				""
+#define RPL_MSG_NOTOPIC				"No topic is set"
 #define RPL_NOTOPIC(...)			build(RPL_CODE_NOTOPIC, ##__VA_ARGS__, RPL_MSG_NOTOPIC, NULL)
 
 #define RPL_MSG_TOPICWHOTIME		""
@@ -68,10 +68,10 @@ typedef enum
 #define RPL_MSG_ENDOFNAMES			""
 #define RPL_ENDOFNAMES(...)			build(RPL_CODE_ENDOFNAMES, ##__VA_ARGS__, RPL_MSG_ENDOFNAMES, NULL)
 
-#define ERR_MSG_NOSUCHNICK			""
+#define ERR_MSG_NOSUCHNICK			"No such nick/channel"
 #define ERR_NOSUCHNICK(...)			build(ERR_CODE_NOSUCHNICK, ##__VA_ARGS__, ERR_MSG_NOSUCHNICK, NULL)
 
-#define ERR_MSG_NOSUCHCHANNEL		""
+#define ERR_MSG_NOSUCHCHANNEL		"No such Channel"
 #define ERR_NOSUCHCHANNEL(...)		build(ERR_CODE_NOSUCHCHANNEL, ##__VA_ARGS__, ERR_MSG_NOSUCHCHANNEL, NULL)
 
 #define ERR_MSG_NONICKNAMEGIVEN		"No nickname given"
@@ -83,13 +83,13 @@ typedef enum
 #define ERR_MSG_NICKNAMEINUSE		"Nickname is already in use"
 #define ERR_NICKNAMEINUSE(...)		build(ERR_CODE_NICKNAMEINUSE, ##__VA_ARGS__, ERR_MSG_NICKNAMEINUSE, NULL)
 
-#define ERR_MSG_USERNOTINCHANNEL	""
+#define ERR_MSG_USERNOTINCHANNEL	"They aren't on that channel"
 #define ERR_USERNOTINCHANNEL(...)	build(ERR_CODE_USERNOTINCHANNEL, ##__VA_ARGS__, ERR_MSG_USERNOTINCHANNEL, NULL)
 
-#define ERR_MSG_NOTONCHANNEL		""
+#define ERR_MSG_NOTONCHANNEL		"You're not on that channel"
 #define ERR_NOTONCHANNEL(...)		build(ERR_CODE_NOTONCHANNEL, ##__VA_ARGS__, ERR_MSG_NOTONCHANNEL, NULL)
 
-#define ERR_MSG_USERONCHANNEL		""
+#define ERR_MSG_USERONCHANNEL		"is already on channel"
 #define ERR_USERONCHANNEL(...)		build(ERR_CODE_USERONCHANNEL, ##__VA_ARGS__, ERR_MSG_USERONCHANNEL, NULL)
 
 #define ERR_MSG_NEEDMOREPARAMS		"Not enough parameters"
@@ -101,19 +101,19 @@ typedef enum
 #define ERR_MSG_PASSWDMISMATCH		""
 #define ERR_PASSWDMISMATCH(...)		build(ERR_CODE_PASSWDMISMATCH, ##__VA_ARGS__, ERR_MSG_PASSWDMISMATCH, NULL)
 
-#define ERR_MSG_CHANNELISFULL		""
+#define ERR_MSG_CHANNELISFULL		"Cannot join channel (+l)"
 #define ERR_CHANNELISFULL(...)		build(ERR_CODE_CHANNELISFULL, ##__VA_ARGS__, ERR_MSG_CHANNELISFULL, NULL)
 
-#define ERR_MSG_UNKNOWNMODE			""
+#define ERR_MSG_UNKNOWNMODE			"is unknown mode char to me"
 #define ERR_UNKNOWNMODE(...)		build(ERR_CODE_UNKNOWNMODE, ##__VA_ARGS__, ERR_MSG_UNKNOWNMODE, NULL)
 
-#define ERR_MSG_INVITEONLYCHAN		""
+#define ERR_MSG_INVITEONLYCHAN		"Cannot join channel (+i)"
 #define ERR_INVITEONLYCHAN(...)		build(ERR_CODE_INVITEONLYCHAN, ##__VA_ARGS__, ERR_MSG_INVITEONLYCHAN, NULL)
 
-#define ERR_MSG_BADCHANNELKEY		""
+#define ERR_MSG_BADCHANNELKEY		"Cannot join channel (+k)"
 #define ERR_BADCHANNELKEY(...)		build(ERR_CODE_BADCHANNELKEY, ##__VA_ARGS__, ERR_MSG_BADCHANNELKEY, NULL)
 
-#define ERR_MSG_CHANOPRIVSNEEDED	""
+#define ERR_MSG_CHANOPRIVSNEEDED	"You're not channel operator"
 #define ERR_CHANOPRIVSNEEDED(...)	build(ERR_CODE_CHANOPRIVSNEEDED, ##__VA_ARGS__, ERR_MSG_CHANOPRIVSNEEDED, NULL)
 
 #define ERR_MSG_INVALIDMODEPARAM	""
