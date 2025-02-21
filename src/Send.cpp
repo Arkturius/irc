@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 19:04:57 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/20 20:14:28 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/21 14:28:04 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,36 +19,38 @@
 #include <time.h>
 #include <Server.h>
 
-// void	Server::_sendJoin(Client *client, Channel *channel)
-// {
-// 	str	clientName = client->get_nickname();
-// 	str channelName = channel->get_name();
-// 	str topic = channel->get_topic();
-// 
-// 	str clientList = clientName; // prefix
-// 	std::vector<int> fdClientList;
-// 	fdClientList = channel->get_fdClient();
-// 	for (IRC_AUTO it = fdClientList.begin(); it != fdClientList.end(); ++it)
-// 	{
-// 		int fdClient = *it;
-// 		IRC_AUTO s = _clients.find(fdClient);
-// 		if (s != _clients.end())
-// 			clientList += " " + s->second.get_nickname();
-// 	}
-// 	fdClientList = channel->get_fdAdminClient();
-// 	for (IRC_AUTO it = fdClientList.begin(); it != fdClientList.end(); ++it)
-// 	{
-// 		int fdClient = *it;
-// 		IRC_AUTO s = _clients.find(fdClient);
-// 		if (s != _clients.end())
-// 			clientList += " " + s->second.get_nickname();
-// 	}
-// 
-// 	_send(client, ":" + clientName + " JOIN " + channelName);
-// 	_send(client, _architect.RPL_TOPIC("", 3, clientName.c_str(), channelName.c_str(), topic.c_str()));
-// 	_send(client, _architect.RPL_NAMREPLY("", 3, clientName.c_str(), channelName.c_str(), clientList.c_str()));
-// 	_send(client, _architect.RPL_ENDOFNAMES("", 2, clientName.c_str(), channelName.c_str()));
-// }
+void	Server::_sendJoin(Client *client, Channel *channel)
+{
+	UNUSED(client);
+	UNUSED(channel);
+	// str	clientName = client->get_nickname();
+	// str channelName = channel->get_name();
+	// str topic = channel->get_topic();
+	//
+	// str clientList = clientName; // prefix
+	// std::vector<int> fdClientList;
+	// fdClientList = channel->get_fdClient();
+	// for (IRC_AUTO it = fdClientList.begin(); it != fdClientList.end(); ++it)
+	// {
+	// 	int fdClient = *it;
+	// 	IRC_AUTO s = _clients.find(fdClient);
+	// 	if (s != _clients.end())
+	// 		clientList += " " + s->second.get_nickname();
+	// }
+	// fdClientList = channel->get_fdAdminClient();
+	// for (IRC_AUTO it = fdClientList.begin(); it != fdClientList.end(); ++it)
+	// {
+	// 	int fdClient = *it;
+	// 	IRC_AUTO s = _clients.find(fdClient);
+	// 	if (s != _clients.end())
+	// 		clientList += " " + s->second.get_nickname();
+	// }
+	//
+	// _send(client, ":" + clientName + " JOIN " + channelName);
+	// _send(client, _architect.RPL_TOPIC("", 3, clientName.c_str(), channelName.c_str(), topic.c_str()));
+	// _send(client, _architect.RPL_NAMREPLY("", 3, clientName.c_str(), channelName.c_str(), clientList.c_str()));
+	// _send(client, _architect.RPL_ENDOFNAMES("", 2, clientName.c_str(), channelName.c_str()));
+}
 // 
 // void	Server::_sendTopic(Client *client, Channel *channel)
 // {

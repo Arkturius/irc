@@ -8,6 +8,7 @@
 # include <irc.h>
 # include <IRCSeeker.h>
 # include <IRCArchitect.h>
+# include <Client.h>
 
 # define COMMA	,
 
@@ -113,9 +114,25 @@ class Server
 		void						_invite(const str, Client *);
 		void						_mode(const str, Client *);
 		bool						_individualMode(bool, char, const str &, Channel *, Client *);
-		Client						*_getClientByName(const str);
-		Channel						*_getChannelByName(const str);
 		EXCEPTION(UnexpectedErrorException,	"oops");
+		
+		Client	*_getClientByName(const str userName)
+		{
+			for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
+			{
+				if (it->second.get_nickname() == userName)
+					return &it->second;
+			}
+			return NULL;
+		}
+
+		Channel	*_getChannelByName(const str Name)
+		{
+			IRC_AUTO it = _channelMap.find(Name);
+			if (it != _channelMap.end())
+				return it->second;
+			return NULL;
+		}
 };
 
 #endif // SERVER_HPP
