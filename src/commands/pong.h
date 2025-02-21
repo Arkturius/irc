@@ -9,8 +9,6 @@ IRC_COMMAND_DEF(PONG)
 {
 	if ((client->get_flag() & IRC_CAN_PONG) != IRC_CAN_PONG) { return ; }
 
-	client->set_flag(client->get_flag() & ~(IRC_CLIENT_PINGED));
-
 	_seeker.feedString(command);
 	_seeker.rebuild(R_MIDDLE_PARAM);
 	_seeker.consume();
@@ -20,8 +18,9 @@ IRC_COMMAND_DEF(PONG)
 	if (argv.size() != 1)			{ return ; }
 	if (argv[0] != "ft_irc")		{ return ; }
 	
-	client->set_flag(client->get_flag() | IRC_CLIENT_AUTH);
+	client->set_flag(client->get_flag() & ~(IRC_CLIENT_PINGED));
 	client->set_flag(client->get_flag() & ~(IRC_CLIENT_REGISTER));
+	client->set_flag(client->get_flag() | IRC_CLIENT_AUTH);
 
-	_welcomeClient();
+	_welcomeClient(client);
 }

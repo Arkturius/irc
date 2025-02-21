@@ -1,7 +1,7 @@
 #ifndef IRCSEEKER_HPP
 # define IRCSEEKER_HPP
 
-#include <cstring>
+# include <cstring>
 # include <irc.h>
 
 # include <regex.h>
@@ -10,8 +10,6 @@
 
 # define COLUMN	;
 # define IRC_SEEKER_GROUP_MAX	126
-
-# define IRC_BZERO(X)	std::memset(&(X), 0, sizeof(X))
 
 class IRCSeeker
 {

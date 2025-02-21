@@ -50,6 +50,8 @@ typedef std::string str;
 
 # define SETTER(t, x)		inline void set##x(t other) { this->x = other ; }
 
+# define IRC_BZERO(X)		std::memset(&(X), 0, sizeof(X))
+
 # define IRC_AUTO __auto_type
 
 #endif

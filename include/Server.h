@@ -18,12 +18,11 @@ typedef enum:	uint32_t
 	IRC_STATUS_OK	=	1U << 0,
 }	serverFlag;
 
-class	Client;
-class	Channel;
 class	Server;
 
 #define	IRC_COMMAND_DECL(mnemonic)	void	_command##mnemonic(Client *client, const str &command)
 #define	IRC_COMMAND_DEF(mnemonic)	void	Server::_command##mnemonic(Client *client, const str &command)
+#define	IRC_COMMAND_FUNC(m, f)		_commandFuncs[m] = &Server::_command##f;
 
 typedef	void	(Server::*IRC_COMMAND_F)(Client *, const str &command);
 
@@ -32,9 +31,10 @@ class Server
 	private:
 		uint32_t	_flag;
 
-		int		_port;
-		int		_sockfd;
-		str		_password;
+		int			_port;
+		int			_sockfd;
+		str			_password;
+		str			_startTime;
 
 		std::vector<struct pollfd>		_pollSet;
 		std::map<int, Client>			_clients;
@@ -51,7 +51,7 @@ class Server
 		struct pollfd	*_acceptClient();
 		void			_connectClient(int fd);
 		void			_registerClient(Client *client);
-		void			_welcomeClient(void);
+		void			_welcomeClient(Client *client);
 		void			_disconnectClient(Client *client);
 
 		void			_handleMessage(Client *client);
@@ -70,7 +70,7 @@ class Server
 		IRC_COMMAND_DECL(PONG);
 
 		IRC_COMMAND_DECL(JOIN);
-		// IRC_COMMAND_DECL(MODE);
+		IRC_COMMAND_DECL(MODE);
 		IRC_COMMAND_DECL(QUIT);
 
 	public:

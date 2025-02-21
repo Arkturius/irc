@@ -13,7 +13,8 @@ void	ircSigHandler(int sig);
 
 void	ircIO(bool action)
 {
-	struct termios		term;
+	struct termios			term;
+	static struct termios	start;
 
 	tcgetattr(STDIN_FILENO, &term);
 
@@ -23,17 +24,19 @@ void	ircIO(bool action)
 
 		struct sigaction	handler;
 		
+		tcgetattr(STDIN_FILENO, &start);
 		handler.sa_handler = ircSigHandler;
 		sigaction(SIGINT, &handler, NULL);
 
 		IRC_FLAG_DEL(term.c_lflag, ECHOCTL);
+// 		term.c_cc[VMIN] = 0;
+		term.c_cc[VTIME] = 0;
+		tcsetattr(STDIN_FILENO, 0, &term);
+
 		IRC_OK("I/O Setup.");
 	}
 	else
-		IRC_FLAG_SET(term.c_lflag, ECHOCTL);
-
-	tcsetattr(STDIN_FILENO, 0, &term);
-	
+		tcsetattr(STDIN_FILENO, 0, &start);
 }
 
 void	ircSigHandler(int sig)

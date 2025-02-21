@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 19:04:57 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/21 15:27:00 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/21 17:56:11 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,8 @@ void	Server::_broadcast(const str &string)
 
 	IRC_LOG("Server Brodcast " BOLD(COLOR(YELLOW,"%s")), string.c_str());
 	for (; it != _clients.end(); ++it)
-		write((it->second.get_pfd()->fd), (string + "\r\n").c_str(), string.size() + 2);
+	{
+		write(((*it).second.get_pfd()->fd), (string + "\r\n").c_str(), string.size() + 2);
+	}
 
 }

@@ -1,4 +1,5 @@
 #include "IRCArchitect.h"
+#include <ctime>
 #include <poll.h>
 
 #include <errno.h>
@@ -9,7 +10,6 @@
 #include <Server.h>
 #include <Client.h>
 
-#define	SET_COMMAND_FUNC(m, f)	_commandFuncs[m] = &Server::_command##f;
 
 #include "commands/pass.h"
 #include "commands/nick.h"
@@ -28,13 +28,18 @@ Server::Server(int port, str password): _flag(IRC_STATUS_OK), _port(port), _pass
 	if (_sockfd == -1)
 		throw ServerSocketFailedException();
 
-	SET_COMMAND_FUNC("PASS", PASS);
-	SET_COMMAND_FUNC("NICK", NICK);
-	SET_COMMAND_FUNC("USER", USER);
-	SET_COMMAND_FUNC("PONG", PONG);
-	SET_COMMAND_FUNC("JOIN", JOIN);
-	// SET_COMMAND_FUNC("MODE", MODE);
-	SET_COMMAND_FUNC("QUIT", QUIT);
+	IRC_COMMAND_FUNC("PASS", PASS);
+	IRC_COMMAND_FUNC("NICK", NICK);
+	IRC_COMMAND_FUNC("USER", USER);
+	IRC_COMMAND_FUNC("PONG", PONG);
+	IRC_COMMAND_FUNC("JOIN", JOIN);
+	IRC_COMMAND_FUNC("MODE", MODE);
+	IRC_COMMAND_FUNC("QUIT", QUIT);
+
+	time_t		timestamp;
+
+	time(&timestamp);
+	_startTime = ctime(&timestamp);
 
 	IRC_OK("socket opened on fd "BOLD(COLOR(GRAY,"[%d]")), _sockfd);
 }
@@ -107,7 +112,7 @@ bool	Server::_updatePollSet()
 		if (_pollSet[id].fd == -1)
 		{
 			_pollSet.erase(_pollSet.begin() + id);
-			continue ;
+			return (true);
 		}
 	}
 	return (!err);
@@ -138,6 +143,7 @@ void	Server::_connectClient(int fd)
 
 void	Server::_disconnectClient(Client *client)
 {
+	client->set_flag(client->get_flag() & ~IRC_CLIENT_EOF);
 	client->disconnect();
 }
 
@@ -163,9 +169,13 @@ struct pollfd	*Server::_acceptClient(void)
 	return (&_pollSet[_pollSet.size() - 1]);
 }
 
-void	Server::_welcomeClient(void)
+void	Server::_welcomeClient(Client *client)
 {
+	const char	*username = client->get_username().c_str();
 
+	_send(client, _architect.RPL_WELCOME (username, (RPL_MSG_WELCOME + client->get_username()).c_str()));
+	_send(client, _architect.RPL_YOURHOST(username));
+	_send(client, _architect.RPL_CREATED (username, (RPL_MSG_CREATED + _startTime).c_str()));
 }
 
 void	Server::_registerClient(Client *client)
@@ -183,6 +193,12 @@ void	Server::_registerClient(Client *client)
 	}
 	_send(client, "PING ft_irc");
 	client->set_flag(client->get_flag() | IRC_CLIENT_PINGED);
+}
+
+IRC_COMMAND_DEF(MODE)
+{
+	UNUSED(client);
+	UNUSED(command);
 }
 
 void	Server::_executeCommand(Client *client, const str &command)
@@ -291,7 +307,7 @@ void	Server::start()
 				{
 					client = &_clients[curr.fd];
 
-					IRC_LOG("STARTING CLIENT FLAG = 0x%016X", client->get_flag());
+					IRC_LOG("Treating with client " BOLD(COLOR(CYAN,"%p")) ", his fd is %d", client, client->get_pfd()->fd);
 					client->readBytes();
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOT))
 					{
@@ -300,10 +316,10 @@ void	Server::start()
 					}
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOF))
 						_disconnectClient(client);
-					IRC_LOG("NEW CLIENT FLAG = 0x%016X", client->get_flag());
 					IRC_LOG("------------------------------------");
 				}
 			}
+			curr.revents = 0;
 		}
 	}
 

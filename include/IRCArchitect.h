@@ -9,7 +9,7 @@
 typedef enum
 {
 	RPL_CODE_WELCOME			=	1,
-	RPL_CODE_YOUHOST			=	2,
+	RPL_CODE_YOURHOST			=	2,
 	RPL_CODE_CREATED			=	3,
 	RPL_CODE_MYINFO				=	4,
 	RPL_CODE_ISUPPORT			=	5,
@@ -46,6 +46,15 @@ typedef enum
 #define CMD_JOIN(source, ...)		build(source, " JOIN ", ##__VA_ARGS__)
 #define CMD_MODE(source, ...)		build(source, " MODE ", ##__VA_ARGS__)
 #define CMD_KICK(source, ...)		build(source, " KICK ", ##__VA_ARGS__)
+
+#define RPL_MSG_WELCOME				"Welcome to the ft_irc server, "
+#define RPL_WELCOME(...)			build(RPL_CODE_WELCOME, ##__VA_ARGS__, NULL)
+
+#define	RPL_MSG_YOURHOST			"Your host is ft_irc server. running whatever version"
+#define RPL_YOURHOST(...)			build(RPL_CODE_YOURHOST, ##__VA_ARGS__, RPL_MSG_YOURHOST, NULL)
+
+#define	RPL_MSG_CREATED				"This server was created "
+#define	RPL_CREATED(...)			build(RPL_CODE_CREATED, ##__VA_ARGS__, NULL)
 
 #define RPL_MSG_CHANNELMODEIS		""
 #define RPL_CHANNELMODEIS(...)		build(RPL_CODE_CHANNELMODEIS, ##__VA_ARGS__, RPL_MSG_CHANNELMODEIS, NULL)
@@ -98,7 +107,7 @@ typedef enum
 #define ERR_MSG_ALREADYREGISTERED	"You may not reregister"
 #define ERR_ALREADYREGISTERED(...)	build(ERR_CODE_ALREADYREGISTERED, ##__VA_ARGS__, ERR_MSG_ALREADYREGISTERED, NULL)
 
-#define ERR_MSG_PASSWDMISMATCH		""
+#define ERR_MSG_PASSWDMISMATCH		"Password incorrect"
 #define ERR_PASSWDMISMATCH(...)		build(ERR_CODE_PASSWDMISMATCH, ##__VA_ARGS__, ERR_MSG_PASSWDMISMATCH, NULL)
 
 #define ERR_MSG_CHANNELISFULL		"Cannot join channel (+l)"
@@ -127,17 +136,11 @@ class IRCArchitect
 	private:
 		IRCSeeker	_seeker;
 
-	public:
-		IRCArchitect(void) {}
-		~IRCArchitect(void) {}
-
-		const str	build(uint32_t code, ...)
+		str			_upgradeParams(str reply, va_list &list)
 		{
-			va_list				list;
 			char				*curr;
 			std::vector<str>	params;
-			
-			va_start(list, code);
+
 			while (true)
 			{
 				curr = va_arg(list, char *);
@@ -146,11 +149,6 @@ class IRCArchitect
 			}
 			va_end(list);
 
-			std::stringstream	stream;
-			str					reply = "";
-
-			stream << std::setfill('0') << std::setw(3) << code;
-			reply += stream.str();
 			for (size_t i = 0; i < params.size(); ++i)
 			{
 				const str	param = params[i];
@@ -172,41 +170,33 @@ class IRCArchitect
 			return (reply);
 		}
 
+	public:
+		IRCArchitect(void) {}
+		~IRCArchitect(void) {}
+
+		const str	build(uint32_t code, ...)
+		{
+			str					reply = "";
+			va_list				list;
+			
+			std::stringstream	stream;
+			stream << std::setfill('0') << std::setw(3) << code;
+			reply += stream.str();
+
+			va_start(list, code);
+			try { reply = _upgradeParams(reply, list); } IRC_CATCH
+
+			return (reply);
+		}
+
 		const str	build(const str &source, const char *command, ...)
 		{
+			str					reply = ":" + source + command;
 			va_list				list;
-			char				*curr;
-			std::vector<str>	params;
 			
 			va_start(list, command);
-			while (true)
-			{
-				curr = va_arg(list, char *);
-				if (!curr) { break ; }
-				params.push_back(str(curr));
-			}
-			va_end(list);
+			try { reply = _upgradeParams(reply, list); } IRC_CATCH
 
-			str					reply = ": " + source + command;
-
-			for (size_t i = 0; i < params.size(); ++i)
-			{
-				const str	param = params[i];
-
-				if (param.empty())	{ continue ; }
-
-				reply += " ";
-				if (i != params.size() - 1)
-				{
-					_seeker.feedString(param);
-					_seeker.rebuild(R_CAPTURE(R_CHAR_INV_GROUP(" ") "*"));
-					if (!_seeker.match())
-						throw InvalidReplyParameterException();
-				}
-				else { reply += ":"; }
-
-				reply += param;
-			}
 			return (reply);
 		}
 	
