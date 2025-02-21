@@ -130,8 +130,12 @@ class Server
 		Channel	*_getChannelByName(const str Name)
 		{
 			IRC_AUTO it = _channelMap.find(Name);
+			IRC_LOG("Channel found at %p", it == _channelMap.end() ? NULL : &it);
 			if (it != _channelMap.end())
-				return it->second;
+			{
+				IRC_WARN("%s : %p", (*it).first.c_str(), (*it).second);
+				return (*it).second;
+			}
 			return NULL;
 		}
 };

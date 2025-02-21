@@ -34,33 +34,33 @@ void	Server::_join(const str &command, Client *client)
 	_seeker.feedString(command);
 	_seeker.rebuild(R_MIDDLE_PARAM);
 	_seeker.findall();
-	std::vector<str>	&argv = _seeker.get_matches();
+	std::vector<str>	argv = _seeker.get_matches();
 	if (argv.size() == 0)
 		return _send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "JOIN"));
 	
 	_seeker.feedString(argv[0]);
 	_seeker.rebuild(R_CAPTURE_CHANNEL_NAME);
 	_seeker.findall();
-	std::vector<str>	&vecChannel = _seeker.get_matches();
+	std::vector<str>	vecChannel = _seeker.get_matches();
 
 	if (argv.size() == 1)
 	{
-		IRC_WARN("\no key given");
+		IRC_WARN("no key given");
 		for (size_t j = 0; j < vecChannel.size(); j++)
 			_addChannel(vecChannel[j], NULL, client);
 		return ;
 	}
 	if (argv.size() == 2)
 	{
-		IRC_WARN("\tparsing  keys");
+		IRC_WARN("parsing  keys");
 		_seeker.feedString(argv[1]);
 		_seeker.rebuild(R_CAPTURE_CHANNEL_KEY);
 		_seeker.findall();
-		std::vector<str>	&vecPassword = _seeker.get_matches();
+		std::vector<str>	vecPassword = _seeker.get_matches();
 		_joinAddAllChannel(vecChannel, vecPassword, client);
 		return ;
 	}
-	IRC_WARN("\terror too many args");
+	IRC_WARN("error too many args");
 }
 
 void	Server::_addChannel(const str &channelName, const str *channelKey, Client *client)
@@ -69,12 +69,12 @@ void	Server::_addChannel(const str &channelName, const str *channelKey, Client *
 	struct pollfd	*pfd = client->get_pfd();
 	Channel			*c = _getChannelByName(channelName);
 
+	IRC_LOG("_getChannel result => %p", c);
 	if (c)
 		goto channelExist;
 	goto channelDoesntExist;
 
 joinChannel:
-	c->addClient(pfd->fd, channelKey);
 	client->joinChannel(c);
 	return _sendJoin(client, c);
 inviteOnlyChannel:
@@ -85,20 +85,25 @@ badChannelKey:
 	return _send(client, _architect.ERR_BADCHANNELKEY(client->get_nickname().c_str(), channelName.c_str()));
 
 channelExist:
+	IRC_LOG("channel already exist; joining it");
 	if (c->get_inviteOnlyChannel() && !c->isInvited(pfd->fd))
 		goto inviteOnlyChannel;
 	try
 	{
 		if (c->get_size() == c->get_userLimit())
 			goto channelIsFull;
+		c->addClient(pfd->fd, channelKey);
 		goto joinChannel;
 	}
 	catch (std::exception &e)
-	{ goto badChannelKey; }
+	{
+		if (c->get_activePassword() && (!channelKey || *channelKey != c->get_password()))
+			goto badChannelKey;
+		return ; //Already in channel
+	}
 channelDoesntExist:
-	Channel	channel(channelName, pfd->fd);
-	c = &channel;
-	_channelMap[channelName] = &channel;
+	c = new Channel(channelName, pfd->fd);
+	_channelMap[channelName] = c;
 	goto joinChannel;
 }
 

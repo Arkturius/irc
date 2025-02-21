@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 19:04:57 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/21 15:27:00 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/21 17:30:49 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void	Server::_sendJoin(Client *client, Channel *channel)
 	str channelName = channel->get_name();
 	str topic = channel->get_topic();
 
-	str clientList = clientName; // prefix
+	std::vector<str>	clientList;
 	std::vector<int> fdClientList;
 	fdClientList = channel->get_fdClient();
 	for (IRC_AUTO it = fdClientList.begin(); it != fdClientList.end(); ++it)
@@ -34,7 +34,7 @@ void	Server::_sendJoin(Client *client, Channel *channel)
 		int fdClient = *it;
 		IRC_AUTO s = _clients.find(fdClient);
 		if (s != _clients.end())
-			clientList += " " + s->second.get_nickname();
+			clientList.push_back(s->second.get_nickname());
 	}
 	fdClientList = channel->get_fdAdminClient();
 	for (IRC_AUTO it = fdClientList.begin(); it != fdClientList.end(); ++it)
@@ -42,12 +42,19 @@ void	Server::_sendJoin(Client *client, Channel *channel)
 		int fdClient = *it;
 		IRC_AUTO s = _clients.find(fdClient);
 		if (s != _clients.end())
-			clientList += " " + s->second.get_nickname();
+			clientList.push_back("@" + s->second.get_nickname());
+	} 
+	IRC_LOG("size Client: %zu", clientList.size());
+	str	stringClientList;
+	for (size_t i = 0; i < clientList.size(); i++)
+	{
+		if (i != 0)
+			stringClientList += " ";
+		stringClientList += clientList[i];
 	}
-
 	_send(client, ":" + clientName + " JOIN " + channelName);
 	_send(client, _architect.RPL_TOPIC(clientName.c_str(), channelName.c_str(), topic.c_str()));
-	_send(client, _architect.RPL_NAMREPLY(clientName.c_str(), channelName.c_str(), clientList.c_str()));
+	_send(client, _architect.RPL_NAMREPLY(clientName.c_str(), "=", channelName.c_str(), stringClientList.c_str()));
 	_send(client, _architect.RPL_ENDOFNAMES(clientName.c_str(), channelName.c_str()));
 }
 

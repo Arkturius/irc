@@ -90,6 +90,7 @@ void	Client::leaveChannel(Channel *channel)
 	s = _channelMap.find(channelName);
 	if (s != _channelMap.end())
 	{
+		delete s->second;
 		_channelMap.erase(s);
 		//TODO sucefully leave the channel;
 	}
@@ -111,6 +112,7 @@ void	Client::leaveChannel(Channel *channel, str comment)
 	s = _channelMap.find(channelName);
 	if (s != _channelMap.end())
 	{
+		delete s->second;
 		_channelMap.erase(s);
 		//TODO sucefully leave the channel;
 		(void)comment;

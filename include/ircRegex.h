@@ -92,7 +92,7 @@
 									R_CHANNEL_ID		R_1_TO_Y(R_CHANNEL_CHAR, 45)	\
 								)
 
-# define	R_CHANNEL_KEY_CHAR	R_CHAR_INV_GROUP(" \x09\x10\x11\x12\x13")
+# define	R_CHANNEL_KEY_CHAR	R_CHAR_INV_GROUP(" \x09\x10\x11\x12\x13,")
 
 # define	R_CHANNEL_KEY		R_1_TO_Y(R_CHANNEL_KEY_CHAR, 23)
 
