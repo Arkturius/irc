@@ -7,19 +7,33 @@
 # include <poll.h>
 
 
-void	Server::_topic(const str command, Client *client)
+void	Server::_topic(const str &command, Client *client)
 {
-	//TOPIC channel => print (can be not set (erreur))
-	//TOPIC channel : => clear 
-	//TOPIC channel : topicContent => rempli
-
-	//TODO parsing
-	(void)command;(void)client;
 	str		channelName;
+	str		topic;
+	bool	newTopic;
+
+	_seeker.feedString(command);
+	_seeker.rebuild(R_MIDDLE_PARAM);
+	_seeker.consumeMany();
+	std::vector<str>	&argv = _seeker.get_matches();
+	if (argv.size() == 1)
+		channelName = argv[0];
+	else
+		return ;
+
+	_seeker.rebuild(R_TRAILING_PARAM);
+	_seeker.consumeMany();
+	std::vector<str>	&topics = _seeker.get_matches();
+	if (topics.size() == 1)
+	{
+		topic = topics[0];
+		newTopic = 1;
+	}
+	if (topics.size() > 1)
+		return ;
 	Channel	*channel = _getChannelByName(channelName);
 	int		perm = 0;
-	bool	newTopic = 1;
-	str	topic;
 	if (!channel)
 		goto errorNoSuchChannel;
 	try { perm = channel->havePerm(client->get_pfd()->fd); }
@@ -46,8 +60,8 @@ void	Server::_topic(const str command, Client *client)
 	}
 
 setNewTopic:
-	channel->set_topic(topic);
-	channel->set_topicIsSet(1);
+	channel->set_topicIsSet(topic.size() != 1);
+	channel->set_topic(topic.substr(1));
 	channel->set_topicSetterNickName(client->get_nickname());
 	channel->set_topicSetTime(time(NULL));
 	_sendTopic(client, channel);
@@ -65,7 +79,6 @@ errorPerm:
 topicNotSet:
 	_send(client, _architect.RPL_NOTOPIC(client->get_nickname().c_str(), channelName.c_str()));
 	return ;
-
 }
 
 

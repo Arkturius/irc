@@ -32,15 +32,10 @@ bool	removeIfVector(std::vector<int> &v, int x)
 
 bool	Channel::isInvited(int fdClient) {return intInVector(_invitedClient, fdClient);}
 
-Channel::Channel(str channelName, int firstClient): _name(channelName), _inviteOnlyChannel(true), _activePassword(0), _userLimit(100), _topicIsSet(0)
+Channel::Channel(str channelName, int firstClient): _name(channelName), _inviteOnlyChannel(false), _activePassword(0), _userLimit(100), _topicIsSet(0)
 {
-	IRC_LOG("Channel constructor called.");
+	IRC_LOG("Channel constructor called : |%s|", channelName.c_str());
 
-	IRCSeeker	parser(R_CHANNEL_NAME);
-
-	parser.feedString(channelName.c_str());
-	if (!parser.match())
-		throw InvalidChannelNameException();
 	_fdAdminClient.push_back(firstClient);
 }
 
@@ -66,9 +61,9 @@ void	Channel::addClient(int fdClient, const str *password)
 		throw InvalidChannelKeyException();
 	
 	if (intInVector(_fdClient, fdClient))
-		return ;
+		throw ClientIsInChannelException();
 	if (intInVector(_fdAdminClient, fdClient))
-		return ;
+		throw ClientIsInChannelException();
 addClientLabel:
 	_fdClient.push_back(fdClient);
 }

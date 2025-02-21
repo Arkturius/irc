@@ -94,6 +94,7 @@ class Channel
 
 		EXCEPTION(InvalidChannelNameException,	"Invalid channel name.");
 		EXCEPTION(ClientNotInChannelException,	"Client not in channel.");
+		EXCEPTION(ClientIsInChannelException,	"Client is already in channel.");
 		EXCEPTION(InvalidChannelKeyException,	"The Channel Key is incorrect");
 		EXCEPTION(InviteOnlyChannelException,	"Its a invite Only channel");
 };
