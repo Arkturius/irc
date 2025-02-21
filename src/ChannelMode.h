@@ -62,7 +62,7 @@ bool	Server::modePermition(bool plus, const str &modeArguments, Channel *target,
 	}
 
 userNotInChannel:
-	_send(client, _architect.ERR_USERNOTINCHANNEL(client->get_nickname().c_str(), modeArguments.c_str(), target->get_name().c_str(), "They aren't on that channel"));
+	_send(client, _architect.ERR_USERNOTINCHANNEL(client->get_nickname().c_str(), modeArguments.c_str(), target->get_name().c_str()));
 	return 1;
 
 }
@@ -96,7 +96,7 @@ bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Cha
 			return 0;
 		}
 	}
-	_send(client, _architect.ERR_UNKNOWNMODE(client->get_nickname().c_str(), mode, "is unknown mode char to me"));
+	_send(client, _architect.ERR_UNKNOWNMODE(client->get_nickname().c_str(), mode));
 	return 1;
 
 invalidIntParam:
@@ -164,13 +164,13 @@ getModeOfChannel:
 	_sendModeIs(client, target);
 	return ;
 invalidNickChannel:
-	_send(client, _architect.ERR_NOSUCHNICK(client->get_nickname().c_str(), targetName.c_str(), "No such nick/channel"));
+	_send(client, _architect.ERR_NOSUCHNICK(client->get_nickname().c_str(), targetName.c_str()));
 	return ;
 invalidPermition:
-	_send(client, _architect.ERR_CHANOPRIVSNEEDED(client->get_nickname().c_str(), targetName.c_str(), "You're not channel operator"));
+	_send(client, _architect.ERR_CHANOPRIVSNEEDED(client->get_nickname().c_str(), targetName.c_str()));
 	return ;
 invalidChannel:
-	_send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), targetName.c_str(), "You're not on that channel"));
+	_send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), targetName.c_str()));
 	return ;
 }
 #endif
