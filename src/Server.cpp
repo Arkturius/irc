@@ -11,6 +11,12 @@
 
 #define	SET_COMMAND_FUNC(m, f)	_commandFuncs[m] = &Server::_command##f;
 
+#include "commands/pass.h"
+#include "commands/nick.h"
+#include "commands/user.h"
+#include "commands/quit.h"
+#include "commands/pong.h"
+
 #include <ircCommands.h>
 #include <ChannelJoin.h>
 
@@ -162,62 +168,6 @@ void	Server::_welcomeClient(void)
 
 }
 
-IRC_COMMAND_DEF(NICK)
-{
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.findall();
-	const std::vector<str>	&argv = _seeker.get_matches();
-
-	if (argv.size() == 0)
-	{
-		_send(client, 
-		_architect.ERR_NONICKNAMEGIVEN 
-		(
-			2,
-			client->get_nickname().c_str(),
-			"No nickname given"
-		));
-		return ;
-	}
-
-	const str	&newNick = argv[0];
-	_seeker.feedString(newNick);
-	_seeker.rebuild(R_NICKNAME);
-
-	if (!_seeker.consume())
-	{
-		_send(client,
-		_architect.ERR_ERRONEUSNICKNAME
-		(
-			3,
-			client->get_nickname().c_str(),
-			newNick.c_str(),
-			"Erroneus nickname"
-		));
-		return ;
-	}
-
-	for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
-	{
-		if (newNick == (*it).second.get_nickname())
-		{
-			_send(client,
-			_architect.ERR_NICKNAMEINUSE
-			(
-				3,
-				client->get_nickname().c_str(),
-				newNick.c_str(),
-				"Nickname is already in use"
-			));
-			return ;
-		}
-	}
-	client->set_nickname(newNick);
-	if (client->get_username() == "")
-		client->set_username(newNick);
-}
-
 void	Server::_registerClient(Client *client)
 {
 	if (client->get_lastPass() != _password)
@@ -234,8 +184,6 @@ void	Server::_registerClient(Client *client)
 	_send(client, "PING ft_irc");
 	client->set_flag(client->get_flag() | IRC_CLIENT_PINGED);
 }
-
-
 
 void	Server::_executeCommand(Client *client, const str &command)
 {

@@ -6,7 +6,7 @@
 #    By: rgramati <rgramati@student.42angouleme.fr  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/05 17:09:56 by rgramati          #+#    #+#              #
-#    Updated: 2025/02/16 23:28:53 by rgramati         ###   ########.fr        #
+#    Updated: 2025/02/21 14:54:27 by rgramati         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,7 +34,7 @@ ifeq ($(VERBOSE), 1)
 	CFLAGS	+=	-DIRC_VERBOSE=1
 endif
 
-IFLAGS		:=	-I$(INC_DIR)
+IFLAGS		:=	-I$(INC_DIR) -I$(SRC_DIR)/commands
 
 RM			:=	rm -rf
 
