@@ -119,7 +119,7 @@ void	Server::modeCmdReturn(bool plus, const char &individualModeChar, Channel *t
 		case ('t'):
 			typeCharMode = "channel TopicRestriction"; break ;
 	}
-	target->_send(_architect.CMD_MODE(client->get_nickname(), 3, target->get_name().c_str(), removeSet[plus].c_str(), typeCharMode.c_str()));
+	target->_broadcast(_architect.CMD_MODE(client->get_nickname(), 3, target->get_name().c_str(), removeSet[plus].c_str(), typeCharMode.c_str()));
 }
 
 void	Server::_mode(const str command, Client *client)
