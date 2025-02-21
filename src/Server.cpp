@@ -1,17 +1,4 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/02/20 20:04:51 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/21 14:02:52 by yroussea         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-#include "IRCSeeker.h"
-#include "ircRegex.h"
+#include "IRCArchitect.h"
 #include <poll.h>
 
 #include <errno.h>
@@ -167,16 +154,10 @@ struct pollfd	*Server::_acceptClient(void)
 	return (&_pollSet[_pollSet.size() - 1]);
 }
 
-void	Server::_welcomeRoutine(void)
+void	Server::_welcomeClient(void)
 {
 
 }
-
-#define IRC_NO_PREFIX	""
-
-#define R_NOAUTH_COMMANDS		R_START_STRING R_CAPTURE("PASS|USER|NICK|QUIT")
-#define R_CHANNEL_COMMANDS		R_START_STRING R_CAPTURE("JOIN|MODE")
-#define	R_IRC_ACCEPTED_COMMANDS	R_NOAUTH_COMMANDS "|" R_CHANNEL_COMMANDS
 
 #define	R_SPACE				" "
 #define R_NOCRLF			R_CHAR_INV_GROUP("\r\n")
@@ -188,43 +169,11 @@ void	Server::_welcomeRoutine(void)
 #define R_TRAILING			R_0_OR_MORE(R_NOCRLF)
 #define R_TRAILING_PARAM	R_SPACE	R_0_OR_1(R_CAPTURE(R_TRAILING))
 
-IRC_COMMAND_DEF(PASS)
-{
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.findall();
-	std::vector<str>	&argv = _seeker.get_matches();
-
-	if (argv.size() == 0)
-	{
-		_send(client, 
-		_architect.ERR_NEEDMOREPARAMS
-		(
-			3,
-			client->get_nickname().c_str(),
-			"PASS",
-			"Not enough parameters"
-		));
-		return ;
-	}
-
-	if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH))
-	{
-		_send(client, 
-		_architect.ERR_ALREADYREGISTERED
-		(
-			2,
-			client->get_nickname().c_str(),
-			"You may not reregister"
-		));
-		return ;
-	}
-	client->set_flag(client->get_flag() | IRC_CLIENT_REGISTER);
-	client->set_lastPass(argv[0]);
-}
+#define	ARCHITECT(c)		
 
 #define	NICKNAME_CHAR		" ,\\*\\?!@#"
 #define NICKNAME_START		NICKNAME_CHAR ":$"
+
 #define R_NICKNAME			R_FULL_MATCH											\
 							(														\
 								R_CAPTURE											\
@@ -415,7 +364,7 @@ IRC_COMMAND_DEF(PONG)
 	client->set_flag(client->get_flag() | IRC_CLIENT_AUTH);
 	client->set_flag(client->get_flag() & ~(IRC_CLIENT_REGISTER));
 
-	_welcomeRoutine();
+	_welcomeClient();
 }
 
 #define R_COMMAND_MNEMO			R_CAPTURE_WORD

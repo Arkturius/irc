@@ -42,31 +42,34 @@ typedef enum
 	RPL_CODE_LAST				=	909
 }	IRCReplyCode;
 
-#define CMD_TOPIC(source, ...)		generate(source, " TOPIC ", ##__VA_ARGS__)
-#define CMD_JOIN(source, ...)		generate(source, " JOIN ", ##__VA_ARGS__)
-#define CMD_MODE(source, ...)		generate(source, " MODE ", ##__VA_ARGS__)
-#define CMD_KICK(source, ...)		generate(source, " KICK ", ##__VA_ARGS__)
+#define CMD_TOPIC(source, ...)		build(source, " TOPIC ", ##__VA_ARGS__)
+#define CMD_JOIN(source, ...)		build(source, " JOIN ", ##__VA_ARGS__)
+#define CMD_MODE(source, ...)		build(source, " MODE ", ##__VA_ARGS__)
+#define CMD_KICK(source, ...)		build(source, " KICK ", ##__VA_ARGS__)
 
-#define RPL_NOTOPIC(...)			generate(RPL_CODE_NOTOPIC, ##__VA_ARGS__)
-#define RPL_TOPICWHOTIME(...)		generate(RPL_CODE_TOPICWHOTIME, ##__VA_ARGS__)
-#define RPL_INVITING(...)			generate(RPL_CODE_INVITING, ##__VA_ARGS__)
-#define ERR_NOSUCHNICK(...)			generate(ERR_CODE_NOSUCHNICK, ##__VA_ARGS__)
-#define ERR_NOSUCHCHANNEL(...)		generate(ERR_CODE_NOSUCHCHANNEL, ##__VA_ARGS__)
-#define ERR_NONICKNAMEGIVEN(...)	generate(ERR_CODE_NONICKNAMEGIVEN, ##__VA_ARGS__)
-#define ERR_ERRONEUSNICKNAME(...)	generate(ERR_CODE_ERRONEUSNICKNAME, ##__VA_ARGS__)
-#define ERR_NICKNAMEINUSE(...)		generate(ERR_CODE_NICKNAMEINUSE, ##__VA_ARGS__)
-#define ERR_USERNOTINCHANNEL(...)	generate(ERR_CODE_USERNOTINCHANNEL, ##__VA_ARGS__)
-#define ERR_NOTONCHANNEL(...)		generate(ERR_CODE_NOTONCHANNEL, ##__VA_ARGS__)
-#define ERR_USERONCHANNEL(...)		generate(ERR_CODE_USERONCHANNEL, ##__VA_ARGS__)
-#define ERR_NEEDMOREPARAMS(...)		generate(ERR_CODE_NEEDMOREPARAMS, ##__VA_ARGS__)
-#define ERR_ALREADYREGISTERED(...)	generate(ERR_CODE_ALREADYREGISTERED, ##__VA_ARGS__)
-#define ERR_PASSWDMISMATCH(...)		generate(ERR_CODE_PASSWDMISMATCH, ##__VA_ARGS__)
-#define ERR_CHANNELISFULL(...)		generate(ERR_CODE_CHANNELISFULL, ##__VA_ARGS__)
-#define ERR_UNKNOWNMODE(...)		generate(ERR_CODE_UNKNOWNMODE, ##__VA_ARGS__)
-#define ERR_INVITEONLYCHAN(...)		generate(ERR_CODE_INVITEONLYCHAN, ##__VA_ARGS__)
-#define ERR_BADCHANNELKEY(...)		generate(ERR_CODE_BADCHANNELKEY, ##__VA_ARGS__)
-#define ERR_CHANOPRIVSNEEDED(...)	generate(ERR_CODE_CHANOPRIVSNEEDED, ##__VA_ARGS__)
-#define ERR_INVALIDMODEPARAM(...)	generate(ERR_CODE_INVALIDMODEPARAM, ##__VA_ARGS__)
+#define RPL_NOTOPIC(...)			build(RPL_CODE_NOTOPIC, ##__VA_ARGS__)
+#define RPL_TOPICWHOTIME(...)		build(RPL_CODE_TOPICWHOTIME, ##__VA_ARGS__)
+#define RPL_INVITING(...)			build(RPL_CODE_INVITING, ##__VA_ARGS__)
+#define ERR_NOSUCHNICK(...)			build(ERR_CODE_NOSUCHNICK, ##__VA_ARGS__)
+#define ERR_NOSUCHCHANNEL(...)		build(ERR_CODE_NOSUCHCHANNEL, ##__VA_ARGS__)
+#define ERR_NONICKNAMEGIVEN(...)	build(ERR_CODE_NONICKNAMEGIVEN, ##__VA_ARGS__)
+#define ERR_ERRONEUSNICKNAME(...)	build(ERR_CODE_ERRONEUSNICKNAME, ##__VA_ARGS__)
+#define ERR_NICKNAMEINUSE(...)		build(ERR_CODE_NICKNAMEINUSE, ##__VA_ARGS__)
+#define ERR_USERNOTINCHANNEL(...)	build(ERR_CODE_USERNOTINCHANNEL, ##__VA_ARGS__)
+#define ERR_NOTONCHANNEL(...)		build(ERR_CODE_NOTONCHANNEL, ##__VA_ARGS__)
+#define ERR_USERONCHANNEL(...)		build(ERR_CODE_USERONCHANNEL, ##__VA_ARGS__)
+
+#define ERR_MSG_NEEDMOREPARAMS		"Not enough parameters"
+#define ERR_NEEDMOREPARAMS(...)		build(ERR_CODE_NEEDMOREPARAMS, ##__VA_ARGS__, ERR_MSG_NEEDMOREPARAMS, NULL)
+
+#define ERR_ALREADYREGISTERED(...)	build(ERR_CODE_ALREADYREGISTERED, ##__VA_ARGS__)
+#define ERR_PASSWDMISMATCH(...)		build(ERR_CODE_PASSWDMISMATCH, ##__VA_ARGS__)
+#define ERR_CHANNELISFULL(...)		build(ERR_CODE_CHANNELISFULL, ##__VA_ARGS__)
+#define ERR_UNKNOWNMODE(...)		build(ERR_CODE_UNKNOWNMODE, ##__VA_ARGS__)
+#define ERR_INVITEONLYCHAN(...)		build(ERR_CODE_INVITEONLYCHAN, ##__VA_ARGS__)
+#define ERR_BADCHANNELKEY(...)		build(ERR_CODE_BADCHANNELKEY, ##__VA_ARGS__)
+#define ERR_CHANOPRIVSNEEDED(...)	build(ERR_CODE_CHANOPRIVSNEEDED, ##__VA_ARGS__)
+#define ERR_INVALIDMODEPARAM(...)	build(ERR_CODE_INVALIDMODEPARAM, ##__VA_ARGS__)
 
 #include <IRCSeeker.h>
 
@@ -79,36 +82,44 @@ class IRCArchitect
 		IRCArchitect(void) {}
 		~IRCArchitect(void) {}
 
-		const str	generate(IRCReplyCode code, uint32_t paramCount, ...)
+		const str	build(uint32_t code, ...)
 		{
+			va_list				list;
+			char				*curr;
+			std::vector<str>	params;
+			
+			va_start(list, code);
+			while (true)
+			{
+				curr = va_arg(list, char *);
+				if (!curr) { break ; }
+				params.push_back(str(curr));
+			}
+			va_end(list);
+
 			std::stringstream	stream;
 			str					reply = "";
-			va_list				list;
 
 			stream << std::setfill('0') << std::setw(3) << code;
 			reply += stream.str();
-			va_start(list, paramCount);
-			for (size_t i = 0; i < paramCount; ++i)
+			for (size_t i = 0; i < params.size(); ++i)
 			{
-				const str	param = va_arg(list, char *);
+				const str	param = params[i];
 
-				if (param.empty())
-					continue ;
+				if (param.empty())	{ continue ; }
+
 				reply += " ";
-
-				if (i != paramCount - 1)
+				if (i != params.size() - 1)
 				{
 					_seeker.feedString(param);
 					_seeker.rebuild(R_CAPTURE(R_CHAR_INV_GROUP(" ") "*"));
 					if (!_seeker.match())
 						throw InvalidReplyParameterException();
 				}
-				else
-					reply += ":";
+				else { reply += ":"; }
 
 				reply += param;
 			}
-			va_end(list);
 			return (reply);
 		}
 		const str	generate(const str &source, const str &command, uint32_t paramCount, ...) const
