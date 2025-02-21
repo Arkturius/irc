@@ -54,16 +54,16 @@ setNewTopic:
 	channel->_send(_architect.CMD_TOPIC(client->get_nickname().c_str(), 1, channelName.c_str()));
 	return ;
 errorNotOnChannel:
-	_send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
+	_send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), channelName.c_str()));
 	return ;
 errorNoSuchChannel:
-	_send(client, _architect.ERR_NOSUCHCHANNEL(client->get_nickname().c_str(), channelName.c_str(), "No such channel"));
+	_send(client, _architect.ERR_NOSUCHCHANNEL(client->get_nickname().c_str(), channelName.c_str()));
 	return ;
 errorPerm:
-	_send(client, _architect.ERR_CHANOPRIVSNEEDED(client->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
+	_send(client, _architect.ERR_CHANOPRIVSNEEDED(client->get_nickname().c_str(), channelName.c_str()));
 	return ;
 topicNotSet:
-	_send(client, _architect.RPL_NOTOPIC(client->get_nickname().c_str(), channelName.c_str(), "No topic is set"));
+	_send(client, _architect.RPL_NOTOPIC(client->get_nickname().c_str(), channelName.c_str()));
 	return ;
 
 }

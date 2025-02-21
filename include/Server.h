@@ -59,6 +59,7 @@ class Server
 		void			_executeCommand(Client *client, const str &command);
 
 		void			_send(Client *client, const str &string);
+		void			_broadcast(const str &string);
 		void			_sendJoin(Client *client, Channel *channel);
 		void			_sendTopic(Client *client, Channel *channel);
 		void			_sendModeIs(Client *client, Channel *channel);

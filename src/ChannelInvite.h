@@ -47,23 +47,23 @@ succesfullInviting:
 	return ;
 
 errorUserOnChannel:
-	_send(client, _architect.ERR_USERONCHANNEL(client->get_nickname().c_str(), target->get_nickname().c_str(), channelName.c_str(), "is already on channel"));
+	_send(client, _architect.ERR_USERONCHANNEL(client->get_nickname().c_str(), target->get_nickname().c_str(), channelName.c_str()));
 	return ;
 
 errorNoPerm:
-	return _send(client, _architect.ERR_CHANOPRIVSNEEDED(client->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
+	return _send(client, _architect.ERR_CHANOPRIVSNEEDED(client->get_nickname().c_str(), channelName.c_str()));
 	return ;
 
 errorYouAreNotOnChannel:
-	return _send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
+	return _send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), channelName.c_str()));
 	return ;
 
 errorNoSuchNick:
-	_send(client, _architect.ERR_NOSUCHNICK(client->get_nickname().c_str(), nickName.c_str(), "No such nick/channel"));
+	_send(client, _architect.ERR_NOSUCHNICK(client->get_nickname().c_str(), nickName.c_str()));
 	return ;
 
 errorNoSuchChannel:
-	_send(client, _architect.ERR_NOSUCHCHANNEL(client->get_nickname().c_str(), channelName.c_str(), "No such channel"));
+	_send(client, _architect.ERR_NOSUCHCHANNEL(client->get_nickname().c_str(), channelName.c_str()));
 	return ;
 
 }

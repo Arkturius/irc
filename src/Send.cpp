@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/19 19:04:57 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/21 14:42:45 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/02/21 15:27:00 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void	Server::_send(Client *client, const str &string)
 	write(pollfd->fd, reply.c_str(), reply.size());
 }
 
-void	Channel::_send(const str &string)
+void	Channel::_broadcast(const str &string)
 {
 	IRC_AUTO	it = _fdClient.begin();
 
@@ -101,3 +101,12 @@ void	Channel::_send(const str &string)
 		write(*it, (string + "\r\n").c_str(), string.size() + 2);
 }
 
+void	Server::_broadcast(const str &string)
+{
+	IRC_AUTO	it = _clients.begin();
+
+	IRC_LOG("Server Brodcast " BOLD(COLOR(YELLOW,"%s")), string.c_str());
+	for (; it != _clients.end(); ++it)
+		write((it->second.get_pfd()->fd), (string + "\r\n").c_str(), string.size() + 2);
+
+}

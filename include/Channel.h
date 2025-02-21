@@ -52,6 +52,7 @@ class Channel
 		void	removePerm(int targetClient);
 
 		void	_send(const str &str);
+		void	_broadcast(const str &);
 
 		GETTER(str, _name);
 		GETTER(str, _topic);
