@@ -50,7 +50,7 @@ class Server
 		struct pollfd	*_acceptClient();
 		void			_connectClient(int fd);
 		void			_registerClient(Client *client);
-		void			_welcomeRoutine(void);
+		void			_welcomeClient(void);
 		void			_disconnectClient(Client *client);
 
 		void			_handleMessage(Client *client);
@@ -94,11 +94,11 @@ class Server
 		SETTER(int, _port);
 		SETTER(int, _sockfd);
 
-		EXCEPTION(ServerSocketFailedException,	"socket() failed.");
-		EXCEPTION(ServerBindFailedException,	"bind() failed.");
-		EXCEPTION(ServerListenFailedException,	"listen() failed.");
-		EXCEPTION(ServerPollFailedException,	"poll() failed.");
-		EXCEPTION(ServerAcceptFailedException,	"accept() failed.");
+	EXCEPTION(ServerSocketFailedException,	"socket() failed.");
+	EXCEPTION(ServerBindFailedException,	"bind() failed.");
+	EXCEPTION(ServerListenFailedException,	"listen() failed.");
+	EXCEPTION(ServerPollFailedException,	"poll() failed.");
+	EXCEPTION(ServerAcceptFailedException,	"accept() failed.");
 	
 	private:
 		std::map<str, Channel *>	_channelMap;
