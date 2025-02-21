@@ -31,16 +31,30 @@ invalidNumberOfParams:
 		_send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "KICK"));
 }
 
-void	Server::_kick(const str command, Client *client)
+void	Server::_kick(const str &command, Client *client)
 {
-	 //Parameters: <channel> *( "," <channel> ) <user> *( "," <user> ) [<comment>]
-	std::vector<str>	vecChannel;
-	std::vector<str>	vecUser;
-	str					*comment = NULL;
-	//TODO parsing
-	
-	UNUSED(command);
+	_seeker.feedString(command);
+	_seeker.rebuild(R_MIDDLE_PARAM);
+	_seeker.findall();
+	std::vector<str>	argv = _seeker.get_matches();
+	if (argv.size() < 2 || argv.size() > 3)
+		return _send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "KICK"));
 
+
+	_seeker.feedString(argv[0]);
+	_seeker.rebuild(R_CAPTURE_CHANNEL_NAME);
+	_seeker.findall();
+	std::vector<str>	vecChannel = _seeker.get_matches();
+
+	_seeker.feedString(argv[1]);
+	_seeker.rebuild(R_CAPTURE_CHANNEL_NAME); // TODO R_USER
+	_seeker.findall();
+	std::vector<str>	vecUser = _seeker.get_matches();
+
+	str	*comment;
+	if (argv.size() == 3)
+		comment = &argv[2];
+	
 	_kickAllChannel(vecChannel, vecUser, comment, client);
 }
 
