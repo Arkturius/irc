@@ -97,7 +97,6 @@ class IRCSeeker
 
 	EXCEPTION(InvalidPatternException,		"invalid REGEX pattern.");
 	EXCEPTION(EmptyPatternException,		"empty pattern.");
-	EXCEPTION(InvalidGroupCountException,	"group count not in range 1 - 126.");
 	EXCEPTION(RegExecFailedException,		"regexec() failed.");
 };
 
