@@ -18,29 +18,21 @@ void	Server::_topic(const str command, Client *client)
 	str		channelName;
 	Channel	*channel = _getChannelByName(channelName);
 	int		perm = 0;
+	bool	newTopic = 1;
+	str	topic;
 	if (!channel)
-		return _send(client, _architect.ERR_NOSUCHCHANNEL(3, client->get_nickname().c_str(), channelName.c_str(), "No such channel"));
+		goto errorNoSuchChannel;
 	try { perm = channel->havePerm(client->get_pfd()->fd); }
 	catch (std::exception &e)
 	{
-		return _send(client, _architect.ERR_NOTONCHANNEL(3, client->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
+		goto errorNotOnChannel;
 	}
-	bool	newTopic = 1;
 	if (newTopic)
 	{
-		str	topic;
-		
 		if (!perm && channel->get_topicPermNeeded())
-			return _send(client, _architect.ERR_CHANOPRIVSNEEDED(3, client->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
+			goto errorPerm;
 		else
-		{
-			channel->set_topic(topic);
-			channel->set_topicIsSet(1);
-			channel->set_topicSetterNickName(client->get_nickname());
-			channel->set_topicSetTime(time(NULL));
-			_sendTopic(client, channel);
-			channel->_send(_architect.CMD_TOPIC(client->get_nickname().c_str(), 1, channelName.c_str()));
-		}
+			goto setNewTopic;
 	}
 	else
 	{
@@ -50,8 +42,30 @@ void	Server::_topic(const str command, Client *client)
 			_sendTopic(client, channel);
 		}
 		else
-			return _send(client, _architect.RPL_NOTOPIC(3, client->get_nickname().c_str(), channelName.c_str(), "No topic is set"));
+			goto topicNotSet;
 	}
+
+setNewTopic:
+	channel->set_topic(topic);
+	channel->set_topicIsSet(1);
+	channel->set_topicSetterNickName(client->get_nickname());
+	channel->set_topicSetTime(time(NULL));
+	_sendTopic(client, channel);
+	channel->_send(_architect.CMD_TOPIC(client->get_nickname().c_str(), 1, channelName.c_str()));
+	return ;
+errorNotOnChannel:
+	_send(client, _architect.ERR_NOTONCHANNEL(3, client->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
+	return ;
+errorNoSuchChannel:
+	_send(client, _architect.ERR_NOSUCHCHANNEL(3, client->get_nickname().c_str(), channelName.c_str(), "No such channel"));
+	return ;
+errorPerm:
+	_send(client, _architect.ERR_CHANOPRIVSNEEDED(3, client->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
+	return ;
+topicNotSet:
+	_send(client, _architect.RPL_NOTOPIC(3, client->get_nickname().c_str(), channelName.c_str(), "No topic is set"));
+	return ;
+
 }
 
 
