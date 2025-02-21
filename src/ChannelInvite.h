@@ -41,29 +41,29 @@ void	Server::_invite(const str command, Client *client)
 	}
 
 succesfullInviting:
-	_send(client, _architect.RPL_INVITING(3, client->get_nickname().c_str(), target->get_nickname().c_str(), channelName.c_str()));
+	_send(client, _architect.RPL_INVITING(client->get_nickname().c_str(), target->get_nickname().c_str(), channelName.c_str()));
 	channel->invite(target->get_pfd()->fd);
 	_send(target, client->get_nickname() + " invited you to channel " + channelName);
 	return ;
 
 errorUserOnChannel:
-	_send(client, _architect.ERR_USERONCHANNEL(4, client->get_nickname().c_str(), target->get_nickname().c_str(), channelName.c_str(), "is already on channel"));
+	_send(client, _architect.ERR_USERONCHANNEL(client->get_nickname().c_str(), target->get_nickname().c_str(), channelName.c_str(), "is already on channel"));
 	return ;
 
 errorNoPerm:
-	return _send(client, _architect.ERR_CHANOPRIVSNEEDED(3, client->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
+	return _send(client, _architect.ERR_CHANOPRIVSNEEDED(client->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
 	return ;
 
 errorYouAreNotOnChannel:
-	return _send(client, _architect.ERR_NOTONCHANNEL(3, client->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
+	return _send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
 	return ;
 
 errorNoSuchNick:
-	_send(client, _architect.ERR_NOSUCHNICK(3, client->get_nickname().c_str(), nickName.c_str(), "No such nick/channel"));
+	_send(client, _architect.ERR_NOSUCHNICK(client->get_nickname().c_str(), nickName.c_str(), "No such nick/channel"));
 	return ;
 
 errorNoSuchChannel:
-	_send(client, _architect.ERR_NOSUCHCHANNEL(3, client->get_nickname().c_str(), channelName.c_str(), "No such channel"));
+	_send(client, _architect.ERR_NOSUCHCHANNEL(client->get_nickname().c_str(), channelName.c_str(), "No such channel"));
 	return ;
 
 }

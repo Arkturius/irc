@@ -28,7 +28,7 @@ void	Server::_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUs
 	return ;
 
 invalidNumberOfParams:
-		_send(client, _architect.ERR_NEEDMOREPARAMS(3, client->get_nickname().c_str(), "KICK", "Not enough parameters"));
+		_send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "KICK", "Not enough parameters"));
 }
 
 void	Server::_kick(const str command, Client *client)
@@ -91,16 +91,16 @@ succesfullKick:
 	return ;
 
 noSuchChannel:
-	return _send(admin, _architect.ERR_NOSUCHCHANNEL(3, admin->get_nickname().c_str(), channelName.c_str(), "No such channel"));
+	return _send(admin, _architect.ERR_NOSUCHCHANNEL(admin->get_nickname().c_str(), channelName.c_str(), "No such channel"));
 
 clientDontHaveThePerm:
-	return _send(admin, _architect.ERR_CHANOPRIVSNEEDED(3, admin->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
+	return _send(admin, _architect.ERR_CHANOPRIVSNEEDED(admin->get_nickname().c_str(), channelName.c_str(), "You're not channel operator"));
 
 targetDontExist:
-	return _send(admin, _architect.ERR_USERNOTINCHANNEL(4, admin->get_nickname().c_str(), kickedName.c_str(),channelName.c_str(), "They aren't on that channel"));
+	return _send(admin, _architect.ERR_USERNOTINCHANNEL(admin->get_nickname().c_str(), kickedName.c_str(),channelName.c_str(), "They aren't on that channel"));
 
 adminNotInChannel:
-	return _send(admin, _architect.ERR_NOTONCHANNEL(3, admin->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
+	return _send(admin, _architect.ERR_NOTONCHANNEL(admin->get_nickname().c_str(), channelName.c_str(), "You're not on that channel"));
 }
 
 #endif

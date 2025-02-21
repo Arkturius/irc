@@ -32,10 +32,10 @@ bool	Server::modePassword(bool plus, const str &modeArguments, Channel *target, 
 	goto invalidPassword;
 
 invalidPassword:
-	_send(client, _architect.ERR_INVALIDMODEPARAM(5, client->get_nickname().c_str(), target->get_name().c_str(), "k", modeArguments.c_str(), "To disable the password you need to enter the correct password"));
+	_send(client, _architect.ERR_INVALIDMODEPARAM(client->get_nickname().c_str(), target->get_name().c_str(), "k", modeArguments.c_str(), "To disable the password you need to enter the correct password"));
 	return 1;
 invalidNewPassword:
-	_send(client, _architect.ERR_INVALIDMODEPARAM(5, client->get_nickname().c_str(), target->get_name().c_str(), "k", modeArguments.c_str(), "invalid input password"));
+	_send(client, _architect.ERR_INVALIDMODEPARAM(client->get_nickname().c_str(), target->get_name().c_str(), "k", modeArguments.c_str(), "invalid input password"));
 	return 1;
 }
 
@@ -62,7 +62,7 @@ bool	Server::modePermition(bool plus, const str &modeArguments, Channel *target,
 	}
 
 userNotInChannel:
-	_send(client, _architect.ERR_USERNOTINCHANNEL(4, client->get_nickname().c_str(), modeArguments.c_str(), target->get_name().c_str(), "They aren't on that channel"));
+	_send(client, _architect.ERR_USERNOTINCHANNEL(client->get_nickname().c_str(), modeArguments.c_str(), target->get_name().c_str(), "They aren't on that channel"));
 	return 1;
 
 }
@@ -96,11 +96,11 @@ bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Cha
 			return 0;
 		}
 	}
-	_send(client, _architect.ERR_UNKNOWNMODE(3, client->get_nickname().c_str(), mode, "is unknown mode char to me"));
+	_send(client, _architect.ERR_UNKNOWNMODE(client->get_nickname().c_str(), mode, "is unknown mode char to me"));
 	return 1;
 
 invalidIntParam:
-	_send(client, _architect.ERR_INVALIDMODEPARAM(5, client->get_nickname().c_str(), target->get_name().c_str(), "l", modeArguments.c_str(), "The limite sould be a possitiv integer"));
+	_send(client, _architect.ERR_INVALIDMODEPARAM(client->get_nickname().c_str(), target->get_name().c_str(), "l", modeArguments.c_str(), "The limite sould be a possitiv integer"));
 	return 1;
 }
 
@@ -164,13 +164,13 @@ getModeOfChannel:
 	_sendModeIs(client, target);
 	return ;
 invalidNickChannel:
-	_send(client, _architect.ERR_NOSUCHNICK(3, client->get_nickname().c_str(), targetName.c_str(), "No such nick/channel"));
+	_send(client, _architect.ERR_NOSUCHNICK(client->get_nickname().c_str(), targetName.c_str(), "No such nick/channel"));
 	return ;
 invalidPermition:
-	_send(client, _architect.ERR_CHANOPRIVSNEEDED(3, client->get_nickname().c_str(), targetName.c_str(), "You're not channel operator"));
+	_send(client, _architect.ERR_CHANOPRIVSNEEDED(client->get_nickname().c_str(), targetName.c_str(), "You're not channel operator"));
 	return ;
 invalidChannel:
-	_send(client, _architect.ERR_NOTONCHANNEL(3, client->get_nickname().c_str(), targetName.c_str(), "You're not on that channel"));
+	_send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), targetName.c_str(), "You're not on that channel"));
 	return ;
 }
 #endif

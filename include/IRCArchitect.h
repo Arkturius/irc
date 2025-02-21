@@ -47,9 +47,13 @@ typedef enum
 #define CMD_MODE(source, ...)		build(source, " MODE ", ##__VA_ARGS__)
 #define CMD_KICK(source, ...)		build(source, " KICK ", ##__VA_ARGS__)
 
+#define RPL_CHANNELMODEIS(...)		build(RPL_CODE_CHANNELMODEIS, ##__VA_ARGS__)
+#define RPL_TOPIC(...)				build(RPL_CODE_TOPIC, ##__VA_ARGS__)
 #define RPL_NOTOPIC(...)			build(RPL_CODE_NOTOPIC, ##__VA_ARGS__)
 #define RPL_TOPICWHOTIME(...)		build(RPL_CODE_TOPICWHOTIME, ##__VA_ARGS__)
 #define RPL_INVITING(...)			build(RPL_CODE_INVITING, ##__VA_ARGS__)
+#define	RPL_NAMREPLY(p, ...)		build(RPL_CODE_NAMREPLY, ##__VA_ARGS__)	
+#define	RPL_ENDOFNAMES(p, ...)		build(RPL_CODE_ENDOFNAMES, ##__VA_ARGS__)
 #define ERR_NOSUCHNICK(...)			build(ERR_CODE_NOSUCHNICK, ##__VA_ARGS__)
 #define ERR_NOSUCHCHANNEL(...)		build(ERR_CODE_NOSUCHCHANNEL, ##__VA_ARGS__)
 #define ERR_NONICKNAMEGIVEN(...)	build(ERR_CODE_NONICKNAMEGIVEN, ##__VA_ARGS__)
