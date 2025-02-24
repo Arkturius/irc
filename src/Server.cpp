@@ -1,23 +1,18 @@
-#include "IRCArchitect.h"
-#include <ctime>
-#include <poll.h>
 
+extern volatile bool	interrupt;
+
+#include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
-#include <unistd.h>
+#include <ctime>
 
 #include <Server.h>
-#include <Client.h>
-
-
 #include "commands/pass.h"
 #include "commands/nick.h"
 #include "commands/user.h"
 #include "commands/quit.h"
 #include "commands/pong.h"
-
-#include <ircCommands.h>
 #include <ChannelJoin.h>
 
 Server::Server(int port, str password): _flag(IRC_STATUS_OK), _port(port), _password(password) 
@@ -41,7 +36,7 @@ Server::Server(int port, str password): _flag(IRC_STATUS_OK), _port(port), _pass
 	time(&timestamp);
 	_startTime = ctime(&timestamp);
 
-	IRC_OK("socket opened on fd "BOLD(COLOR(GRAY,"[%d]")), _sockfd);
+	IRC_OK("socket opened on fd " BOLD(COLOR(GRAY,"[%d]")), _sockfd);
 }
 
 Server::~Server(void)
@@ -50,13 +45,12 @@ Server::~Server(void)
 
 	for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
 	{
-		if (it == _clients.begin())
-			continue ;
-		((*it).second).disconnect();
+		Client	&client = (*it).second;
+		client.disconnect();
 	}
 	close(_sockfd);
 
-	IRC_OK("closed socket on fd "BOLD(COLOR(GRAY,"[%d]")), _sockfd);
+	IRC_OK("closed socket on fd " BOLD(COLOR(GRAY,"[%d]")), _sockfd);
 }
 
 void	Server::_bindSocket() const
@@ -76,13 +70,11 @@ void	Server::_bindSocket() const
 	IRC_OK("socket binded to port %d.", _port);
 }
 
-#define IRC_CLIENT_CAP	10
-
 void	Server::_listenSocket() const
 {
 	IRC_LOG("listening...");
 
-	int err = listen(_sockfd, IRC_CLIENT_CAP);
+	int err = listen(_sockfd, 10);
 	if (err)
 		throw ServerListenFailedException();
 
@@ -111,7 +103,7 @@ bool	Server::_updatePollSet()
 	{
 		if (_pollSet[id].fd == -1)
 		{
-			_pollSet.erase(_pollSet.begin() + id);
+			_pollSet.erase(id);
 			return (true);
 		}
 	}
@@ -138,13 +130,16 @@ void	Server::_connectClient(int fd)
 	client_pfd.events = POLLIN | POLLOUT;
 	client_pfd.revents = 0;
 
-	_pollSet.push_back(client_pfd);
+	_pollSet.push(client_pfd);
 }
 
-void	Server::_disconnectClient(Client *client)
+void	Server::_disconnectClient(Client &client)
 {
-	client->set_flag(client->get_flag() & ~IRC_CLIENT_EOF);
-	client->disconnect();
+	IRC_LOG("disconnecting client, fd = " BOLD(COLOR(GRAY,"[%d]")), client.get_pfd()->fd);
+
+	client.set_flag(client.get_flag() & ~IRC_CLIENT_EOF);
+	client.disconnect();
+	_clients.erase(client.get_pfd()->fd);
 }
 
 struct pollfd	*Server::_acceptClient(void)
@@ -163,9 +158,17 @@ struct pollfd	*Server::_acceptClient(void)
 			throw ServerAcceptFailedException();
 		return (NULL);
 	}
-	_connectClient(fd);
+	IRC_OK("client accepted, fd = "BOLD(COLOR(GRAY,"[%d]"))".", fd);
 
-	IRC_OK("client accepted on fd "BOLD(COLOR(GRAY,"[%d]"))".", fd);
+	if (_clients.size() == IRC_CLIENT_CAP)
+	{
+		IRC_WARN("too many clients, connection refused.");
+		close(fd);
+		return (NULL);
+	}
+	_connectClient(fd);
+	IRC_OK("client connected, fd = "BOLD(COLOR(GRAY,"[%d]"))".", fd);
+
 	return (&_pollSet[_pollSet.size() - 1]);
 }
 
@@ -185,7 +188,6 @@ void	Server::_registerClient(Client *client)
 		_send(client,
 		_architect.ERR_PASSWDMISMATCH
 		(
-			2,
 			client->get_nickname().c_str(),
 			"Password incorrect"
 		));
@@ -257,16 +259,6 @@ void	Server::_handleMessage(Client *client)
 
 	for (IRC_AUTO it = commands.begin(); it != commands.end(); ++it)
 	{
-// 		bool	isAuth = IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH);
-
-// 		_seeker.rebuild(R_NOAUTH_COMMANDS);
-// 		_seeker.feedString(*it);
-// 		if (!isAuth && !_seeker.match())
-// 		{
-// 			IRC_WARN("COMMAND IGNORED" BOLD(COLOR(YELLOW, "[ %s ]")), (*it).c_str());
-// 			continue ;
-// 		}
-
 		IRC_OK(BOLD(COLOR(GREEN, "EXECUTION CALL [ %s ]")), (*it).c_str());
 		_executeCommand(client, *it);
 	}
@@ -280,24 +272,29 @@ void	Server::start()
 
 	server_pfd.fd = _sockfd;
 	server_pfd.events = POLLIN | POLLOUT;
-	_pollSet.push_back(server_pfd);
+	_pollSet.push(server_pfd);
 
 	Client					*client;
 
 	while (IRC_FLAG_GET(_flag, IRC_STATUS_OK))
 	{
+		if (interrupt)
+			break ;
+
 		if (_updatePollSet())
 			continue ;
 
 		for (size_t id = 0; id < _pollSet.size(); ++id)
 		{
 			struct pollfd	curr = _pollSet[id];
+			if (curr.fd == 0) { continue; }
 
 			if (curr.revents & POLLIN)
 			{
 				if (id == 0)
 				{
 					struct pollfd	*client_pfd = _acceptClient();
+					IRC_LOG("NEW CLIENT PFD = %p", client_pfd);
 
 					if (!client_pfd)
 						continue ;
@@ -307,7 +304,7 @@ void	Server::start()
 				{
 					client = &_clients[curr.fd];
 
-					IRC_LOG("Treating with client " BOLD(COLOR(CYAN,"%p")) ", his fd is %d", client, client->get_pfd()->fd);
+					IRC_LOG("Treating with client " BOLD(COLOR(CYAN,"%p")) ", PFD at %p", client, client->get_pfd());
 					client->readBytes();
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOT))
 					{
@@ -315,7 +312,7 @@ void	Server::start()
 						_handleMessage(client);
 					}
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOF))
-						_disconnectClient(client);
+						_disconnectClient(_clients[curr.fd]);
 					IRC_LOG("------------------------------------");
 				}
 			}

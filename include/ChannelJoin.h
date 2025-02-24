@@ -1,11 +1,8 @@
 #ifndef CHANNEL_JOIN_H
 # define CHANNEL_JOIN_H
 
-#include "irc.h"
 # include <Server.h>
 # include <Channel.h>
-# include <Client.h>
-# include <poll.h>
 
 IRC_COMMAND_DEF(JOIN)
 {

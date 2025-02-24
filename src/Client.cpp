@@ -12,16 +12,17 @@ Client::Client(struct pollfd *pfd, uint32_t flag): _flag(flag), _username(""), _
 
 void	Client::resetBuffer(void) { _buffer = ""; IRC_FLAG_DEL(_flag, IRC_CLIENT_EOT); }
 
-size_t	Client::_readToBuffer(void)
+int	Client::_readToBuffer(void)
 {
 	char	tmp[1024] = {0};
-	size_t	bytes = 0;
+	int 	bytes = 0;
 
 	bytes = read(_pfd->fd, tmp, sizeof(tmp) - 1);
 	if (bytes)
 	{
 		tmp[bytes] = 0;
 		_buffer += str(tmp);
+		IRC_LOG("client [%d] - appending [%s]", _pfd->fd, tmp);
 	}
 	return (bytes);
 }
@@ -30,15 +31,14 @@ void	Client::disconnect()
 {
 	IRC_LOG("client "BOLD(COLOR(GRAY,"[%d]"))" disconnected.", _pfd->fd);
 	close(_pfd->fd);
-	_pfd->fd = -1;
-	_pfd->events = 0;
 }
 
 void	Client::readBytes(void)
 {
-	size_t	bytes;
+	int	bytes;
 
 	bytes = _readToBuffer();
+	IRC_LOG("client [%d] - readbytes returned %d", _pfd->fd, bytes);
 	if (bytes == 0 || _buffer.length() == 0)
 	{
 		IRC_FLAG_SET(_flag, IRC_CLIENT_EOF);

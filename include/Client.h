@@ -30,7 +30,7 @@ class Client
 		struct pollfd				*_pfd;
 		std::map<str, Channel *>	_channelMap;
 
-		size_t	_readToBuffer(void);
+		int			_readToBuffer(void);
 
 	public:
 		Client(void);

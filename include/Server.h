@@ -3,12 +3,12 @@
 
 # include <sys/socket.h>
 # include <map>
-# include <vector>
 
 # include <irc.h>
+# include <PollList.h>
+# include <Client.h>
 # include <IRCSeeker.h>
 # include <IRCArchitect.h>
-# include <Client.h>
 
 # define COMMA	,
 
@@ -36,7 +36,7 @@ class Server
 		str			_password;
 		str			_startTime;
 
-		std::vector<struct pollfd>		_pollSet;
+		PollList						_pollSet;
 		std::map<int, Client>			_clients;
 
 		std::map<str, IRC_COMMAND_F>	_commandFuncs;
@@ -52,7 +52,7 @@ class Server
 		void			_connectClient(int fd);
 		void			_registerClient(Client *client);
 		void			_welcomeClient(Client *client);
-		void			_disconnectClient(Client *client);
+		void			_disconnectClient(Client &client);
 
 		void			_handleMessage(Client *client);
 		str				_extractCommand(str *source);

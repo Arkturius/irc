@@ -3,9 +3,10 @@
 
 # include <stdio.h>
 # include <stdint.h>
-# include <string>
+# include <cstring>
 # include <iostream>
 # include <exception>
+# include <poll.h>
 
 typedef std::string str;
 
@@ -53,5 +54,7 @@ typedef std::string str;
 # define IRC_BZERO(X)		std::memset(&(X), 0, sizeof(X))
 
 # define IRC_AUTO __auto_type
+
+# define IRC_CLIENT_CAP		512
 
 #endif
