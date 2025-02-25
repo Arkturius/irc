@@ -10,8 +10,11 @@ IRC_COMMAND_DEF(USER)
 	_seeker.findall();
 	std::vector<str>	&argv = _seeker.get_matches();
 
-	if (argv.size() != 3)									{ goto needMoreParams; }
-	if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH))	{ goto alreadyRegistered; }
+	if (argv.size() != 3)
+		goto needMoreParams;
+
+	if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH))
+		goto alreadyRegistered;
 
 	client->set_username(argv[0]);
 	_registerClient(client);

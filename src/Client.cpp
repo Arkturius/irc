@@ -8,7 +8,7 @@ Client::Client(void): ATarget() {}
 
 Client::~Client(void) {}
 
-Client::Client(struct pollfd *pfd, uint32_t flag): _flag(flag), _username(""), _nickname(""), _pfd(pfd) {}
+Client::Client(uint32_t flag, int32_t fd): _flag(flag), _fd(fd), _username(""), _nickname("") {}
 
 void	Client::resetBuffer(void) { _buffer = ""; IRC_FLAG_DEL(_flag, IRC_CLIENT_EOT); }
 
@@ -17,20 +17,20 @@ int	Client::_readToBuffer(void)
 	char	tmp[1024] = {0};
 	int 	bytes = 0;
 
-	bytes = read(_pfd->fd, tmp, sizeof(tmp) - 1);
+	bytes = read(_fd, tmp, sizeof(tmp) - 1);
 	if (bytes)
 	{
 		tmp[bytes] = 0;
 		_buffer += str(tmp);
-		IRC_LOG("client [%d] - appending [%s]", _pfd->fd, tmp);
+		IRC_LOG("client [%d] - appending [%s]", _fd, tmp);
 	}
 	return (bytes);
 }
 
 void	Client::disconnect()
 {
-	IRC_LOG("client "BOLD(COLOR(GRAY,"[%d]"))" disconnected.", _pfd->fd);
-	close(_pfd->fd);
+	IRC_LOG("client "BOLD(COLOR(GRAY,"[%d]"))" disconnected.", _fd);
+	close(_fd);
 }
 
 void	Client::readBytes(void)
@@ -38,7 +38,7 @@ void	Client::readBytes(void)
 	int	bytes;
 
 	bytes = _readToBuffer();
-	IRC_LOG("client [%d] - readbytes returned %d", _pfd->fd, bytes);
+	IRC_LOG("client [%d] - readbytes returned %d", _fd, bytes);
 	if (bytes == 0 || _buffer.length() == 0)
 	{
 		IRC_FLAG_SET(_flag, IRC_CLIENT_EOF);

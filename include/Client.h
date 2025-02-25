@@ -22,20 +22,22 @@ class Client: public ATarget
 {
 	private:
 		uint32_t	_flag;
+
+		int32_t		_fd;
+
 		str			_username;
 		str			_nickname;
-
-		str			_buffer;
 		str			_lastPass;
 
-		struct pollfd				*_pfd;
+		str			_buffer;
+		int			_readToBuffer(void);
+
 		std::map<str, Channel *>	_channelMap;
 
-		int			_readToBuffer(void);
 
 	public:
 		Client(void);
-		Client(struct pollfd *pfd, uint32_t flag);
+		Client(uint32_t flag, int32_t fd);
 		~Client(void);
 
 		void	readBytes(void);
@@ -49,18 +51,18 @@ class Client: public ATarget
 		void	sendMsg(const str &) const;
 		
 		GETTER(uint32_t, _flag);
+		GETTER(int32_t, _fd);
 		GETTER(str, _username);
 		GETTER(str, _nickname);
-		GETTER(str, _buffer);
 		GETTER(str, _lastPass);
-		GETTER(struct pollfd *, _pfd);
+		GETTER(str, _buffer);
 		GETTER(std::map<str COMMA Channel *>, _channelMap);
 		
 		GETTER_C(uint32_t, _flag);
 		GETTER_C(str, _username);
 		GETTER_C(str, _nickname);
-		GETTER_C(str, _buffer);
 		GETTER_C(str, _lastPass);
+		GETTER_C(str, _buffer);
  		GETTER_C(std::map<str COMMA Channel *>, _channelMap);
 
 		SETTER(uint32_t, _flag);

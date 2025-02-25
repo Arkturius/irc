@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Server.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/02/25 19:32:37 by rgramati          #+#    #+#             */
+/*   Updated: 2025/02/25 19:55:12 by rgramati         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "IRCArchitect.h"
 extern volatile bool	interrupt;
@@ -58,7 +69,7 @@ bool	Server::_updatePollSet()
 	{
 		if (_pollSet[id].fd == -1)
 		{
-			_pollSet.erase(id);
+			_pollSet.erase(_pollSet.begin() + id);
 			return (true);
 		}
 	}
@@ -85,18 +96,18 @@ void	Server::_connectClient(int fd)
 	client_pfd.events = POLLIN | POLLOUT;
 	client_pfd.revents = 0;
 
-	_pollSet.push(client_pfd);
+	_pollSet.push_back(client_pfd);
 }
 
 void	Server::_disconnectClient(Client &client)
 {
-	IRC_LOG("disconnecting client, fd = " BOLD(COLOR(GRAY,"[%d]")), client.get_pfd()->fd);
+	IRC_LOG("disconnecting client, fd = " BOLD(COLOR(GRAY,"[%d]")), client.get_fd());
 
 	client.disconnect();
-	_clients.erase(client.get_pfd()->fd);
+	_clients.erase(client.get_fd());
 }
 
-struct pollfd	*Server::_acceptClient(void)
+int32_t	Server::_acceptClient(void)
 {
 	IRC_LOG("new client connection.");
 
@@ -110,7 +121,7 @@ struct pollfd	*Server::_acceptClient(void)
 			IRC_LOG("accept failed. retrying...");
 		else
 			throw ServerAcceptFailedException();
-		return (NULL);
+		return (-1);
 	}
 	IRC_OK("client accepted, fd = "BOLD(COLOR(GRAY,"[%d]"))".", fd);
 
@@ -118,12 +129,12 @@ struct pollfd	*Server::_acceptClient(void)
 	{
 		IRC_WARN("too many clients, connection refused.");
 		close(fd);
-		return (NULL);
+		return (-1);
 	}
 	_connectClient(fd);
 	IRC_OK("client connected, fd = "BOLD(COLOR(GRAY,"[%d]"))".", fd);
 
-	return (&_pollSet[_pollSet.size() - 1]);
+	return (fd);
 }
 
 #include <ctime>
@@ -145,17 +156,16 @@ void	Server::_welcomeClient(Client *client)
 void	Server::_registerClient(Client *client)
 {
 	if (client->get_lastPass() != _password)
-	{
-		_send(client,
-		_architect.ERR_PASSWDMISMATCH
-		(
-			client->get_nickname().c_str(),
-			"Password incorrect"
-		));
-		return ;
-	}
+		goto	passwdMismatch;
+
 	_send(client, "PING ft_irc");
 	client->set_flag(client->get_flag() | IRC_CLIENT_PINGED);
+	return ;
+
+passwdMismatch:
+	_send(client, _architect.ERR_PASSWDMISMATCH(client->get_nickname().c_str()));
+	_send(client, "ERROR");
+	client->disconnect();
 }
 
 IRC_COMMAND_DEF(MODE)
@@ -233,7 +243,7 @@ void	Server::start()
 
 	server_pfd.fd = _sockfd;
 	server_pfd.events = POLLIN;
-	_pollSet.push(server_pfd);
+	_pollSet.push_back(server_pfd);
 
 	Client					*client;
 
@@ -254,24 +264,18 @@ void	Server::start()
 			{
 				if (id == 0)
 				{
-					struct pollfd	*client_pfd = _acceptClient();
-					IRC_LOG("NEW CLIENT PFD = %p", client_pfd);
+					int32_t	client_fd = _acceptClient();
+					if (client_fd == -1) { continue ; }
 
-					if (!client_pfd)
-						continue ;
-					_clients[client_pfd->fd] = Client(client_pfd, 0);
+					_clients[client_fd] = Client(0, client_fd);
 				}
 				else
 				{
 					client = &_clients[curr.fd];
 
-					IRC_LOG("Treating with client " BOLD(COLOR(CYAN,"%p")) ", PFD at %p", client, client->get_pfd());
 					client->readBytes();
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOT))
-					{
-						IRC_LOG("FULL MESSAGE = {\n" BOLD(COLOR(RED,"%s")) "\n}", client->get_buffer().c_str());
 						_handleMessage(client);
-					}
 					if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_EOF))
 						_disconnectClient(_clients[curr.fd]);
 					IRC_LOG("------------------------------------");

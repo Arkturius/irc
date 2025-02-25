@@ -63,7 +63,7 @@ void	Server::_join(const str &command, Client *client)
 void	Server::_addChannel(const str &channelName, const str *channelKey, Client *client)
 {
 	IRC_OK("joinning channel: %s with key :%s", channelName.c_str(), channelKey ? channelKey->c_str() : "NULL");
-	struct pollfd	*pfd = client->get_pfd();
+	int32_t			fd = client->get_fd();
 	Channel			*c = _getChannelByName(channelName);
 
 	IRC_LOG("_getChannel result => %p", c);
@@ -83,13 +83,13 @@ badChannelKey:
 
 channelExist:
 	IRC_LOG("channel already exist; joining it");
-	if (c->get_inviteOnlyChannel() && !c->isInvited(pfd->fd))
+	if (c->get_inviteOnlyChannel() && !c->isInvited(fd))
 		goto inviteOnlyChannel;
 	try
 	{
 		if (c->get_size() == c->get_userLimit())
 			goto channelIsFull;
-		c->addClient(pfd->fd, channelKey);
+		c->addClient(fd, channelKey);
 		goto joinChannel;
 	}
 	catch (std::exception &e)
@@ -99,7 +99,7 @@ channelExist:
 		return ; //Already in channel
 	}
 channelDoesntExist:
-	c = new Channel(channelName, pfd->fd);
+	c = new Channel(channelName, fd);
 	_channelMap[channelName] = c;
 	goto joinChannel;
 }
