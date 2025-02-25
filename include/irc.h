@@ -55,6 +55,6 @@ typedef std::string str;
 
 # define IRC_AUTO __auto_type
 
-# define IRC_CLIENT_CAP		512
+# define IRC_CLIENT_CAP		3
 
 #endif

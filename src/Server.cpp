@@ -1,7 +1,7 @@
 
+#include "IRCArchitect.h"
 extern volatile bool	interrupt;
 
-#include <unistd.h>
 #include <errno.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -14,44 +14,6 @@ extern volatile bool	interrupt;
 #include "commands/quit.h"
 #include "commands/pong.h"
 #include <ChannelJoin.h>
-
-Server::Server(int port, str password): _flag(IRC_STATUS_OK), _port(port), _password(password) 
-{
-	IRC_LOG("Server constructor called.");
-
-	_sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
-	if (_sockfd == -1)
-		throw ServerSocketFailedException();
-
-	IRC_COMMAND_FUNC("PASS", PASS);
-	IRC_COMMAND_FUNC("NICK", NICK);
-	IRC_COMMAND_FUNC("USER", USER);
-	IRC_COMMAND_FUNC("PONG", PONG);
-	IRC_COMMAND_FUNC("JOIN", JOIN);
-	IRC_COMMAND_FUNC("MODE", MODE);
-	IRC_COMMAND_FUNC("QUIT", QUIT);
-
-	time_t		timestamp;
-
-	time(&timestamp);
-	_startTime = ctime(&timestamp);
-
-	IRC_OK("socket opened on fd " BOLD(COLOR(GRAY,"[%d]")), _sockfd);
-}
-
-Server::~Server(void)
-{
-	IRC_LOG("Server destructor called.");
-
-	for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
-	{
-		Client	&client = (*it).second;
-		client.disconnect();
-	}
-	close(_sockfd);
-
-	IRC_OK("closed socket on fd " BOLD(COLOR(GRAY,"[%d]")), _sockfd);
-}
 
 void	Server::_bindSocket() const
 {	
@@ -79,13 +41,6 @@ void	Server::_listenSocket() const
 		throw ServerListenFailedException();
 
 	IRC_OK("listening on port %d.", _port);
-}
-
-void	Server::init()
-{
-	_bindSocket();
-	_listenSocket();
-	IRC_FLAG_SET(_flag, IRC_STATUS_OK);
 }
 
 bool	Server::_updatePollSet()
@@ -137,7 +92,6 @@ void	Server::_disconnectClient(Client &client)
 {
 	IRC_LOG("disconnecting client, fd = " BOLD(COLOR(GRAY,"[%d]")), client.get_pfd()->fd);
 
-	client.set_flag(client.get_flag() & ~IRC_CLIENT_EOF);
 	client.disconnect();
 	_clients.erase(client.get_pfd()->fd);
 }
@@ -172,13 +126,20 @@ struct pollfd	*Server::_acceptClient(void)
 	return (&_pollSet[_pollSet.size() - 1]);
 }
 
+#include <ctime>
 void	Server::_welcomeClient(Client *client)
 {
 	const char	*username = client->get_username().c_str();
+	const str	created = str(RPL_MSG_CREATED) + str(ctime(&_startTime));
 
 	_send(client, _architect.RPL_WELCOME (username, (RPL_MSG_WELCOME + client->get_username()).c_str()));
 	_send(client, _architect.RPL_YOURHOST(username));
-	_send(client, _architect.RPL_CREATED (username, (RPL_MSG_CREATED + _startTime).c_str()));
+	_send(client, _architect.RPL_CREATED(username, created.substr(0, created.length() - 1).c_str()));
+	_send(client, _architect.RPL_MYINFO(username, "ft_irc", "0.0", "o", "ikl"));
+	_send(client, _architect.RPL_ISUPPORT(username, "NICKLEN=9"));
+	_send(client, _architect.RPL_MOTDSTART(username));
+	_send(client, _architect.RPL_MOTD(username));
+	_send(client, _architect.RPL_ENDOFMOTD(username));
 }
 
 void	Server::_registerClient(Client *client)
@@ -271,7 +232,7 @@ void	Server::start()
 	struct pollfd	server_pfd;
 
 	server_pfd.fd = _sockfd;
-	server_pfd.events = POLLIN | POLLOUT;
+	server_pfd.events = POLLIN;
 	_pollSet.push(server_pfd);
 
 	Client					*client;
@@ -321,16 +282,4 @@ void	Server::start()
 	}
 
 	IRC_OK("server has been stopped.");
-}
-
-void	Server::serverInfo() const
-{
-	IRC_LOG
-	(
-		"Server:\n"
-		"\tsocket on file descriptor "BOLD(COLOR(GRAY,"[%d]"))"\n"
-		"\tlistening on port         "BOLD(COLOR(GRAY,"[%d]"))"\n",
-		_sockfd,
-		_port
-	);
 }
