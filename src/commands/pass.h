@@ -10,8 +10,11 @@ IRC_COMMAND_DEF(PASS)
 	_seeker.findall();
 	const std::vector<str>	&argv = _seeker.get_matches();
 
-	if (argv.size() == 0)									{ goto needMoreParams; }
-	if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH))	{ goto alreadyRegistered; }
+	if (argv.size() == 0)
+		goto needMoreParams;
+
+	if (IRC_FLAG_GET(client->get_flag(), IRC_CLIENT_AUTH))
+		goto alreadyRegistered;
 
 	client->set_flag(client->get_flag() | IRC_CLIENT_REGISTER);
 	client->set_lastPass(argv[0]);

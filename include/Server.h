@@ -1,8 +1,8 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-#include "ATarget.h"
-#include "Channel.h"
+# include "ATarget.h"
+# include "Channel.h"
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -11,7 +11,6 @@
 # include <map>
 
 # include <irc.h>
-# include <PollList.h>
 # include <Client.h>
 # include <IRCSeeker.h>
 # include <IRCArchitect.h>
@@ -46,19 +45,19 @@ class Server
 		str			_password;
 		time_t		_startTime;
 
-		PollList						_pollSet;
+		std::vector<struct pollfd>		_pollSet;
 		std::map<int, Client>			_clients;
 
 		std::map<str, IRC_COMMAND_F>	_commandFuncs;
 		IRCSeeker						_seeker;
 		IRCArchitect					_architect;
 
-		void			_bindSocket() const;
-		void			_listenSocket() const;
+		void			_bindSocket(void) const;
+		void			_listenSocket(void) const;
 
-		bool			_updatePollSet();
+		bool			_updatePollSet(void);
 
-		struct pollfd	*_acceptClient();
+		int32_t			_acceptClient(void);
 		void			_connectClient(int fd);
 		void			_registerClient(Client *client);
 		void			_welcomeClient(Client *client);

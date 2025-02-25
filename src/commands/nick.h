@@ -10,15 +10,18 @@ IRC_COMMAND_DEF(NICK)
 	_seeker.findall();
 	const std::vector<str>	&argv = _seeker.get_matches();
 
-	if (argv.size() == 0)							{ goto noNicknameGiven; }
+	if (argv.size() == 0)
+		goto noNicknameGiven;
 
 	_seeker.feedString(argv[0]);
 	_seeker.rebuild(R_NICKNAME);
 
-	if (!_seeker.consume())							{ goto erroneusNickname; }	
+	if (!_seeker.consume())
+		goto erroneusNickname;
 
 	for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
-		if (argv[0] == (*it).second.get_nickname())	{ goto nicknameInUse; }
+		if (argv[0] == (*it).second.get_nickname())
+			goto nicknameInUse;
 
 	client->set_nickname(argv[0]);
 	if (client->get_username() == "")

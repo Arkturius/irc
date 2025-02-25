@@ -44,6 +44,8 @@ void	Server::_sendJoin(Client *client, Channel *channel)
 	_send(client, _architect.RPL_TOPIC(clientName.c_str(), channelName.c_str(), topic.c_str()));
 	_send(client, _architect.RPL_NAMREPLY(clientName.c_str(), "=", channelName.c_str(), stringClientList.c_str()));
 	_send(client, _architect.RPL_ENDOFNAMES(clientName.c_str(), channelName.c_str()));
+
+	_send(client, ":ghost PRIVMSG #test :le message du fantome");
 }
 
 void	Server::_sendTopic(Client *client, Channel *channel)
@@ -99,13 +101,13 @@ void	Server::_broadcast(const str &string)
 	IRC_LOG("Server Brodcast " BOLD(COLOR(YELLOW,"%s")), string.c_str());
 	for (; it != _clients.end(); ++it)
 	{
-		write(((*it).second.get_pfd()->fd), (string + "\r\n").c_str(), string.size() + 2);
+		write(((*it).second.get_fd()), (string + "\r\n").c_str(), string.size() + 2);
 	}
 }
 
 void	Client::sendMsg(const str &string) const
 {
-	write(this->_pfd->fd, (string + "\r\n").c_str(), string.size() + 2);
+	write(_fd, (string + "\r\n").c_str(), string.size() + 2);
 }
 
 void	Channel::sendMsg(const str &string) const
