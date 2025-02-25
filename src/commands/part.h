@@ -57,13 +57,13 @@ IRC_COMMAND_DEF(PART)
 
 
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "PRIVMSG"));
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "PRIVMSG"));
 	return ;
 notOnChannel:
-	_send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), targetName.c_str()));
+	_send(client, _architect.ERR_NOTONCHANNEL(client->getTargetName(), targetName.c_str()));
 	return ;
 noSuchChannel:
-	_send(client, _architect.ERR_NOSUCHCHANNEL(client->get_nickname().c_str(), targetName.c_str()));
+	_send(client, _architect.ERR_NOSUCHCHANNEL(client->getTargetName(), targetName.c_str()));
 	return ;
 }
 

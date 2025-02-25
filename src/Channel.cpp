@@ -36,6 +36,7 @@ Channel::Channel(str channelName, int firstClient): ATarget(), _name(channelName
 {
 	IRC_LOG("Channel constructor called : |%s|", channelName.c_str());
 
+	set_targetName(_name);
 	_fdAdminClient.push_back(firstClient);
 }
 

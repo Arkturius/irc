@@ -28,7 +28,7 @@ void	Server::_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUs
 	return ;
 
 invalidNumberOfParams:
-		_send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "KICK"));
+		_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "KICK"));
 }
 
 void	Server::_kick(const str &command, Client *client)
@@ -38,7 +38,7 @@ void	Server::_kick(const str &command, Client *client)
 	_seeker.findall();
 	std::vector<str>	argv = _seeker.get_matches();
 	if (argv.size() < 2 || argv.size() > 3)
-		return _send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "KICK"));
+		return _send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "KICK"));
 
 
 	_seeker.feedString(argv[0]);
@@ -95,7 +95,7 @@ void	Server::_kickChannel(str channelName, Client *admin, str kickedName, str *c
 	}
 
 succesfullKick:
-	c->_broadcast(_architect.CMD_KICK(admin->get_nickname().c_str(), 1, c->get_name().c_str()));
+	c->_broadcast(_architect.CMD_KICK(admin->getTargetName(), 1, c->get_name().c_str()));
 	if (size == 0)
 		_channelMap.erase(s);
 	if (comment)
@@ -105,16 +105,16 @@ succesfullKick:
 	return ;
 
 noSuchChannel:
-	return _send(admin, _architect.ERR_NOSUCHCHANNEL(admin->get_nickname().c_str(), channelName.c_str()));
+	return _send(admin, _architect.ERR_NOSUCHCHANNEL(admin->getTargetName(), channelName.c_str()));
 
 clientDontHaveThePerm:
-	return _send(admin, _architect.ERR_CHANOPRIVSNEEDED(admin->get_nickname().c_str(), channelName.c_str()));
+	return _send(admin, _architect.ERR_CHANOPRIVSNEEDED(admin->getTargetName(), channelName.c_str()));
 
 targetDontExist:
-	return _send(admin, _architect.ERR_USERNOTINCHANNEL(admin->get_nickname().c_str(), kickedName.c_str(),channelName.c_str()));
+	return _send(admin, _architect.ERR_USERNOTINCHANNEL(admin->getTargetName(), kickedName.c_str(),channelName.c_str()));
 
 adminNotInChannel:
-	return _send(admin, _architect.ERR_NOTONCHANNEL(admin->get_nickname().c_str(), channelName.c_str()));
+	return _send(admin, _architect.ERR_NOTONCHANNEL(admin->getTargetName(), channelName.c_str()));
 }
 
 #endif

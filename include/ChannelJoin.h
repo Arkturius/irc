@@ -22,18 +22,18 @@ void	Server::_joinAddAllChannel
 	return ;
 
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "JOIN"));
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "JOIN"));
 }
 
 void	Server::_join(const str &command, Client *client)
 {
-	IRC_WARN("joinning %s", command.c_str());
+	IRC_WARN("joining %s", command.c_str());
 	_seeker.feedString(command);
 	_seeker.rebuild(R_MIDDLE_PARAM);
 	_seeker.findall();
 	std::vector<str>	argv = _seeker.get_matches();
 	if (argv.size() == 0)
-		return _send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "JOIN"));
+		return _send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "JOIN"));
 	
 	_seeker.feedString(argv[0]);
 	_seeker.rebuild(R_CAPTURE_CHANNEL_NAME);
@@ -75,11 +75,11 @@ joinChannel:
 	client->joinChannel(c);
 	return _sendJoin(client, c);
 inviteOnlyChannel:
-	return _send(client, _architect.ERR_INVITEONLYCHAN(client->get_nickname().c_str(), channelName.c_str()));
+	return _send(client, _architect.ERR_INVITEONLYCHAN(client->getTargetName(), channelName.c_str()));
 channelIsFull:
-	return _send(client, _architect.ERR_CHANNELISFULL(client->get_nickname().c_str(), channelName.c_str()));
+	return _send(client, _architect.ERR_CHANNELISFULL(client->getTargetName(), channelName.c_str()));
 badChannelKey:
-	return _send(client, _architect.ERR_BADCHANNELKEY(client->get_nickname().c_str(), channelName.c_str()));
+	return _send(client, _architect.ERR_BADCHANNELKEY(client->getTargetName(), channelName.c_str()));
 
 channelExist:
 	IRC_LOG("channel already exist; joining it");

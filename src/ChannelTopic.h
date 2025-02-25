@@ -65,19 +65,19 @@ setNewTopic:
 	channel->set_topicSetterNickName(client->get_nickname());
 	channel->set_topicSetTime(time(NULL));
 	_sendTopic(client, channel);
-	channel->_broadcast(_architect.CMD_TOPIC(client->get_nickname().c_str(), 1, channelName.c_str()));
+	channel->_broadcast(_architect.CMD_TOPIC(client->getTargetName(), 1, channelName.c_str()));
 	return ;
 errorNotOnChannel:
-	_send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), channelName.c_str()));
+	_send(client, _architect.ERR_NOTONCHANNEL(client->getTargetName(), channelName.c_str()));
 	return ;
 errorNoSuchChannel:
-	_send(client, _architect.ERR_NOSUCHCHANNEL(client->get_nickname().c_str(), channelName.c_str()));
+	_send(client, _architect.ERR_NOSUCHCHANNEL(client->getTargetName(), channelName.c_str()));
 	return ;
 errorPerm:
-	_send(client, _architect.ERR_CHANOPRIVSNEEDED(client->get_nickname().c_str(), channelName.c_str()));
+	_send(client, _architect.ERR_CHANOPRIVSNEEDED(client->getTargetName(), channelName.c_str()));
 	return ;
 topicNotSet:
-	_send(client, _architect.RPL_NOTOPIC(client->get_nickname().c_str(), channelName.c_str()));
+	_send(client, _architect.RPL_NOTOPIC(client->getTargetName(), channelName.c_str()));
 	return ;
 }
 

@@ -45,15 +45,15 @@ IRC_COMMAND_DEF(PRIVMSG)
 
 
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "PRIVMSG"));
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "PRIVMSG"));
 	return ;
 noSuchNick:
-	_send(client, _architect.ERR_NOSUCHNICK(client->get_nickname().c_str(), targetName.c_str()));
+	_send(client, _architect.ERR_NOSUCHNICK(client->getTargetName(), targetName.c_str()));
 	return ;
 noRecipient:
-	_send(client, _architect.ERR_NORECIPIENT(client->get_nickname().c_str()));
+	_send(client, _architect.ERR_NORECIPIENT(client->getTargetName()));
 	return ;
 noTextToSend:
-	_send(client, _architect.ERR_NOTEXTTOSEND(client->get_nickname().c_str()));
+	_send(client, _architect.ERR_NOTEXTTOSEND(client->getTargetName()));
 	return ;
 }

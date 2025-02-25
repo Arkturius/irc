@@ -18,7 +18,7 @@ IRC_COMMAND_DEF(USER)
 	return ;
 
 needMoreParams:
-	return _send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "USER"));
+	return _send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "USER"));
 alreadyRegistered:
-	return _send(client, _architect.ERR_ALREADYREGISTERED(client->get_nickname().c_str()));
+	return _send(client, _architect.ERR_ALREADYREGISTERED(client->getTargetName()));
 }
