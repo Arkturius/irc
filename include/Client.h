@@ -3,6 +3,7 @@
 
 # include <irc.h>
 # include <map>
+# include <ATarget.h>
 
 class Channel;
 
@@ -17,7 +18,7 @@ typedef enum:	uint32_t
 
 #define COMMA	,
 
-class Client
+class Client: public ATarget
 {
 	private:
 		uint32_t	_flag;
@@ -44,6 +45,8 @@ class Client
 		void	joinChannel(Channel *);
 		void	leaveChannel(Channel *);
 		void	leaveChannel(Channel *, str);
+
+		void	sendMsg(const str &) const;
 		
 		GETTER(uint32_t, _flag);
 		GETTER(str, _username);

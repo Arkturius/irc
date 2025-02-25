@@ -77,15 +77,11 @@ void	Server::_sendModeIs(Client *client, Channel *channel)
 
 void	Server::_send(Client *client, const str &string)
 {
-	struct pollfd	*pollfd = client->get_pfd();
-
 	IRC_LOG("sending reply " BOLD(COLOR(RED,"%s")), string.c_str());
-	
-	const str	reply = string + "\r\n";
-	write(pollfd->fd, reply.c_str(), reply.size());
+	client->sendMsg(string);
 }
 
-void	Channel::_broadcast(const str &string)
+void	Channel::_broadcast(const str &string) const
 {
 	IRC_AUTO	it = _fdClient.begin();
 
@@ -105,5 +101,14 @@ void	Server::_broadcast(const str &string)
 	{
 		write(((*it).second.get_pfd()->fd), (string + "\r\n").c_str(), string.size() + 2);
 	}
+}
 
+void	Client::sendMsg(const str &string) const
+{
+	write(this->_pfd->fd, (string + "\r\n").c_str(), string.size() + 2);
+}
+
+void	Channel::sendMsg(const str &string) const
+{
+	_broadcast(string);
 }

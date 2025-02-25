@@ -1,6 +1,8 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
+#include "ATarget.h"
+#include "Channel.h"
 # include <sys/socket.h>
 # include <map>
 
@@ -138,6 +140,17 @@ class Server
 			}
 			return NULL;
 		}
+
+		ATarget	*_getTargetByName(const str Name)
+		{
+			ATarget *target;
+
+			if (!(target = _getClientByName(Name)))
+				target = _getChannelByName(Name);
+
+			return target;
+		}
+
 };
 
 #endif // SERVER_HPP

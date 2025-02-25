@@ -6,13 +6,6 @@
 
 IRC_COMMAND_DEF(JOIN)
 {
-
-	_send(client, ":rgramati JOIN #test");
-	_send(client, "332 rgramati #test :test");
-	_send(client, "353 rgramati = #test @rgramati");
-	_send(client, "366 rgramati #test");
-	return ;
-
 	_join(command, client);
 }
 

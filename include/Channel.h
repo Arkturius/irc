@@ -5,14 +5,13 @@
 # include <ircRegex.h>
 # include <irc.h>
 # include <time.h>
-
-
+# include <ATarget.h>
 
 class Client;
 
 
 
-class Channel
+class Channel: public ATarget
 {
 	//TODO pour l instant tous est public =
 	private:
@@ -51,8 +50,8 @@ class Channel
 		void	givePerm(int userClient, int targetClient);
 		void	removePerm(int targetClient);
 
-		void	_send(const str &str);
-		void	_broadcast(const str &);
+		void	_broadcast(const str &) const;
+		void	sendMsg(const str &) const;
 
 		GETTER(str, _name);
 		GETTER(str, _topic);

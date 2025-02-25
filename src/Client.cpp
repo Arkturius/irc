@@ -4,7 +4,7 @@
 #include <Client.h>
 #include <Channel.h>
 
-Client::Client(void) {}
+Client::Client(void): ATarget() {}
 
 Client::~Client(void) {}
 
@@ -115,7 +115,7 @@ void	Client::leaveChannel(Channel *channel, str comment)
 		delete s->second;
 		_channelMap.erase(s);
 		//TODO sucefully leave the channel;
-		(void)comment;
+		(void)comment; //TODO kicked msg
 	}
 	else
 	{
