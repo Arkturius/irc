@@ -3,7 +3,11 @@
 
 #include "ATarget.h"
 #include "Channel.h"
+# include <unistd.h>
+# include <sys/types.h>
 # include <sys/socket.h>
+# include <netdb.h>
+
 # include <map>
 
 # include <irc.h>
@@ -28,6 +32,8 @@ class	Server;
 
 typedef	void	(Server::*IRC_COMMAND_F)(Client *, const str &command);
 
+#define IRC_NICKLEN	9
+
 class Server
 {
 	private:
@@ -35,8 +41,10 @@ class Server
 
 		int			_port;
 		int			_sockfd;
+
+		str			_hostname;
 		str			_password;
-		str			_startTime;
+		time_t		_startTime;
 
 		PollList						_pollSet;
 		std::map<int, Client>			_clients;
@@ -70,19 +78,72 @@ class Server
 		IRC_COMMAND_DECL(NICK);
 		IRC_COMMAND_DECL(USER);
 		IRC_COMMAND_DECL(PONG);
-
 		IRC_COMMAND_DECL(JOIN);
 		IRC_COMMAND_DECL(MODE);
 		IRC_COMMAND_DECL(QUIT);
 
 	public:
-		Server(int port, str password);
-		~Server(void);
 
-		void	init();
+		Server(int port, str password): _flag(IRC_STATUS_OK), _port(port)
+		{
+			IRC_LOG("Server constructor called.");
+
+			struct addrinfo	hints;
+			struct addrinfo	*result;
+
+			IRC_BZERO(hints);
+			hints.ai_family = AF_INET;
+			hints.ai_socktype = SOCK_STREAM;
+			hints.ai_flags = AI_CANONNAME;
+
+			int err = getaddrinfo("localhost", NULL, &hints, &result);
+			if (err)				{ throw AddrinfoFailedException();		}
+			_hostname = result->ai_canonname;
+			freeaddrinfo(result);
+
+			_sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+			if (_sockfd == -1)		{ throw ServerSocketFailedException();	}
+
+			_seeker.feedString(" " + password);
+ 			_seeker.rebuild(R_MIDDLE_PARAM);
+			if (!_seeker.consume())	{ throw InvalidPasswordException();		}
+			_password = password;
+	
+			time(&_startTime);
+
+			IRC_COMMAND_FUNC("PASS", PASS);
+			IRC_COMMAND_FUNC("NICK", NICK);
+			IRC_COMMAND_FUNC("USER", USER);
+			IRC_COMMAND_FUNC("PONG", PONG);
+			IRC_COMMAND_FUNC("JOIN", JOIN);
+			IRC_COMMAND_FUNC("MODE", MODE);
+			IRC_COMMAND_FUNC("QUIT", QUIT);
+
+			IRC_OK("socket [%s] opened on fd " BOLD(COLOR(GRAY,"[%d]")), _hostname.c_str(), _sockfd);
+		}
+
+		~Server(void)
+		{
+			IRC_LOG("Server destructor called.");
+
+			for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
+			{
+				Client	&client = (*it).second;
+				client.disconnect();
+			}
+			close(_sockfd);
+
+			IRC_OK("closed socket on fd " BOLD(COLOR(GRAY,"[%d]")), _sockfd);
+		}
+
+		void	init(void)
+		{
+			_bindSocket();
+			_listenSocket();
+			IRC_FLAG_SET(_flag, IRC_STATUS_OK);
+		}
+
 		void	start();
-
-		void	serverInfo() const;
 
 		GETTER(uint32_t, _flag);
 		GETTER(int, _port);
@@ -98,6 +159,8 @@ class Server
 		SETTER(int, _port);
 		SETTER(int, _sockfd);
 
+	EXCEPTION(AddrinfoFailedException,		"getaddrinfo() failed.");
+	EXCEPTION(InvalidPasswordException,		"invalid password.");
 	EXCEPTION(ServerSocketFailedException,	"socket() failed.");
 	EXCEPTION(ServerBindFailedException,	"bind() failed.");
 	EXCEPTION(ServerListenFailedException,	"listen() failed.");

@@ -21,6 +21,10 @@ typedef enum
 	RPL_CODE_NAMREPLY			=	353,
 	RPL_CODE_ENDOFNAMES			=	366,
 
+	RPL_CODE_MOTD				=	371,
+	RPL_CODE_MOTDSTART			=	375,
+	RPL_CODE_ENDOFMOTD			=	376,
+
 	ERR_CODE_NOSUCHNICK			=	401,
 	ERR_CODE_NOSUCHCHANNEL		=	403,
 	ERR_CODE_NORECIPIENT		=	411,
@@ -52,11 +56,17 @@ typedef enum
 #define RPL_MSG_WELCOME				"Welcome to the ft_irc server, "
 #define RPL_WELCOME(...)			build(RPL_CODE_WELCOME, ##__VA_ARGS__, NULL)
 
-#define	RPL_MSG_YOURHOST			"Your host is ft_irc server. running whatever version"
+#define	RPL_MSG_YOURHOST			"Your host is ft_irc server. running version 0.0"
 #define RPL_YOURHOST(...)			build(RPL_CODE_YOURHOST, ##__VA_ARGS__, RPL_MSG_YOURHOST, NULL)
 
 #define	RPL_MSG_CREATED				"This server was created "
 #define	RPL_CREATED(...)			build(RPL_CODE_CREATED, ##__VA_ARGS__, NULL)
+
+#define RPL_MSG_MYINFO				""
+#define RPL_MYINFO(...)				build(RPL_CODE_MYINFO, ##__VA_ARGS__, NULL)
+
+#define RPL_MSG_ISUPPORT			"are supported by this server"
+#define RPL_ISUPPORT(...)			build(RPL_CODE_ISUPPORT, ##__VA_ARGS__, RPL_MSG_ISUPPORT, NULL)
 
 #define RPL_MSG_CHANNELMODEIS		""
 #define RPL_CHANNELMODEIS(...)		build(RPL_CODE_CHANNELMODEIS, ##__VA_ARGS__, RPL_MSG_CHANNELMODEIS, NULL)
@@ -79,6 +89,15 @@ typedef enum
 #define RPL_MSG_ENDOFNAMES			""
 #define RPL_ENDOFNAMES(...)			build(RPL_CODE_ENDOFNAMES, ##__VA_ARGS__, RPL_MSG_ENDOFNAMES, NULL)
 
+#define RPL_MSG_MOTD				"hello bro."
+#define RPL_MOTD(...)				build(RPL_CODE_MOTD, ##__VA_ARGS__, RPL_MSG_MOTD, NULL)
+
+#define RPL_MSG_MOTDSTART			"- ft_irc Message of the day -"
+#define RPL_MOTDSTART(...)			build(RPL_CODE_MOTDSTART, ##__VA_ARGS__, RPL_MSG_MOTDSTART, NULL)
+
+#define RPL_MSG_ENDOFMOTD			"End of /MOTD command."
+#define RPL_ENDOFMOTD(...)			build(RPL_CODE_ENDOFMOTD, ##__VA_ARGS__, RPL_MSG_ENDOFMOTD, NULL)
+
 #define ERR_MSG_NOSUCHNICK			"No such nick/channel"
 #define ERR_NOSUCHNICK(...)			build(ERR_CODE_NOSUCHNICK, ##__VA_ARGS__, ERR_MSG_NOSUCHNICK, NULL)
 
@@ -92,7 +111,7 @@ typedef enum
 #define ERR_NOTEXTTOSEND(...)		build(ERR_CODE_NOTEXTTOSEND, ##__VA_ARGS__, ERR_MSG_NOTEXTTOSEND, NULL)
 
 #define ERR_MSG_NONICKNAMEGIVEN		"No nickname given"
-#define ERR_NONICKNAMEGIVEN(...)	build(ERR_CODE_NONICKNAMEGIVEN, ##__VA_ARGS__)
+#define ERR_NONICKNAMEGIVEN(...)	build(ERR_CODE_NONICKNAMEGIVEN, ##__VA_ARGS__, ERR_MSG_NONICKNAMEGIVEN, NULL)
 
 #define ERR_MSG_ERRONEUSNICKNAME	"Erroneus nickname"
 #define ERR_ERRONEUSNICKNAME(...)	build(ERR_CODE_ERRONEUSNICKNAME, ##__VA_ARGS__, ERR_MSG_ERRONEUSNICKNAME, NULL)

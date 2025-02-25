@@ -15,5 +15,5 @@ IRC_COMMAND_DEF(QUIT)
 	
 	_send(client, "ERROR");
 	_broadcast("QUIT Quit: " + argv[0]);
-	_disconnectClient(*client);
+	IRC_FLAG_SET(client->get_flag(), IRC_CLIENT_EOF);
 }
