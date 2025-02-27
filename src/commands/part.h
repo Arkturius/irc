@@ -7,7 +7,7 @@
 
 IRC_COMMAND_DEF(PART)
 {
-	int					fd = client->get_pfd()->fd;
+	int					fd = client->get_fd();
 	str					targetName;
 	str					PartReason;
 	std::vector<str>	trailing;
@@ -45,10 +45,10 @@ IRC_COMMAND_DEF(PART)
 		if (s == _channelMap.end())
 			goto noSuchChannel;
 		target = s->second;
-		try {target->havePerm(client->get_pfd()->fd);}
+		try {target->havePerm(client->get_fd());}
 		catch (std::exception &e) { goto notOnChannel; }
 
-		target->_broadcast(_architect.CMD_PART());
+		target->_broadcast(_architect.CMD_PART(client->get_nickname(), target->getTargetName()));
 		int size = target->removeClient(fd);
 		if (size == 0)
 			_channelMap.erase(s);

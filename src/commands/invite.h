@@ -1,5 +1,5 @@
-#ifndef CHANNELTOPIC_H
-# define CHANNELTOPIC_H
+#ifndef INVITE_H
+# define INVITE_H
 
 # include <Server.h>
 # include <Client.h>
@@ -7,7 +7,7 @@
 # include <poll.h>
 #include <vector>
 
-void	Server::_invite(const str command, Client *client)
+IRC_COMMAND_DEF(INVITE)
 {
 	std::vector<str>	argv;
 
@@ -29,7 +29,7 @@ void	Server::_invite(const str command, Client *client)
 		goto errorNoSuchChannel;
 	if (!target)
 		goto errorNoSuchNick;
-	try { perm = channel->havePerm(client->get_pfd()->fd); }
+	try { perm = channel->havePerm(client->get_fd()); }
 	catch (std::exception &e)
 	{
 		goto errorYouAreNotOnChannel;
@@ -38,13 +38,13 @@ void	Server::_invite(const str command, Client *client)
 		goto errorNoPerm;
 	try
 	{
-		channel->havePerm(target->get_pfd()->fd);
+		channel->havePerm(target->get_fd());
 		goto errorUserOnChannel;
 	}
 	IRC_CATCH
 
 	_send(client, _architect.RPL_INVITING(client->getTargetName(), target->getTargetName(), channelName.c_str()));
-	channel->invite(target->get_pfd()->fd);
+	channel->invite(target->get_fd());
 	return _send(target, client->get_nickname() + " invited you to channel " + channelName);
 
 errorUserOnChannel:

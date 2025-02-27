@@ -1,13 +1,8 @@
-#ifndef CHANNEL_JOIN_H
-# define CHANNEL_JOIN_H
+#ifndef JOIN_H
+# define JOIN_H
 
 # include <Server.h>
 # include <Channel.h>
-
-IRC_COMMAND_DEF(JOIN)
-{
-	_join(command, client);
-}
 
 void	Server::_joinAddAllChannel
 (std::vector<str> &vecChannel, std::vector<str> &vecKey, Client *client)
@@ -25,7 +20,7 @@ needMoreParam:
 	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "JOIN"));
 }
 
-void	Server::_join(const str &command, Client *client)
+IRC_COMMAND_DEF(JOIN)
 {
 	IRC_WARN("joining %s", command.c_str());
 	_seeker.feedString(command);

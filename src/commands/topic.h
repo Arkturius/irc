@@ -1,17 +1,15 @@
-#ifndef CHANNELTOPIC_H
-# define CHANNELTOPIC_H
+#ifndef TOPIC_H
+# define TOPIC_H
 
 # include <Server.h>
 # include <Client.h>
 # include <Channel.h>
-# include <poll.h>
 
-
-void	Server::_topic(const str &command, Client *client)
+IRC_COMMAND_DEF(TOPIC)
 {
 	str		channelName;
 	str		topic;
-	bool	newTopic;
+	bool	newTopic = 0;
 
 	_seeker.feedString(command);
 	_seeker.rebuild(R_MIDDLE_PARAM);
@@ -23,7 +21,7 @@ void	Server::_topic(const str &command, Client *client)
 		return ;
 
 	_seeker.rebuild(R_TRAILING_PARAM);
-	_seeker.consumeMany();
+	_seeker.findall();
 	std::vector<str>	&topics = _seeker.get_matches();
 	if (topics.size() == 1)
 	{
@@ -36,7 +34,7 @@ void	Server::_topic(const str &command, Client *client)
 	int		perm = 0;
 	if (!channel)
 		goto errorNoSuchChannel;
-	try { perm = channel->havePerm(client->get_pfd()->fd); }
+	try { perm = channel->havePerm(client->get_fd()); }
 	catch (std::exception &e)
 	{
 		goto errorNotOnChannel;
@@ -54,6 +52,7 @@ void	Server::_topic(const str &command, Client *client)
 		{
 			str	topic = channel->get_topic();
 			_sendTopic(client, channel);
+			return ;
 		}
 		else
 			goto topicNotSet;
@@ -65,7 +64,7 @@ setNewTopic:
 	channel->set_topicSetterNickName(client->get_nickname());
 	channel->set_topicSetTime(time(NULL));
 	_sendTopic(client, channel);
-	channel->_broadcast(_architect.CMD_TOPIC(client->getTargetName(), 1, channelName.c_str()));
+	channel->_broadcast(_architect.CMD_TOPIC(client->get_nickname(), channelName.c_str()));
 	return ;
 errorNotOnChannel:
 	_send(client, _architect.ERR_NOTONCHANNEL(client->getTargetName(), channelName.c_str()));

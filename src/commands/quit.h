@@ -1,7 +1,9 @@
-#include <irc.h>
+#ifndef QUIT_H
+# define QUIT_H
+# include <irc.h>
 
-#include <Server.h>
-#include <Client.h>
+# include <Server.h>
+# include <Client.h>
 
 IRC_COMMAND_DEF(QUIT)
 {
@@ -21,3 +23,5 @@ IRC_COMMAND_DEF(QUIT)
 	_broadcast("QUIT Quit: " + argv[0]);
 	IRC_FLAG_SET(client->get_flag(), IRC_CLIENT_EOF);
 }
+
+#endif

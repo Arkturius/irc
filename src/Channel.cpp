@@ -32,7 +32,7 @@ bool	removeIfVector(std::vector<int> &v, int x)
 
 bool	Channel::isInvited(int fdClient) {return intInVector(_invitedClient, fdClient);}
 
-Channel::Channel(str channelName, int firstClient): ATarget(), _name(channelName), _inviteOnlyChannel(false), _activePassword(0), _userLimit(100), _topicIsSet(0)
+Channel::Channel(str channelName, int firstClient): ATarget(), _name(channelName), _inviteOnlyChannel(false), _activePassword(0), _userLimit(100), _topicIsSet(0), _topicPermNeeded(0)
 {
 	IRC_LOG("Channel constructor called : |%s|", channelName.c_str());
 

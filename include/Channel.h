@@ -44,8 +44,7 @@ class Channel: public ATarget
 		void	invite(int fdClient) {_invitedClient.push_back(fdClient);}
 		bool	isInvited(int fdClient);
 		void	addClient(int fdClient, const str *password);
-		int		removeClient(int fdClient); //TODO remove call by server, need to check if size == 0 to delete it
-
+		int		removeClient(int fdClient); 
 		bool	havePerm(int fdClient);
 		void	givePerm(int userClient, int targetClient);
 		void	removePerm(int targetClient);

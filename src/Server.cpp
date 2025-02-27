@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/02/25 19:32:37 by rgramati          #+#    #+#             */
-/*   Updated: 2025/02/25 19:55:12 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/02/27 01:21:13 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,14 @@ extern volatile bool	interrupt;
 #include "commands/user.h"
 #include "commands/quit.h"
 #include "commands/pong.h"
-#include <ChannelJoin.h>
+
+#include "commands/join.h"
+#include "commands/invite.h"
+#include "commands/kick.h"
+#include "commands/mode.h"
+#include "commands/topic.h"
+#include "commands/part.h"
+#include "commands/privmsg.h"
 
 void	Server::_bindSocket() const
 {	
@@ -166,12 +173,6 @@ passwdMismatch:
 	_send(client, _architect.ERR_PASSWDMISMATCH(client->get_nickname().c_str()));
 	_send(client, "ERROR");
 	client->disconnect();
-}
-
-IRC_COMMAND_DEF(MODE)
-{
-	UNUSED(client);
-	UNUSED(command);
 }
 
 void	Server::_executeCommand(Client *client, const str &command)

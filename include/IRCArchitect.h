@@ -48,10 +48,12 @@ typedef enum
 	RPL_CODE_LAST				=	909
 }	IRCReplyCode;
 
-#define CMD_TOPIC(source, ...)		build(source, " TOPIC ", ##__VA_ARGS__)
-#define CMD_JOIN(source, ...)		build(source, " JOIN ", ##__VA_ARGS__)
-#define CMD_MODE(source, ...)		build(source, " MODE ", ##__VA_ARGS__)
-#define CMD_KICK(source, ...)		build(source, " KICK ", ##__VA_ARGS__)
+#define CMD_TOPIC(source, ...)				build(source, "TOPIC", ##__VA_ARGS__, NULL)
+#define CMD_JOIN(source, ...)				build(source, "JOIN", ##__VA_ARGS__, NULL)
+#define CMD_MODE(source, ...)				build( source, "MODE", ##__VA_ARGS__, NULL)
+#define CMD_KICK(source, ...)				build(source, "KICK", ##__VA_ARGS__, NULL)
+#define CMD_PART(source, ...)				build(source, "PART", ##__VA_ARGS__, NULL)
+#define CMD_PRIVMSG(source, ...)			build(source, "PRIVMSG", ##__VA_ARGS__, NULL)
 
 #define RPL_MSG_WELCOME				"Welcome to the ft_irc server, "
 #define RPL_WELCOME(...)			build(RPL_CODE_WELCOME, ##__VA_ARGS__, NULL)
@@ -190,7 +192,11 @@ class IRCArchitect
 					if (!_seeker.match())
 						throw InvalidReplyParameterException();
 				}
-				else { reply += ":"; }
+				else
+				{
+					IRC_ERR("build dernier %s", param.c_str());
+					reply += ":";
+				}
 
 				reply += param;
 			}
@@ -218,7 +224,7 @@ class IRCArchitect
 
 		const str	build(const str &source, const char *command, ...)
 		{
-			str					reply = ":" + source + command;
+			str					reply = ":" + source + " " + command;
 			va_list				list;
 			
 			va_start(list, command);

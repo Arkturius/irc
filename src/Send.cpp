@@ -40,18 +40,27 @@ void	Server::_sendJoin(Client *client, Channel *channel)
 			stringClientList += " ";
 		stringClientList += clientList[i];
 	}
-	_send(client, ":" + clientName + " JOIN " + channelName);
+	channel->_broadcast(_architect.CMD_JOIN(clientName, channelName.c_str()));
 	_send(client, _architect.RPL_TOPIC(clientName.c_str(), channelName.c_str(), topic.c_str()));
 	_send(client, _architect.RPL_NAMREPLY(clientName.c_str(), "=", channelName.c_str(), stringClientList.c_str()));
 	_send(client, _architect.RPL_ENDOFNAMES(clientName.c_str(), channelName.c_str()));
 
-	_send(client, ":ghost PRIVMSG #test :le message du fantome");
 }
 
 void	Server::_sendTopic(Client *client, Channel *channel)
 {
-	_send(client, _architect.RPL_TOPIC(client->get_nickname().c_str(), channel->get_name().c_str(), channel->get_topic().c_str()));
-	_send(client, _architect.RPL_TOPICWHOTIME(client->get_nickname().c_str(), channel->get_name().c_str(), channel->get_topicSetterNickName().c_str(), channel->get_topicSetTime()));
+	str					time = "";
+
+	std::stringstream	stream;
+	stream << std::setfill('0') << std::setw(3) << channel->get_topicSetTime();
+	time += stream.str();
+
+	_send(client, _architect.RPL_TOPIC(client->getTargetName(), channel->getTargetName(), channel->get_topic().c_str()));
+	IRC_LOG("%s", client->getTargetName());
+	IRC_LOG("%s", channel->getTargetName());
+	IRC_LOG("%s", channel->get_topicSetterNickName().c_str());
+	IRC_LOG("%s", time.c_str());
+	_send(client, _architect.RPL_TOPICWHOTIME(client->getTargetName(), channel->getTargetName(), channel->get_topicSetterNickName().c_str(), time.c_str()));
 }
 
 void	Server::_sendModeIs(Client *client, Channel *channel)
@@ -74,7 +83,7 @@ void	Server::_sendModeIs(Client *client, Channel *channel)
 		modeArgs += ss.str();
 	}
 	
-	_send(client, _architect.RPL_CHANNELMODEIS(client->get_nickname().c_str(), channel->get_name().c_str(), modeis.c_str(), modeArgs.c_str()));
+	_send(client, _architect.RPL_CHANNELMODEIS(client->getTargetName(), channel->getTargetName(), modeis.c_str(), modeArgs.c_str()));
 }
 
 void	Server::_send(Client *client, const str &string)
@@ -87,11 +96,13 @@ void	Channel::_broadcast(const str &string) const
 {
 	IRC_AUTO	it = _fdClient.begin();
 
-	IRC_LOG("Channel Brodcast " BOLD(COLOR(YELLOW,"%s")), string.c_str());
+	IRC_LOG("Channel Brodcast " BOLD(COLOR(YELLOW,"%s")) " to %d client", string.c_str(), get_size());
 	for (; it != _fdClient.end(); ++it)
 		write(*it, (string + "\r\n").c_str(), string.size() + 2);
+	it = _fdAdminClient.begin();
 	for (; it != _fdAdminClient.end(); ++it)
 		write(*it, (string + "\r\n").c_str(), string.size() + 2);
+	IRC_LOG("succesfull Broadcast, it suprisely didnt segfault");
 }
 
 void	Server::_broadcast(const str &string)

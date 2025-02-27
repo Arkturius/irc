@@ -69,36 +69,19 @@ void	Client::joinChannel(Channel *channel)
 	str	channelName = channel->get_name();
 
 	IRC_AUTO s = _channelMap.find(channelName);
-	if (s != _channelMap.end())
-	{
-		//TODO tu est deja dedant..
-	}
-	else
-	{
+	if (s == _channelMap.end())
 		_channelMap[channelName] = channel;
-		//TODO sucefully join the channel;
-	}
 }
+
 void	Client::leaveChannel(Channel *channel)
 {
 	std::map<str, Channel * >::iterator s;
-	str									channelName; 
 
-	if (!channel)
-		goto channelDoesntExist;
-	channelName = channel->get_name();
-	s = _channelMap.find(channelName);
+	s = _channelMap.find(channel->get_name());
 	if (s != _channelMap.end())
 	{
 		delete s->second;
 		_channelMap.erase(s);
-		//TODO sucefully leave the channel;
-	}
-	else
-	{
-channelDoesntExist:
-		;
-		//TODO tu etais pas dedant ...
 	}
 }
 void	Client::leaveChannel(Channel *channel, str comment)
@@ -106,21 +89,12 @@ void	Client::leaveChannel(Channel *channel, str comment)
 	std::map<str, Channel * >::iterator s;
 	str									channelName; 
 
-	if (!channel)
-		goto channelDoesntExist;
 	channelName = channel->get_name();
 	s = _channelMap.find(channelName);
 	if (s != _channelMap.end())
 	{
 		delete s->second;
 		_channelMap.erase(s);
-		//TODO sucefully leave the channel;
 		(void)comment; //TODO kicked msg
-	}
-	else
-	{
-channelDoesntExist:
-		;
-		//TODO tu etais pas dedant ...
 	}
 }

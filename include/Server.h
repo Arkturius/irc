@@ -78,6 +78,11 @@ class Server
 		IRC_COMMAND_DECL(USER);
 		IRC_COMMAND_DECL(PONG);
 		IRC_COMMAND_DECL(JOIN);
+		IRC_COMMAND_DECL(KICK);
+		IRC_COMMAND_DECL(PRIVMSG);
+		IRC_COMMAND_DECL(INVITE);
+		IRC_COMMAND_DECL(TOPIC);
+		IRC_COMMAND_DECL(PART);
 		IRC_COMMAND_DECL(MODE);
 		IRC_COMMAND_DECL(QUIT);
 
@@ -115,6 +120,11 @@ class Server
 			IRC_COMMAND_FUNC("USER", USER);
 			IRC_COMMAND_FUNC("PONG", PONG);
 			IRC_COMMAND_FUNC("JOIN", JOIN);
+			IRC_COMMAND_FUNC("KICK", KICK);
+			IRC_COMMAND_FUNC("PRIVMSG", PRIVMSG);
+			IRC_COMMAND_FUNC("INVITE", INVITE);
+			IRC_COMMAND_FUNC("TOPIC", TOPIC);
+			IRC_COMMAND_FUNC("PART", PART);
 			IRC_COMMAND_FUNC("MODE", MODE);
 			IRC_COMMAND_FUNC("QUIT", QUIT);
 
@@ -172,13 +182,13 @@ class Server
 		void						_addChannel(const str &channelName, const str *key, Client *);
 		void						_removeChannel(str channelName, Client *);
 		void						_kickChannel(str channelName, Client *admin, str kicked, str *comment);
+void								_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUser, str *comment, Client *client);
 
-		void						_join(const str &, Client *);
-		void						_kick(const str, Client *);
-		void						_topic(const str, Client *);
-		void						_invite(const str, Client *);
-		void						_mode(const str, Client *);
+		bool						modePassword(bool plus, const str &modeArguments, Channel *target, Client *client);
+		bool						modePermition(bool plus, const str &modeArguments, Channel *target, Client *client);
+		void						modeCmdReturn(bool plus, const char &individualModeChar, Channel *target, Client *client);
 		bool						_individualMode(bool, char, const str &, Channel *, Client *);
+
 		EXCEPTION(UnexpectedErrorException,	"oops");
 		
 		Client	*_getClientByName(const str userName)

@@ -1,3 +1,7 @@
+#ifndef PRIVMSG_H
+# define PRIVMSG_H
+
+
 #include <irc.h>
 
 #include <Server.h>
@@ -40,7 +44,7 @@ IRC_COMMAND_DEF(PRIVMSG)
 		target = _getTargetByName(targetName);
 		if (!target)
 			goto noSuchNick;
-		target->sendMsg("j envoie un msg xd"); //TODO
+		target->sendMsg(_architect.CMD_PRIVMSG(client->get_nickname(), target->getTargetName(), topics[0].c_str()));
 	}
 
 
@@ -57,3 +61,5 @@ noTextToSend:
 	_send(client, _architect.ERR_NOTEXTTOSEND(client->getTargetName()));
 	return ;
 }
+
+#endif

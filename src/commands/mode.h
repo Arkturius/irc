@@ -1,5 +1,5 @@
-#ifndef CHANNEL_MODE_H
-# define CHANNEL_MODE_H
+#ifndef MODE_H
+# define MODE_H
 
 # include <Server.h>
 # include <Channel.h>
@@ -9,19 +9,14 @@
 # include <errno.h>
 # include <climits>
 
-IRC_COMMAND_DEF(MODE)
-{
-	UNUSED(command);
-	UNUSED(client);
-}
-
 bool	Server::modePassword(bool plus, const str &modeArguments, Channel *target, Client *client)
 {
 	if (!plus && target->get_password() == modeArguments)
 		return target->set_activePassword(0), 0;
 	else if (plus)
 	{
-		_seeker.rebuild(R_CHANNEL_KEY);
+		IRC_LOG("testing channel key regex");
+		_seeker.rebuild(R_CAPTURE_CHANNEL_KEY);
 		_seeker.feedString(modeArguments);
 		if (!_seeker.match())
 			goto invalidNewPassword;
@@ -41,28 +36,39 @@ invalidNewPassword:
 
 bool	Server::modePermition(bool plus, const str &modeArguments, Channel *target, Client *client)
 {
-	//TODO
-	// _seeker.rebuild(R_); // client
-	_seeker.feedString(modeArguments);
-	//match => userTarget
-	Client	*userTarget = NULL;
-	try
-	{
-		if (!userTarget)
-			throw UnexpectedErrorException();
-		if (plus)
-			target->givePerm(client->get_pfd()->fd, userTarget->get_pfd()->fd);
-		else
-			target->removePerm(userTarget->get_pfd()->fd);
-		return 0;
-	}
-	catch (std::exception &e)
-	{
-		goto userNotInChannel;
-	}
+	IRC_LOG("changing perm");
+	str TargetName;
 
+	_seeker.rebuild(R_NICKNAME);
+	_seeker.feedString(modeArguments);
+	_seeker.consumeMany();
+	if (_seeker.get_matchCount() == 1)
+	{
+		TargetName = _seeker.get_matches()[0];
+		Client	*userTarget = _getClientByName(TargetName);
+		try
+		{
+			if (!userTarget)
+				goto noSuchNick;
+			if (plus)
+				target->givePerm(client->get_fd(), userTarget->get_fd());
+			else
+				target->removePerm(userTarget->get_fd());
+			return 0;
+		}
+		catch (std::exception &e)
+		{
+			goto userNotInChannel;
+		}
+	}
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "MODE (o)"));
+	return 1;
+
+noSuchNick:
+	_send(client, _architect.ERR_USERNOTINCHANNEL(client->getTargetName(), modeArguments.c_str(), TargetName.c_str()));
+	return 1;
 userNotInChannel:
-	_send(client, _architect.ERR_USERNOTINCHANNEL(client->getTargetName(), modeArguments.c_str(), target->get_name().c_str()));
+	_send(client, _architect.ERR_USERNOTINCHANNEL(client->getTargetName(), modeArguments.c_str(), TargetName.c_str()));
 	return 1;
 
 }
@@ -86,6 +92,8 @@ bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Cha
 			long	ele;
 			char	*tmp;
 
+			if (modeArguments.size() == 0)
+				goto needMoreParam;
 			ele = strtol(modeArguments.c_str(), &tmp, 10);
 			if (errno == ERANGE || ele < 0 || ele > INT_MAX || *tmp)
 				goto invalidIntParam;
@@ -99,6 +107,9 @@ bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Cha
 	_send(client, _architect.ERR_UNKNOWNMODE(client->getTargetName(), mode));
 	return 1;
 
+needMoreParam:
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "MODE (l)"));
+	return 1;
 invalidIntParam:
 	_send(client, _architect.ERR_INVALIDMODEPARAM(client->getTargetName(), target->get_name().c_str(), "l", modeArguments.c_str(), "The limite sould be a possitiv integer"));
 	return 1;
@@ -119,27 +130,34 @@ void	Server::modeCmdReturn(bool plus, const char &individualModeChar, Channel *t
 		case ('t'):
 			typeCharMode = "channel TopicRestriction"; break ;
 	}
-	target->_broadcast(_architect.CMD_MODE(client->get_nickname(), 3, target->get_name().c_str(), removeSet[plus].c_str(), typeCharMode.c_str()));
+	target->_broadcast(_architect.CMD_MODE(client->get_nickname(), target->get_name().c_str(), removeSet[plus].c_str(), typeCharMode.c_str()));
 }
 
-void	Server::_mode(const str command, Client *client)
+IRC_COMMAND_DEF(MODE)
 {
-	//<target> [<modestring> [<mode arguments>...]]
-	(void)command;(void)client;
 	str					targetName;
 	str					modeString;
-	std::vector<str>	modeArgs;
 	Channel				*target;
-	//TODO parsing
+	std::vector<str>	argv;
 
+	_seeker.feedString(command);
+	_seeker.rebuild(R_MIDDLE_PARAM);
+	_seeker.consumeMany();
+	argv = _seeker.get_matches();
+	if (!argv.size())
+		goto needMoreParam;
+
+	targetName = argv[0];
 	target = _getChannelByName(targetName);
 	if (!target)
 		goto invalidNickChannel;
-	if (modeString.size() == 0)
+
+	if (argv.size() == 1)
 		goto getModeOfChannel;
+	modeString = argv[1];
 	try
 	{
-		if (target->havePerm(client->get_pfd()->fd) == 0)
+		if (target->havePerm(client->get_fd()) == 0)
 			goto invalidPermition;
 	}
 	catch (std::exception &e)
@@ -147,19 +165,21 @@ void	Server::_mode(const str command, Client *client)
 		goto invalidChannel;
 	}
 
-	//  +ab argsA argsB
-	//  on ne melange pas les - et les + !
 	for (size_t i = 1; i < modeString.size(); i++)
 	{
-		const str	&modeArguments = modeArgs[i - 1];
 		const bool	&plus = modeString.c_str()[0] == '+';
+		const str	&modeArguments = argv[i + 1];
 		const char	&individualModeChar = modeString.c_str()[i];
+		IRC_WARN("MODE %c", individualModeChar);
 		if (_individualMode(plus, individualModeChar, modeArguments, target, client))
 			return ;
 		modeCmdReturn(plus, individualModeChar, target, client);
 	}
+	return ;
 
-
+needMoreParam:
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "MODE"));
+	return ;
 getModeOfChannel:
 	_sendModeIs(client, target);
 	return ;
