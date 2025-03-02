@@ -4,6 +4,15 @@
 # include <Server.h>
 # include <Channel.h>
 
+IRC_COMMAND_DEF(JOIN)
+{
+// 	_join(command, client);
+	UNUSED(client);
+	UNUSED(command);
+}
+
+/*
+>>>>>>> Stashed changes:include/ChannelJoin.h
 void	Server::_joinAddAllChannel
 (std::vector<str> &vecChannel, std::vector<str> &vecKey, Client *client)
 {
@@ -98,5 +107,5 @@ channelDoesntExist:
 	_channelMap[channelName] = c;
 	goto joinChannel;
 }
-
+*/
 #endif

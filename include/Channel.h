@@ -1,5 +1,4 @@
-#ifndef CHANNEL_H
-# define CHANNEL_H
+#pragma once
 
 # include <vector>
 # include <ircRegex.h>
@@ -8,8 +7,6 @@
 # include <ATarget.h>
 
 class Client;
-
-
 
 class Channel: public ATarget
 {
@@ -96,5 +93,3 @@ class Channel: public ATarget
 		EXCEPTION(InvalidChannelKeyException,	"The Channel Key is incorrect");
 		EXCEPTION(InviteOnlyChannelException,	"Its a invite Only channel");
 };
-
-#endif // CHANNEL_H

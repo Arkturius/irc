@@ -1,5 +1,4 @@
-#ifndef IRCARCHITECT_H
-# define IRCARCHITECT_H
+#pragma once
 
 #include <irc.h>
 #include <cstdarg>
@@ -29,6 +28,7 @@ typedef enum
 	ERR_CODE_NOSUCHCHANNEL		=	403,
 	ERR_CODE_NORECIPIENT		=	411,
 	ERR_CODE_NOTEXTTOSEND		=	412,
+	ERR_CODE_NOMOTD				=	422,
 	ERR_CODE_NONICKNAMEGIVEN	=	431,
 	ERR_CODE_ERRONEUSNICKNAME	=	432,
 	ERR_CODE_NICKNAMEINUSE		=	433,
@@ -97,7 +97,7 @@ typedef enum
 #define RPL_MSG_MOTDSTART			"- ft_irc Message of the day -"
 #define RPL_MOTDSTART(...)			build(RPL_CODE_MOTDSTART, ##__VA_ARGS__, RPL_MSG_MOTDSTART, NULL)
 
-#define RPL_MSG_ENDOFMOTD			"End of /MOTD command."
+#define RPL_MSG_ENDOFMOTD			""
 #define RPL_ENDOFMOTD(...)			build(RPL_CODE_ENDOFMOTD, ##__VA_ARGS__, RPL_MSG_ENDOFMOTD, NULL)
 
 #define ERR_MSG_NOSUCHNICK			"No such nick/channel"
@@ -111,6 +111,9 @@ typedef enum
 
 #define ERR_MSG_NOTEXTTOSEND		"No text to send"
 #define ERR_NOTEXTTOSEND(...)		build(ERR_CODE_NOTEXTTOSEND, ##__VA_ARGS__, ERR_MSG_NOTEXTTOSEND, NULL)
+
+#define ERR_MSG_NOMOTD				""
+#define ERR_NOMOTD(...)				build(ERR_CODE_NOMOTD, ##__VA_ARGS__, ERR_MSG_NOMOTD, NULL)
 
 #define ERR_MSG_NONICKNAMEGIVEN		"No nickname given"
 #define ERR_NONICKNAMEGIVEN(...)	build(ERR_CODE_NONICKNAMEGIVEN, ##__VA_ARGS__, ERR_MSG_NONICKNAMEGIVEN, NULL)
@@ -235,5 +238,3 @@ class IRCArchitect
 	
 	EXCEPTION(InvalidReplyParameterException, "Invalid reply parameter.");
 };
-
-#endif	//	IRCARCHITECT_H

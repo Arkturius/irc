@@ -22,14 +22,12 @@ int	Client::_readToBuffer(void)
 	{
 		tmp[bytes] = 0;
 		_buffer += str(tmp);
-		IRC_LOG("client [%d] - appending [%s]", _fd, tmp);
 	}
 	return (bytes);
 }
 
 void	Client::disconnect()
 {
-	IRC_LOG("client "BOLD(COLOR(GRAY,"[%d]"))" disconnected.", _fd);
 	close(_fd);
 }
 
@@ -38,7 +36,6 @@ void	Client::readBytes(void)
 	int	bytes;
 
 	bytes = _readToBuffer();
-	IRC_LOG("client [%d] - readbytes returned %d", _fd, bytes);
 	if (bytes == 0 || _buffer.length() == 0)
 	{
 		IRC_FLAG_SET(_flag, IRC_CLIENT_EOF);

@@ -1,5 +1,4 @@
-#ifndef CLIENT_HPP
-# define CLIENT_HPP
+#pragma once
 
 # include <irc.h>
 # include <map>
@@ -70,5 +69,3 @@ class Client: public ATarget
 		SETTER(str, _nickname);
 		SETTER(str, _lastPass);
 };
-
-#endif // CLIENT_HPP

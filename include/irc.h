@@ -1,5 +1,4 @@
-#ifndef IRC_H
-# define IRC_H
+#pragma once
 
 # include <stdio.h>
 # include <stdint.h>
@@ -55,6 +54,6 @@ typedef std::string str;
 
 # define IRC_AUTO __auto_type
 
-# define IRC_CLIENT_CAP		3
+# define IRC_CLIENT_CAP		2
 
-#endif
+# define	IRC_ERRNO_NOT_FATAL(e)	(e == ENETDOWN || e == EPROTO || e == ENOPROTOOPT || e == EHOSTDOWN || e == ENONET || e == EHOSTUNREACH || e == EOPNOTSUPP || e == ENETUNREACH)

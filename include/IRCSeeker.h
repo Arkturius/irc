@@ -1,5 +1,4 @@
-#ifndef IRCSEEKER_HPP
-# define IRCSEEKER_HPP
+#pragma once
 
 # include <cstring>
 # include <irc.h>
@@ -97,5 +96,3 @@ class IRCSeeker
 	EXCEPTION(EmptyPatternException,		"empty pattern.");
 	EXCEPTION(RegExecFailedException,		"regexec() failed.");
 };
-
-#endif // IRCSEEKER_HPP

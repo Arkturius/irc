@@ -8,9 +8,9 @@
 #include <time.h>
 #include <Server.h>
 
-void	Server::_sendJoin(Client *client, Channel *channel)
+void	Server::_sendJoin(Client &client, Channel *channel)
 {
-	str	clientName = client->get_nickname();
+	str	clientName = client.get_nickname();
 	str channelName = channel->get_name();
 	str topic = channel->get_topic();
 
@@ -47,7 +47,7 @@ void	Server::_sendJoin(Client *client, Channel *channel)
 
 }
 
-void	Server::_sendTopic(Client *client, Channel *channel)
+void	Server::_sendTopic(Client &client, Channel *channel)
 {
 	str					time = "";
 
@@ -55,15 +55,15 @@ void	Server::_sendTopic(Client *client, Channel *channel)
 	stream << std::setfill('0') << std::setw(3) << channel->get_topicSetTime();
 	time += stream.str();
 
-	_send(client, _architect.RPL_TOPIC(client->getTargetName(), channel->getTargetName(), channel->get_topic().c_str()));
-	IRC_LOG("%s", client->getTargetName());
+	_send(client, _architect.RPL_TOPIC(client.getTargetName(), channel->getTargetName(), channel->get_topic().c_str()));
+	IRC_LOG("%s", client.getTargetName());
 	IRC_LOG("%s", channel->getTargetName());
 	IRC_LOG("%s", channel->get_topicSetterNickName().c_str());
 	IRC_LOG("%s", time.c_str());
-	_send(client, _architect.RPL_TOPICWHOTIME(client->getTargetName(), channel->getTargetName(), channel->get_topicSetterNickName().c_str(), time.c_str()));
+	_send(client, _architect.RPL_TOPICWHOTIME(client.getTargetName(), channel->getTargetName(), channel->get_topicSetterNickName().c_str(), time.c_str()));
 }
 
-void	Server::_sendModeIs(Client *client, Channel *channel)
+void	Server::_sendModeIs(Client &client, Channel *channel)
 {
 	str					modeArgs = "";
 	std::stringstream	ss;
@@ -83,7 +83,7 @@ void	Server::_sendModeIs(Client *client, Channel *channel)
 		modeArgs += ss.str();
 	}
 	
-	_send(client, _architect.RPL_CHANNELMODEIS(client->getTargetName(), channel->getTargetName(), modeis.c_str(), modeArgs.c_str()));
+	_send(client, _architect.RPL_CHANNELMODEIS(client.getTargetName(), channel->getTargetName(), modeis.c_str(), modeArgs.c_str()));
 }
 
 void	Server::_send(Client *client, const str &string)

@@ -1,5 +1,4 @@
-#ifndef ATARGET_H
-# define ATARGET_H
+#pragma once
 
 # include <irc.h>
 
@@ -17,5 +16,3 @@ class ATarget
 
 		SETTER(str, _targetName);
 };
-
-#endif

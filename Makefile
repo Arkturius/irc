@@ -6,7 +6,7 @@
 #    By: rgramati <rgramati@student.42angouleme.fr  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/05 17:09:56 by rgramati          #+#    #+#              #
-#    Updated: 2025/02/23 15:36:21 by rgramati         ###   ########.fr        #
+#    Updated: 2025/02/28 14:45:08 by rgramati         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,7 +22,7 @@ OBJS 		:=	$(addprefix $(OBJ_DIR)/, $(SRCS:%.cpp=%.o))
 
 CC			:=	clang++
 
-CFLAGS		:=	-Wall -Wextra -Werror -gdwarf-2 -std=c++98
+CFLAGS		:=	-Wall -Wextra -Werror -gdwarf-2 -std=c++98 -MMD -MP
 
 SAVE_TEMPS	?=	0
 ifeq ($(SAVE_TEMPS), 1)
@@ -50,7 +50,7 @@ $(NAME):	 	$(OBJS)
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(@D)
 	@echo " $(CYAN)$(BOLD)$(ITALIC)■$(RESET)  compiling	$(GRAY)$(BOLD)$(ITALIC)$(notdir $@)$(RESET) from $(GRAY)$(BOLD)$(ITALIC)$(notdir $^)$(RESET)"
-	@$(CC) $(CFLAGS) $(IFLAGS) -o $@ -c $^
+	@$(CC) $(CFLAGS) $(IFLAGS) -o $@ -c $<
 
 clean:
 	echo " $(RED)$(BOLD)$(ITALIC)■$(RESET)  deleted	$(GRAY)$(BOLD)$(ITALIC)$(OBJ_DIR)$(RESET)"
@@ -61,6 +61,8 @@ fclean:			clean
 	$(RM) $(NAME)
 
 re:			fclean all
+
+-include	$(OBJS:.o=.d)
 
 .PHONY:		all clean fclean test re
 .SILENT:	all clean fclean test re

@@ -1,17 +1,16 @@
-#ifndef SERVER_HPP
-# define SERVER_HPP
+#pragma once
 
-# include "ATarget.h"
-# include "Channel.h"
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/socket.h>
+# include <errno.h>
 # include <netdb.h>
 
 # include <map>
 
 # include <irc.h>
 # include <Client.h>
+# include <Channel.h>
 # include <IRCSeeker.h>
 # include <IRCArchitect.h>
 
@@ -23,59 +22,331 @@ typedef enum:	uint32_t
 	IRC_STATUS_OK	=	1U << 0,
 }	serverFlag;
 
+extern volatile	bool	interrupt;
+
 class	Server;
 
-#define	IRC_COMMAND_DECL(mnemonic)	void	_command##mnemonic(Client *client, const str &command)
-#define	IRC_COMMAND_DEF(mnemonic)	void	Server::_command##mnemonic(Client *client, const str &command)
-#define	IRC_COMMAND_FUNC(m, f)		_commandFuncs[m] = &Server::_command##f;
+# define	IRC_COMMAND_DECL(mnemonic)	void	_command##mnemonic(Client &client, const str &command)
+# define	IRC_COMMAND_DEF(mnemonic)	void	Server::_command##mnemonic(Client &client, const str &command)
+# define	IRC_COMMAND_FUNC(m, f)		_commandFuncs[m] = &Server::_command##f;
 
-typedef	void	(Server::*IRC_COMMAND_F)(Client *, const str &command);
+typedef	void	(Server::*IRC_COMMAND_F)(Client &, const str &command);
 
-#define IRC_NICKLEN	9
+# define IRC_SERVER_RUNNING		!interrupt && IRC_FLAG_GET(_flag, IRC_STATUS_OK)
+# define IRC_POLLIN(t)			(t.revents & POLLIN)
+# define IRC_CLIENT_INCOMING(s)	IRC_POLLIN(s)
+# define IRC_CLIENT_WRITING(c)	IRC_POLLIN(c)
+
+#define	IRC_CLIENT_OFFLINE(c)	IRC_FLAG_GET((c).get_flag(), IRC_CLIENT_EOF)
+#define	IRC_CLIENT_PENDING(c)	IRC_FLAG_GET((c).get_flag(), IRC_CLIENT_EOT)
+
+# define IRC_NICKLEN	9
 
 class Server
 {
 	private:
-		uint32_t	_flag;
+		uint32_t		_flag;
+		IRCSeeker		_seeker;
+		IRCArchitect	_architect;
 
-		int			_port;
-		int			_sockfd;
+		/**
+		 * @ Server config
+		 */
+		int				_port;
+		int				_sockfd;
+		str				_hostname;
+		str				_password;
+		time_t			_startTime;
 
-		str			_hostname;
-		str			_password;
-		time_t		_startTime;
+		void	_bindSocket()
+		{	
+			IRC_LOG("binding...");
 
+			sockaddr_in	addr;
+
+			addr.sin_family = AF_INET;
+			addr.sin_port = htons(_port);
+			addr.sin_addr.s_addr = INADDR_ANY;
+
+			int err = bind(_sockfd, (struct sockaddr *)&addr, sizeof(addr));
+			if (err)
+				throw ServerBindFailedException();
+
+			IRC_OK("socket bound to port %d.", _port);
+		}
+
+		void	_listenSocket()
+		{
+			IRC_LOG("listening...");
+
+			int err = listen(_sockfd, 10);
+			if (err)
+				throw ServerListenFailedException();
+
+			IRC_OK("listening on port %d.", _port);
+		}
+
+		/**
+		 * @ Poll utilities
+		 */
 		std::vector<struct pollfd>		_pollSet;
+
+		void	_addPollFd(int fd)
+		{
+			struct pollfd	pfd = 
+			{
+				.fd = fd,
+				.events = POLLIN,
+				.revents = 0,
+			};
+
+			_pollSet.push_back(pfd);
+		}
+
+		void	_delPollFd(int fd)
+		{
+			for (size_t id = 0; id < _pollSet.size(); ++id)
+			{
+				if (_pollSet[id].fd == fd)
+				{
+					_pollSet.erase(_pollSet.begin() + id);
+					return ;
+				}
+			}
+		}
+
+		bool	_updatePollSet()
+		{
+			int err = poll(&_pollSet[0], _pollSet.size(), 1);
+			if (err < 0)
+			{
+				if (errno == EAGAIN)
+					IRC_ERR("poll failed " COLOR(RED,"[EAGAIN]") ", trying again...");
+				if (errno == EAGAIN || errno == EINTR)
+					return (true);
+				throw ServerPollFailedException();
+			}
+			return (!err);
+		}
+	
+		/**
+		 * @ Client global handling
+		 */
 		std::map<int, Client>			_clients;
 
+		int	_acceptClient(void)
+		{
+			IRC_LOG("new client connection attempt.");
+
+			struct sockaddr_in	client;
+			socklen_t			len = sizeof(client);
+
+			int fd = accept(_sockfd, (struct sockaddr *)&client, &len);
+			if (fd == -1)
+			{
+				if (IRC_ERRNO_NOT_FATAL(errno))
+					IRC_LOG("accept failed. retrying...");
+				else
+					throw ServerAcceptFailedException();
+				return (-1);
+			}
+			if (_clients.size() == IRC_CLIENT_CAP)
+			{
+				IRC_WARN("too many clients, connection refused.");
+				close(fd);
+				return (-1);
+			}
+			return (fd);
+		}
+
+		void	_connectClient(void)
+		{
+			int32_t	client_fd = _acceptClient();
+			if (client_fd == -1)
+				return ;
+
+			IRC_LOG("client " BOLD(COLOR(GRAY,"[%d]")) " connected.", client_fd);
+
+			_clients[client_fd] = Client(0, client_fd);
+			_addPollFd(client_fd);
+		}
+
+		void	_disconnectClient(Client &client)
+		{
+			int fd = client.get_fd();
+
+			IRC_LOG("client " BOLD(COLOR(GRAY,"[%d]")) " disconnected.", fd);
+
+			client.disconnect();
+			_clients.erase(fd);
+			_delPollFd(fd);
+		}
+
+		void	_welcomeClient(Client &client)
+		{
+			const char	*username = client.get_username().c_str();
+			const str	created = str(RPL_MSG_CREATED) + str(ctime(&_startTime));
+
+			_send(client, _architect.RPL_WELCOME (username, (RPL_MSG_WELCOME + client.get_username()).c_str()));
+			_send(client, _architect.RPL_YOURHOST(username));
+			_send(client, _architect.RPL_CREATED(username, created.substr(0, created.length() - 1).c_str()));
+			_send(client, _architect.RPL_MYINFO(username, "ft_irc", "0.0", "o", "ikl"));
+			_send(client, _architect.RPL_ISUPPORT(username, "NICKLEN=9"));
+			_send(client, _architect.ERR_NOMOTD(username));
+		}
+
+		void	_registerClient(Client &client)
+		{
+			if (client.get_lastPass() != _password)
+			{
+				_send(client, _architect.ERR_PASSWDMISMATCH(client.get_nickname().c_str()));
+				_send(client, "ERROR");
+				_disconnectClient(client);
+				return ;
+			}
+
+			_send(client, "PING ft_irc");
+			client.set_flag(client.get_flag() | IRC_CLIENT_PINGED);
+		}
+
+		/**
+		 * @ Commands
+		 */
 		std::map<str, IRC_COMMAND_F>	_commandFuncs;
-		IRCSeeker						_seeker;
-		IRCArchitect					_architect;
 
-		void			_bindSocket(void) const;
-		void			_listenSocket(void) const;
+		void	_executeCommand(Client &client, const str &command)
+		{
+			_seeker.feedString(command);
+			_seeker.rebuild(R_COMMAND_MNEMO);
+			if (!_seeker.consume())
+			{
+				IRC_WARN(BOLD(COLOR(YELLOW,"INVALID MNEMONIC.")));
+				return ;
+			}
 
-		bool			_updatePollSet(void);
+			std::vector<str>	&argv = _seeker.get_matches();
+			const str			strip = _seeker.get_string();	
+			const str			mnemo = argv[0];
+			IRC_AUTO			func = _commandFuncs.find(mnemo);
 
-		int32_t			_acceptClient(void);
-		void			_connectClient(int fd);
-		void			_registerClient(Client *client);
-		void			_welcomeClient(Client *client);
-		void			_disconnectClient(Client &client);
+			if (func == _commandFuncs.end())
+			{
+				IRC_WARN(BOLD(COLOR(YELLOW,"COMMAND NOT SUPPORTED.")));
+				return ;
+			}
 
-		void			_handleMessage(Client *client);
-		str				_extractCommand(str *source);
-		void			_executeCommand(Client *client, const str &command);
+			_seeker.feedString(mnemo);
+			if (!(client.get_flag() & IRC_CLIENT_AUTH))
+			{
+				_seeker.rebuild(R_IRC_NOAUTH_COMMANDS);
+				if (!_seeker.consume())
+				{
+					IRC_WARN(BOLD(COLOR(YELLOW,"CLIENT NOT AUTHENTIFIED, IGNORING...")));
+					return ;
+				}
+			}
+
+			IRC_OK("called " BOLD(COLOR(GREEN,"[%s")) BOLD(COLOR(CYAN,"%s]")), mnemo.c_str(), strip.c_str());
+			(this->*(func->second))(client, strip);
+		}
+
+		void	_handleMessage(Client &client)
+		{
+			str					buffer = client.get_buffer();
+			std::vector<str>	commands;
+
+			while (true)
+			{
+				const size_t	linefeed = buffer.find("\n");
+				if (!linefeed || linefeed == str::npos)
+					break ;
+				const size_t	crlf = (buffer.at(linefeed - 1) == '\r');
+				const str		command = buffer.substr(0, linefeed - crlf);
+
+				commands.push_back(command);
+				buffer = buffer.substr(linefeed + 1, buffer.length());
+			}
+			client.resetBuffer();
+
+			for (IRC_AUTO it = commands.begin(); it != commands.end(); ++it)
+				_executeCommand(client, *it);
+		}
 
 		void			_send(Client *client, const str &string);
-		void			_broadcast(const str &string);
-		void			_sendJoin(Client *client, Channel *channel);
-		void			_sendTopic(Client *client, Channel *channel);
-		void			_sendModeIs(Client *client, Channel *channel);
 
-		IRC_COMMAND_DECL(PASS);
-		IRC_COMMAND_DECL(NICK);
+		void	_send(Client &client, const str &string)
+		{
+			IRC_LOG("sending reply " BOLD(COLOR(RED,"%s")), string.c_str());
+	
+			if (string.length() > 4 && string.substr(0, 4) == "PING")
+			{
+				client.sendMsg(string);
+				return ;
+			}
+			client.sendMsg(":ft_irc@" + _hostname + " " + string);
+		}
+		void			_broadcast(const str &string);
+		void			_sendJoin(Client &client, Channel *channel);
+		void			_sendTopic(Client &client, Channel *channel);
+		void			_sendModeIs(Client &client, Channel *channel);
+
+		IRC_COMMAND_DECL(PASS)
+		{
+			_seeker.feedString(command);
+			_seeker.rebuild(R_MIDDLE_PARAM);
+			_seeker.findall();
+			const std::vector<str>	&argv = _seeker.get_matches();
+
+			if (argv.size() == 0)
+				goto needMoreParams;
+
+			if (IRC_FLAG_GET(client.get_flag(), IRC_CLIENT_AUTH))
+				goto alreadyRegistered;
+
+			client.set_flag(client.get_flag() | IRC_CLIENT_REGISTER);
+			client.set_lastPass(argv[0]);
+			return ;
+
+needMoreParams:
+			return _send(client, _architect.ERR_NEEDMOREPARAMS(client.get_nickname().c_str(), "PASS"));
+alreadyRegistered:
+			return _send(client, _architect.ERR_ALREADYREGISTERED(client.get_nickname().c_str()));
+		}
+
+		IRC_COMMAND_DECL(NICK)
+		{
+			_seeker.feedString(command);
+			_seeker.rebuild(R_MIDDLE_PARAM);
+			_seeker.findall();
+			const std::vector<str>	&argv = _seeker.get_matches();
+
+			if (argv.size() == 0)
+				goto noNicknameGiven;
+
+			_seeker.feedString(argv[0]);
+			_seeker.rebuild(R_NICKNAME);
+
+			if (!_seeker.consume())
+				goto erroneusNickname;
+
+			for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
+				if (argv[0] == (*it).second.get_nickname())
+					goto nicknameInUse;
+
+			client.set_nickname(argv[0]);
+			if (client.get_username() == "")
+				client.set_username(argv[0]);
+			return ;
+
+noNicknameGiven:
+			return _send(client, _architect.ERR_NONICKNAMEGIVEN(client.get_nickname().c_str()));
+erroneusNickname:
+			return _send(client, _architect.ERR_ERRONEUSNICKNAME(client.get_nickname().c_str(), argv[0].c_str()));
+nicknameInUse:
+			return _send(client, _architect.ERR_NICKNAMEINUSE(client.get_nickname().c_str(), argv[0].c_str()));
+		}
 		IRC_COMMAND_DECL(USER);
+		IRC_COMMAND_DECL(PING);
 		IRC_COMMAND_DECL(PONG);
 		IRC_COMMAND_DECL(JOIN);
 		IRC_COMMAND_DECL(KICK);
@@ -90,8 +361,6 @@ class Server
 
 		Server(int port, str password): _flag(IRC_STATUS_OK), _port(port)
 		{
-			IRC_LOG("Server constructor called.");
-
 			struct addrinfo	hints;
 			struct addrinfo	*result;
 
@@ -101,23 +370,28 @@ class Server
 			hints.ai_flags = AI_CANONNAME;
 
 			int err = getaddrinfo("localhost", NULL, &hints, &result);
-			if (err)				{ throw AddrinfoFailedException();		}
+			if (err)
+				throw AddrinfoFailedException();
 			_hostname = result->ai_canonname;
 			freeaddrinfo(result);
 
 			_sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
-			if (_sockfd == -1)		{ throw ServerSocketFailedException();	}
+			if (_sockfd == -1)
+				throw ServerSocketFailedException();
+			_addPollFd(_sockfd);	
 
 			_seeker.feedString(" " + password);
  			_seeker.rebuild(R_MIDDLE_PARAM);
-			if (!_seeker.consume())	{ throw InvalidPasswordException();		}
+			if (!_seeker.consume())
+				throw InvalidPasswordException();
 			_password = password;
-	
+
 			time(&_startTime);
 
 			IRC_COMMAND_FUNC("PASS", PASS);
 			IRC_COMMAND_FUNC("NICK", NICK);
 			IRC_COMMAND_FUNC("USER", USER);
+			IRC_COMMAND_FUNC("PING", PING);
 			IRC_COMMAND_FUNC("PONG", PONG);
 			IRC_COMMAND_FUNC("JOIN", JOIN);
 			IRC_COMMAND_FUNC("KICK", KICK);
@@ -128,21 +402,20 @@ class Server
 			IRC_COMMAND_FUNC("MODE", MODE);
 			IRC_COMMAND_FUNC("QUIT", QUIT);
 
-			IRC_OK("socket [%s] opened on fd " BOLD(COLOR(GRAY,"[%d]")), _hostname.c_str(), _sockfd);
+			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) "started.", _hostname.c_str(), _sockfd);
 		}
 
 		~Server(void)
 		{
-			IRC_LOG("Server destructor called.");
-
-			for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
+			while (_clients.size())
 			{
-				Client	&client = (*it).second;
-				client.disconnect();
+				Client	&client = (*(_clients.begin())).second;
+				_disconnectClient(client);
 			}
-			close(_sockfd);
+			if (_sockfd > STDERR_FILENO)
+				close(_sockfd);
 
-			IRC_OK("closed socket on fd " BOLD(COLOR(GRAY,"[%d]")), _sockfd);
+			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) " stopped.", _hostname.c_str(), _sockfd);
 		}
 
 		void	init(void)
@@ -152,7 +425,40 @@ class Server
 			IRC_FLAG_SET(_flag, IRC_STATUS_OK);
 		}
 
-		void	start();
+		void	start()
+		{
+			IRC_LOG("server started.");
+
+			while (IRC_SERVER_RUNNING)
+			{
+				if (_updatePollSet())
+					continue ;
+
+				struct pollfd	server = _pollSet[0];
+
+				if (IRC_CLIENT_INCOMING(server))
+					_connectClient();
+
+				for (size_t id = 1; id < _pollSet.size(); ++id)
+				{
+					struct pollfd	curr = _pollSet[id];
+
+					if (!IRC_CLIENT_WRITING(curr))
+						continue ;
+
+					Client	&client = _clients[curr.fd];
+
+					client.readBytes();
+					if (IRC_CLIENT_PENDING(client))
+						_handleMessage(client);
+					if (IRC_CLIENT_OFFLINE(client))
+					{
+						_disconnectClient(client);
+						break ;
+					}
+				}
+			}
+		}
 
 		GETTER(uint32_t, _flag);
 		GETTER(int, _port);
@@ -225,4 +531,15 @@ void								_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUse
 
 };
 
-#endif // SERVER_HPP
+IRC_COMMAND_DECL(MODE)
+{
+	UNUSED(client);
+	UNUSED(command);
+}
+
+# include <commands/pass.h>
+# include <commands/nick.h>
+# include <commands/user.h>
+# include <commands/quit.h>
+# include <commands/pong.h>
+# include <ChannelJoin.h>
