@@ -1,11 +1,8 @@
-#ifndef KICK_H
-# define KICK_H
+#pragma once
 
 # include <Server.h>
-# include <Channel.h>
-# include <Client.h>
 
-void	Server::_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUser, str *comment, Client *client)
+void	Server::_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUser, str *comment, Client &client)
 {
 	bool	i;
 	size_t	k = 0;
@@ -23,7 +20,7 @@ void	Server::_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUs
 	return ;
 
 invalidNumberOfParams:
-		_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "KICK"));
+		_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "KICK"));
 }
 
 IRC_COMMAND_DEF(KICK)
@@ -33,7 +30,7 @@ IRC_COMMAND_DEF(KICK)
 	_seeker.findall();
 	std::vector<str>	argv = _seeker.get_matches();
 	if (argv.size() < 2 || argv.size() > 3)
-		return _send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "KICK"));
+		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "KICK"));
 
 
 	_seeker.feedString(argv[0]);
@@ -53,7 +50,7 @@ IRC_COMMAND_DEF(KICK)
 	_kickAllChannel(vecChannel, vecUser, comment, client);
 }
 
-void	Server::_kickChannel(str channelName, Client *admin, str kickedName, str *comment)
+void	Server::_kickChannel(str channelName, Client &admin, str kickedName, str *comment)
 {
 	Client	*kicked = _getClientByName(kickedName);
 	IRC_AUTO		s = _channelMap.find(channelName);
@@ -68,7 +65,7 @@ void	Server::_kickChannel(str channelName, Client *admin, str kickedName, str *c
 	c = s->second;
 	try
 	{
-		if (!c->havePerm(admin->get_fd()))
+		if (!c->havePerm(admin.get_fd()))
 			goto clientDontHaveThePerm;
 	}
 	catch (std::exception &e)
@@ -86,7 +83,7 @@ void	Server::_kickChannel(str channelName, Client *admin, str kickedName, str *c
 	}
 
 succesfullKick:
-	c->_broadcast(_architect.CMD_KICK(admin->get_nickname(), c->get_name().c_str(), kickedName.c_str()));
+	c->_broadcast(_architect.CMD_KICK(admin.get_nickname(), c->get_name().c_str(), kickedName.c_str()));
 	if (size == 0)
 		_channelMap.erase(s);
 	if (comment)
@@ -96,16 +93,11 @@ succesfullKick:
 	return ;
 
 noSuchChannel:
-	return _send(admin, _architect.ERR_NOSUCHCHANNEL(admin->getTargetName(), channelName.c_str()));
-
+	return _send(admin, _architect.ERR_NOSUCHCHANNEL(admin.getTargetName(), channelName.c_str()));
 clientDontHaveThePerm:
-	return _send(admin, _architect.ERR_CHANOPRIVSNEEDED(admin->getTargetName(), channelName.c_str()));
-
+	return _send(admin, _architect.ERR_CHANOPRIVSNEEDED(admin.getTargetName(), channelName.c_str()));
 targetDontExist:
-	return _send(admin, _architect.ERR_USERNOTINCHANNEL(admin->getTargetName(), kickedName.c_str(),channelName.c_str()));
-
+	return _send(admin, _architect.ERR_USERNOTINCHANNEL(admin.getTargetName(), kickedName.c_str(),channelName.c_str()));
 adminNotInChannel:
-	return _send(admin, _architect.ERR_NOTONCHANNEL(admin->getTargetName(), channelName.c_str()));
+	return _send(admin, _architect.ERR_NOTONCHANNEL(admin.getTargetName(), channelName.c_str()));
 }
-
-#endif

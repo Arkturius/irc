@@ -1,23 +1,8 @@
 #pragma once
 
-#include <irc.h>
-
 #include <Server.h>
-#include <Client.h>
 
 #define IRC_CAN_PONG	(IRC_CLIENT_PINGED | IRC_CLIENT_REGISTER)
-
-IRC_COMMAND_DEF(PING)
-{
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-
-	if (!_seeker.consume())
-		return ;
-
-	const std::vector<str>	&argv = _seeker.get_matches();
-	_send(client, "PONG " + argv[0]);
-}
 
 IRC_COMMAND_DEF(PONG)
 {

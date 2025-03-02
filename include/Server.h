@@ -5,7 +5,6 @@
 # include <sys/socket.h>
 # include <errno.h>
 # include <netdb.h>
-
 # include <map>
 
 # include <irc.h>
@@ -32,13 +31,13 @@ class	Server;
 
 typedef	void	(Server::*IRC_COMMAND_F)(Client &, const str &command);
 
-# define IRC_SERVER_RUNNING		!interrupt && IRC_FLAG_GET(_flag, IRC_STATUS_OK)
-# define IRC_POLLIN(t)			(t.revents & POLLIN)
-# define IRC_CLIENT_INCOMING(s)	IRC_POLLIN(s)
-# define IRC_CLIENT_WRITING(c)	IRC_POLLIN(c)
+# define	IRC_SERVER_RUNNING			!interrupt && IRC_FLAG_GET(_flag, IRC_STATUS_OK)
+# define	IRC_POLLIN(t)				(t.revents & POLLIN)
 
-#define	IRC_CLIENT_OFFLINE(c)	IRC_FLAG_GET((c).get_flag(), IRC_CLIENT_EOF)
-#define	IRC_CLIENT_PENDING(c)	IRC_FLAG_GET((c).get_flag(), IRC_CLIENT_EOT)
+# define	IRC_CLIENT_INCOMING(s)		IRC_POLLIN(s)
+# define	IRC_CLIENT_WRITING(c)		IRC_POLLIN(c)
+# define	IRC_CLIENT_OFFLINE(c)		IRC_FLAG_GET((c).get_flag(), IRC_CLIENT_EOF)
+# define	IRC_CLIENT_PENDING(c)		IRC_FLAG_GET((c).get_flag(), IRC_CLIENT_EOT)
 
 # define IRC_NICKLEN	9
 
@@ -272,11 +271,9 @@ class Server
 				_executeCommand(client, *it);
 		}
 
-		void			_send(Client *client, const str &string);
-
 		void	_send(Client &client, const str &string)
 		{
-			IRC_LOG("sending reply " BOLD(COLOR(RED,"%s")), string.c_str());
+			IRC_LOG(BOLD(COLOR(CYAN,"%s : ")) BOLD(COLOR(RED,"%s")), __func__, string.c_str());
 	
 			if (string.length() > 4 && string.substr(0, 4) == "PING")
 			{
@@ -285,7 +282,16 @@ class Server
 			}
 			client.sendMsg(":ft_irc@" + _hostname + " " + string);
 		}
-		void			_broadcast(const str &string);
+
+		void	_broadcast(const str &string)
+		{
+			IRC_AUTO	it = _clients.begin();
+
+			IRC_LOG("Server Brodcast " BOLD(COLOR(YELLOW,"%s")), string.c_str());
+			for (; it != _clients.end(); ++it)
+				_send((*it).second, string);
+		}
+
 		void			_sendJoin(Client &client, Channel *channel);
 		void			_sendTopic(Client &client, Channel *channel);
 		void			_sendModeIs(Client &client, Channel *channel);
@@ -334,6 +340,7 @@ alreadyRegistered:
 					goto nicknameInUse;
 
 			client.set_nickname(argv[0]);
+			client.set_targetName(argv[0]);
 			if (client.get_username() == "")
 				client.set_username(argv[0]);
 			return ;
@@ -484,16 +491,16 @@ nicknameInUse:
 	
 	private:
 		std::map<str, Channel *>	_channelMap;
-		void						_joinAddAllChannel(std::vector<str> &, std::vector<str> &, Client *);
-		void						_addChannel(const str &channelName, const str *key, Client *);
-		void						_removeChannel(str channelName, Client *);
-		void						_kickChannel(str channelName, Client *admin, str kicked, str *comment);
-void								_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUser, str *comment, Client *client);
+		void						_joinAddAllChannel(std::vector<str> &chanVec, std::vector<str> &keyVec, Client &client);
+		void						_addChannel(const str &channelName, const str *key, Client &client);
+		void						_removeChannel(str channelName, Client &client);
+		void						_kickChannel(str channelName, Client &admin, str kicked, str *comment);
+void								_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUser, str *comment, Client &client);
 
-		bool						modePassword(bool plus, const str &modeArguments, Channel *target, Client *client);
-		bool						modePermition(bool plus, const str &modeArguments, Channel *target, Client *client);
-		void						modeCmdReturn(bool plus, const char &individualModeChar, Channel *target, Client *client);
-		bool						_individualMode(bool, char, const str &, Channel *, Client *);
+		bool						modePassword(bool plus, const str &modeArguments, Channel *target, Client &client);
+		bool						modePermition(bool plus, const str &modeArguments, Channel *target, Client &client);
+		void						modeCmdReturn(bool plus, const char &individualModeChar, Channel *target, Client &client);
+		bool						_individualMode(bool, char, const str &, Channel *, Client &);
 
 		EXCEPTION(UnexpectedErrorException,	"oops");
 		
@@ -531,15 +538,19 @@ void								_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUse
 
 };
 
-IRC_COMMAND_DECL(MODE)
-{
-	UNUSED(client);
-	UNUSED(command);
-}
-
 # include <commands/pass.h>
 # include <commands/nick.h>
 # include <commands/user.h>
-# include <commands/quit.h>
+
 # include <commands/pong.h>
-# include <ChannelJoin.h>
+# include <commands/ping.h>
+
+# include <commands/join.h>
+# include <commands/part.h>
+# include <commands/topic.h>
+# include <commands/invite.h>
+# include <commands/kick.h>
+# include <commands/mode.h>
+# include <commands/privmsg.h>
+
+# include <commands/quit.h>

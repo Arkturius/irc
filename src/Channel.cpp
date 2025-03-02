@@ -110,3 +110,27 @@ void	Channel::removePerm(int targetClient)
 		_addClient(targetClient, 0);
 	}
 }
+
+#include <unistd.h>
+
+void	Channel::_broadcast(const str &string) const
+{
+	IRC_AUTO	it = _fdClient.begin();
+
+	IRC_LOG("Channel Brodcast " BOLD(COLOR(YELLOW,"%s")) " to %d client", string.c_str(), get_size());
+
+	for (; it != _fdClient.end(); ++it)
+		write(*it, (string + "\r\n").c_str(), string.size() + 2);
+
+	it = _fdAdminClient.begin();
+
+	for (; it != _fdAdminClient.end(); ++it)
+		write(*it, (string + "\r\n").c_str(), string.size() + 2);
+
+	IRC_LOG("succesfull Broadcast, it suprisely didnt segfault");
+}
+
+void	Channel::sendMsg(const str &string) const
+{
+	_broadcast(string);
+}

@@ -1,20 +1,9 @@
-#ifndef JOIN_H
-# define JOIN_H
+#pragma once
 
 # include <Server.h>
 # include <Channel.h>
 
-IRC_COMMAND_DEF(JOIN)
-{
-// 	_join(command, client);
-	UNUSED(client);
-	UNUSED(command);
-}
-
-/*
->>>>>>> Stashed changes:include/ChannelJoin.h
-void	Server::_joinAddAllChannel
-(std::vector<str> &vecChannel, std::vector<str> &vecKey, Client *client)
+void	Server::_joinAddAllChannel(std::vector<str> &vecChannel, std::vector<str> &vecKey, Client &client)
 {
 	size_t	j;
 	if (vecKey.size() > vecChannel.size())
@@ -26,7 +15,7 @@ void	Server::_joinAddAllChannel
 	return ;
 
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "JOIN"));
+	return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "JOIN"));
 }
 
 IRC_COMMAND_DEF(JOIN)
@@ -37,7 +26,7 @@ IRC_COMMAND_DEF(JOIN)
 	_seeker.findall();
 	std::vector<str>	argv = _seeker.get_matches();
 	if (argv.size() == 0)
-		return _send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "JOIN"));
+		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "JOIN"));
 	
 	_seeker.feedString(argv[0]);
 	_seeker.rebuild(R_CAPTURE_CHANNEL_NAME);
@@ -64,10 +53,10 @@ IRC_COMMAND_DEF(JOIN)
 	IRC_WARN("error too many args");
 }
 
-void	Server::_addChannel(const str &channelName, const str *channelKey, Client *client)
+void	Server::_addChannel(const str &channelName, const str *channelKey, Client &client)
 {
 	IRC_OK("joinning channel: %s with key :%s", channelName.c_str(), channelKey ? channelKey->c_str() : "NULL");
-	int32_t			fd = client->get_fd();
+	int32_t			fd = client.get_fd();
 	Channel			*c = _getChannelByName(channelName);
 
 	IRC_LOG("_getChannel result => %p", c);
@@ -76,14 +65,14 @@ void	Server::_addChannel(const str &channelName, const str *channelKey, Client *
 	goto channelDoesntExist;
 
 joinChannel:
-	client->joinChannel(c);
+	client.joinChannel(c);
 	return _sendJoin(client, c);
 inviteOnlyChannel:
-	return _send(client, _architect.ERR_INVITEONLYCHAN(client->getTargetName(), channelName.c_str()));
+	return _send(client, _architect.ERR_INVITEONLYCHAN(client.getTargetName(), channelName.c_str()));
 channelIsFull:
-	return _send(client, _architect.ERR_CHANNELISFULL(client->getTargetName(), channelName.c_str()));
+	return _send(client, _architect.ERR_CHANNELISFULL(client.getTargetName(), channelName.c_str()));
 badChannelKey:
-	return _send(client, _architect.ERR_BADCHANNELKEY(client->getTargetName(), channelName.c_str()));
+	return _send(client, _architect.ERR_BADCHANNELKEY(client.getTargetName(), channelName.c_str()));
 
 channelExist:
 	IRC_LOG("channel already exist; joining it");
@@ -107,5 +96,44 @@ channelDoesntExist:
 	_channelMap[channelName] = c;
 	goto joinChannel;
 }
-*/
-#endif
+
+void	Server::_sendJoin(Client &client, Channel *channel)
+{
+	str	clientName = client.get_nickname();
+	str channelName = channel->get_name();
+	str topic = channel->get_topic();
+
+	std::vector<str>	clientList;
+	std::vector<int>	fdList;
+
+	fdList = channel->get_fdClient();
+	for (IRC_AUTO it = fdList.begin(); it != fdList.end(); ++it)
+	{
+		int fdClient = *it;
+		IRC_AUTO s = _clients.find(fdClient);
+		if (s != _clients.end())
+			clientList.push_back(s->second.get_nickname());
+	}
+
+	fdList = channel->get_fdAdminClient();
+	for (IRC_AUTO it = fdList.begin(); it != fdList.end(); ++it)
+	{
+		int fdClient = *it;
+		IRC_AUTO s = _clients.find(fdClient);
+		if (s != _clients.end())
+			clientList.push_back("@" + s->second.get_nickname());
+	} 
+
+	str	clientListString;
+	for (size_t i = 0; i < clientList.size(); i++)
+	{
+		if (i != 0)
+			clientListString += " ";
+		clientListString += clientList[i];
+	}
+
+	channel->_broadcast(_architect.CMD_JOIN(clientName, channelName.c_str()));
+	_send(client, _architect.RPL_TOPIC(clientName.c_str(), channelName.c_str(), topic.c_str()));
+	_send(client, _architect.RPL_NAMREPLY(clientName.c_str(), "=", channelName.c_str(), clientListString.c_str()));
+	_send(client, _architect.RPL_ENDOFNAMES(clientName.c_str(), channelName.c_str()));
+}

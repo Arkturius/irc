@@ -6,11 +6,10 @@
 #    By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/08 16:01:29 by rgramati          #+#    #+#              #
-#    Updated: 2025/02/28 14:49:05 by rgramati         ###   ########.fr        #
+#    Updated: 2025/03/02 16:16:24 by rgramati         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 SRCS	:=	ircserv.cpp	\
 			Client.cpp	\
-			Send.cpp	\
 	 		Channel.cpp

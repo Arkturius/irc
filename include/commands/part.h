@@ -2,11 +2,11 @@
 
 # include <Server.h>
 # include <Channel.h>
-# include <exception>
+#include <exception>
 
 IRC_COMMAND_DEF(PART)
 {
-	int					fd = client->get_pfd()->fd;
+	int					fd = client.get_fd();
 	str					targetName;
 	str					PartReason;
 	std::vector<str>	trailing;
@@ -44,24 +44,24 @@ IRC_COMMAND_DEF(PART)
 		if (s == _channelMap.end())
 			goto noSuchChannel;
 		target = s->second;
-		try {target->havePerm(client->get_pfd()->fd);}
+		try {target->havePerm(fd);}
 		catch (std::exception &e) { goto notOnChannel; }
 
-		target->_broadcast(_architect.CMD_PART());
+		target->_broadcast(_architect.CMD_PART(client.get_nickname(), target->getTargetName()));
 		int size = target->removeClient(fd);
 		if (size == 0)
 			_channelMap.erase(s);
-		client->leaveChannel(target);
+		client.leaveChannel(target);
 	}
 
 
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client->get_nickname().c_str(), "PRIVMSG"));
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "PRIVMSG"));
 	return ;
 notOnChannel:
-	_send(client, _architect.ERR_NOTONCHANNEL(client->get_nickname().c_str(), targetName.c_str()));
+	_send(client, _architect.ERR_NOTONCHANNEL(client.getTargetName(), targetName.c_str()));
 	return ;
 noSuchChannel:
-	_send(client, _architect.ERR_NOSUCHCHANNEL(client->get_nickname().c_str(), targetName.c_str()));
+	_send(client, _architect.ERR_NOSUCHCHANNEL(client.getTargetName(), targetName.c_str()));
 	return ;
 }

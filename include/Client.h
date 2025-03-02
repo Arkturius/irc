@@ -1,5 +1,7 @@
 #pragma once
 
+# include <unistd.h>
+
 # include <irc.h>
 # include <map>
 # include <ATarget.h>
@@ -33,7 +35,6 @@ class Client: public ATarget
 
 		std::map<str, Channel *>	_channelMap;
 
-
 	public:
 		Client(void);
 		Client(uint32_t flag, int32_t fd);
@@ -47,7 +48,10 @@ class Client: public ATarget
 		void	leaveChannel(Channel *);
 		void	leaveChannel(Channel *, str);
 
-		void	sendMsg(const str &) const;
+		void	sendMsg(const str &string) const
+		{
+			write(_fd, (string + "\r\n").c_str(), string.size() + 2);
+		}
 		
 		GETTER(uint32_t, _flag);
 		GETTER(int32_t, _fd);

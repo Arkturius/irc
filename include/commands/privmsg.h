@@ -1,12 +1,11 @@
 #pragma once
 
-#include <unistd.h>
-
 #include <irc.h>
 
 #include <Server.h>
 #include <Client.h>
 #include <Channel.h>
+#include <unistd.h>
 
 IRC_COMMAND_DEF(PRIVMSG)
 {
@@ -43,20 +42,15 @@ IRC_COMMAND_DEF(PRIVMSG)
 		target = _getTargetByName(targetName);
 		if (!target)
 			goto noSuchNick;
-		target->sendMsg("j envoie un msg xd"); //TODO
+		target->sendMsg(_architect.CMD_PRIVMSG(client.get_nickname(), target->getTargetName(), topics[0].c_str()));
 	}
 
-
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client.get_nickname().c_str(), "PRIVMSG"));
-	return ;
+	return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "PRIVMSG"));
 noSuchNick:
-	_send(client, _architect.ERR_NOSUCHNICK(client.get_nickname().c_str(), targetName.c_str()));
-	return ;
+	return _send(client, _architect.ERR_NOSUCHNICK(client.getTargetName(), targetName.c_str()));
 noRecipient:
-	_send(client, _architect.ERR_NORECIPIENT(client.get_nickname().c_str()));
-	return ;
+	return _send(client, _architect.ERR_NORECIPIENT(client.getTargetName()));
 noTextToSend:
-	_send(client, _architect.ERR_NOTEXTTOSEND(client.get_nickname().c_str()));
-	return ;
+	return _send(client, _architect.ERR_NOTEXTTOSEND(client.getTargetName()));
 }

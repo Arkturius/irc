@@ -1,15 +1,11 @@
-#ifndef MODE_H
-# define MODE_H
+#pragma once
 
 # include <Server.h>
-# include <Channel.h>
-# include <Client.h>
 # include <cstdlib>
-# include <poll.h>
 # include <errno.h>
 # include <climits>
 
-bool	Server::modePassword(bool plus, const str &modeArguments, Channel *target, Client *client)
+bool	Server::modePassword(bool plus, const str &modeArguments, Channel *target, Client &client)
 {
 	if (!plus && target->get_password() == modeArguments)
 		return target->set_activePassword(0), 0;
@@ -27,14 +23,14 @@ bool	Server::modePassword(bool plus, const str &modeArguments, Channel *target, 
 	goto invalidPassword;
 
 invalidPassword:
-	_send(client, _architect.ERR_INVALIDMODEPARAM(client->getTargetName(), target->get_name().c_str(), "k", modeArguments.c_str(), "To disable the password you need to enter the correct password"));
+	_send(client, _architect.ERR_INVALIDMODEPARAM(client.getTargetName(), target->get_name().c_str(), "k", modeArguments.c_str(), "To disable the password you need to enter the correct password"));
 	return 1;
 invalidNewPassword:
-	_send(client, _architect.ERR_INVALIDMODEPARAM(client->getTargetName(), target->get_name().c_str(), "k", modeArguments.c_str(), "invalid input password"));
+	_send(client, _architect.ERR_INVALIDMODEPARAM(client.getTargetName(), target->get_name().c_str(), "k", modeArguments.c_str(), "invalid input password"));
 	return 1;
 }
 
-bool	Server::modePermition(bool plus, const str &modeArguments, Channel *target, Client *client)
+bool	Server::modePermition(bool plus, const str &modeArguments, Channel *target, Client &client)
 {
 	IRC_LOG("changing perm");
 	str TargetName;
@@ -51,7 +47,7 @@ bool	Server::modePermition(bool plus, const str &modeArguments, Channel *target,
 			if (!userTarget)
 				goto noSuchNick;
 			if (plus)
-				target->givePerm(client->get_fd(), userTarget->get_fd());
+				target->givePerm(client.get_fd(), userTarget->get_fd());
 			else
 				target->removePerm(userTarget->get_fd());
 			return 0;
@@ -61,19 +57,19 @@ bool	Server::modePermition(bool plus, const str &modeArguments, Channel *target,
 			goto userNotInChannel;
 		}
 	}
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "MODE (o)"));
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "MODE (o)"));
 	return 1;
 
 noSuchNick:
-	_send(client, _architect.ERR_USERNOTINCHANNEL(client->getTargetName(), modeArguments.c_str(), TargetName.c_str()));
+	_send(client, _architect.ERR_USERNOTINCHANNEL(client.getTargetName(), modeArguments.c_str(), TargetName.c_str()));
 	return 1;
 userNotInChannel:
-	_send(client, _architect.ERR_USERNOTINCHANNEL(client->getTargetName(), modeArguments.c_str(), TargetName.c_str()));
+	_send(client, _architect.ERR_USERNOTINCHANNEL(client.getTargetName(), modeArguments.c_str(), TargetName.c_str()));
 	return 1;
 
 }
 
-bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Channel *target, Client *client) //ref
+bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Channel *target, Client &client)
 {
 	switch (mode)
 	{
@@ -104,18 +100,18 @@ bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Cha
 			return 0;
 		}
 	}
-	_send(client, _architect.ERR_UNKNOWNMODE(client->getTargetName(), mode));
+	_send(client, _architect.ERR_UNKNOWNMODE(client.getTargetName(), mode));
 	return 1;
 
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "MODE (l)"));
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "MODE (l)"));
 	return 1;
 invalidIntParam:
-	_send(client, _architect.ERR_INVALIDMODEPARAM(client->getTargetName(), target->get_name().c_str(), "l", modeArguments.c_str(), "The limite sould be a possitiv integer"));
+	_send(client, _architect.ERR_INVALIDMODEPARAM(client.getTargetName(), target->get_name().c_str(), "l", modeArguments.c_str(), "The limite sould be a possitiv integer"));
 	return 1;
 }
 
-void	Server::modeCmdReturn(bool plus, const char &individualModeChar, Channel *target, Client *client)
+void	Server::modeCmdReturn(bool plus, const char &individualModeChar, Channel *target, Client &client)
 {
 	const str	removeSet[2] = {"remove", "set"};
 	str	typeCharMode;
@@ -130,7 +126,7 @@ void	Server::modeCmdReturn(bool plus, const char &individualModeChar, Channel *t
 		case ('t'):
 			typeCharMode = "channel TopicRestriction"; break ;
 	}
-	target->_broadcast(_architect.CMD_MODE(client->get_nickname(), target->get_name().c_str(), removeSet[plus].c_str(), typeCharMode.c_str()));
+	target->_broadcast(_architect.CMD_MODE(client.get_nickname(), target->get_name().c_str(), removeSet[plus].c_str(), typeCharMode.c_str()));
 }
 
 IRC_COMMAND_DEF(MODE)
@@ -157,7 +153,7 @@ IRC_COMMAND_DEF(MODE)
 	modeString = argv[1];
 	try
 	{
-		if (target->havePerm(client->get_fd()) == 0)
+		if (target->havePerm(client.get_fd()) == 0)
 			goto invalidPermition;
 	}
 	catch (std::exception &e)
@@ -178,19 +174,41 @@ IRC_COMMAND_DEF(MODE)
 	return ;
 
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "MODE"));
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "MODE"));
 	return ;
 getModeOfChannel:
 	_sendModeIs(client, target);
 	return ;
 invalidNickChannel:
-	_send(client, _architect.ERR_NOSUCHNICK(client->getTargetName(), targetName.c_str()));
+	_send(client, _architect.ERR_NOSUCHNICK(client.getTargetName(), targetName.c_str()));
 	return ;
 invalidPermition:
-	_send(client, _architect.ERR_CHANOPRIVSNEEDED(client->getTargetName(), targetName.c_str()));
+	_send(client, _architect.ERR_CHANOPRIVSNEEDED(client.getTargetName(), targetName.c_str()));
 	return ;
 invalidChannel:
-	_send(client, _architect.ERR_NOTONCHANNEL(client->getTargetName(), targetName.c_str()));
+	_send(client, _architect.ERR_NOTONCHANNEL(client.getTargetName(), targetName.c_str()));
 	return ;
 }
-#endif
+
+void	Server::_sendModeIs(Client &client, Channel *channel)
+{
+	str					modeArgs = "";
+	std::stringstream	ss;
+	const int			userLimit = channel->get_userLimit();
+	str					modeis = "+";
+
+	if (channel->get_inviteOnlyChannel())
+		modeis += "i";
+	if (channel->get_topicPermNeeded())
+		modeis += "t";
+	if (channel->get_activePassword())
+		modeis += "k";
+	if (userLimit != INT_MAX)
+	{
+		ss << userLimit;
+		modeis += "l";
+		modeArgs += ss.str();
+	}
+	
+	_send(client, _architect.RPL_CHANNELMODEIS(client.getTargetName(), channel->getTargetName(), modeis.c_str(), modeArgs.c_str()));
+}

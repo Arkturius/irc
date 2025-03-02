@@ -16,7 +16,7 @@ IRC_COMMAND_DEF(INVITE)
 	_seeker.consumeMany();
 	argv = _seeker.get_matches();
 	if (argv.size() != 2)
-		return _send(client, _architect.ERR_NEEDMOREPARAMS(client->getTargetName(), "INVITE"));
+		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "INVITE"));
 
 	str	&nickName = argv[0];
 	str	&channelName = argv[1];
@@ -29,7 +29,7 @@ IRC_COMMAND_DEF(INVITE)
 		goto errorNoSuchChannel;
 	if (!target)
 		goto errorNoSuchNick;
-	try { perm = channel->havePerm(client->get_fd()); }
+	try { perm = channel->havePerm(client.get_fd()); }
 	catch (std::exception &e)
 	{
 		goto errorYouAreNotOnChannel;
@@ -43,24 +43,24 @@ IRC_COMMAND_DEF(INVITE)
 	}
 	IRC_CATCH
 
-	_send(client, _architect.RPL_INVITING(client->getTargetName(), target->getTargetName(), channelName.c_str()));
+	_send(client, _architect.RPL_INVITING(client.getTargetName(), target->getTargetName(), channelName.c_str()));
 	channel->invite(target->get_fd());
-	return _send(target, client->get_nickname() + " invited you to channel " + channelName);
+	return _send(*target, client.get_nickname() + " invited you to channel " + channelName);
 
 errorUserOnChannel:
-	return _send(client, _architect.ERR_USERONCHANNEL(client->getTargetName(), target->getTargetName(), channelName.c_str()));
+	return _send(client, _architect.ERR_USERONCHANNEL(client.getTargetName(), target->getTargetName(), channelName.c_str()));
 
 errorNoPerm:
-	return _send(client, _architect.ERR_CHANOPRIVSNEEDED(client->getTargetName(), channelName.c_str()));
+	return _send(client, _architect.ERR_CHANOPRIVSNEEDED(client.getTargetName(), channelName.c_str()));
 
 errorYouAreNotOnChannel:
-	return _send(client, _architect.ERR_NOTONCHANNEL(client->getTargetName(), channelName.c_str()));
+	return _send(client, _architect.ERR_NOTONCHANNEL(client.getTargetName(), channelName.c_str()));
 
 errorNoSuchNick:
-	return _send(client, _architect.ERR_NOSUCHNICK(client->getTargetName(), nickName.c_str()));
+	return _send(client, _architect.ERR_NOSUCHNICK(client.getTargetName(), nickName.c_str()));
 
 errorNoSuchChannel:
-	return _send(client, _architect.ERR_NOSUCHCHANNEL(client->getTargetName(), channelName.c_str()));
+	return _send(client, _architect.ERR_NOSUCHCHANNEL(client.getTargetName(), channelName.c_str()));
 }
 
 
