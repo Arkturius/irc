@@ -29,7 +29,7 @@ IRC_COMMAND_DEF(KICK)
 	_seeker.rebuild(R_MIDDLE_PARAM);
 	_seeker.findall();
 	std::vector<str>	argv = _seeker.get_matches();
-	if (argv.size() < 2 || argv.size() > 3)
+	if (argv.size() != 2)
 		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "KICK"));
 
 
@@ -43,15 +43,17 @@ IRC_COMMAND_DEF(KICK)
 	_seeker.findall();
 	std::vector<str>	vecUser = _seeker.get_matches();
 
-	str	*comment = NULL;
-	if (argv.size() == 3)
-		comment = &argv[2];
+	_seeker.feedString(command);
+	_seeker.rebuild(R_TRAILING_PARAM);
+	_seeker.findall();
+	str	*comment = _seeker.get_matchCount() ? &_seeker.get_matches()[0] : NULL;
 	
 	_kickAllChannel(vecChannel, vecUser, comment, client);
 }
 
 void	Server::_kickChannel(str channelName, Client &admin, str kickedName, str *comment)
 {
+	str				reason = comment != NULL ? *comment : "";
 	Client	*kicked = _getClientByName(kickedName);
 	IRC_AUTO		s = _channelMap.find(channelName);
 	Channel			*c = NULL;
@@ -74,7 +76,7 @@ void	Server::_kickChannel(str channelName, Client &admin, str kickedName, str *c
 	}
 	try
 	{
-		size = c->removeClient(kicked->get_fd());
+		c->havePerm(kicked->get_fd());
 		goto succesfullKick;
 	}
 	catch (std::exception &e)
@@ -83,13 +85,12 @@ void	Server::_kickChannel(str channelName, Client &admin, str kickedName, str *c
 	}
 
 succesfullKick:
-	c->_broadcast(_architect.CMD_KICK(admin.get_nickname(), c->get_name().c_str(), kickedName.c_str()));
+	IRC_LOG("kicked for %s", reason.c_str());
+	c->_broadcast(_architect.CMD_KICK(admin.get_nickname(), c->getTargetName(), kickedName.c_str(), reason.c_str()));
+	size = c->removeClient(kicked->get_fd());
 	if (size == 0)
 		_channelMap.erase(s);
-	if (comment)
-		kicked->leaveChannel(c, *comment);
-	else
-		kicked->leaveChannel(c);
+	kicked->leaveChannel(c);
 	return ;
 
 noSuchChannel:

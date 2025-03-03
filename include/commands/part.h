@@ -47,7 +47,7 @@ IRC_COMMAND_DEF(PART)
 		try {target->havePerm(fd);}
 		catch (std::exception &e) { goto notOnChannel; }
 
-		target->_broadcast(_architect.CMD_PART(client.get_nickname(), target->getTargetName()));
+		_channelbroadcast(*target, _architect.CMD_PART(client.get_nickname(), target->getTargetName()));
 		int size = target->removeClient(fd);
 		if (size == 0)
 			_channelMap.erase(s);
@@ -55,8 +55,9 @@ IRC_COMMAND_DEF(PART)
 	}
 
 
+	return ;
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "PRIVMSG"));
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "PART"));
 	return ;
 notOnChannel:
 	_send(client, _architect.ERR_NOTONCHANNEL(client.getTargetName(), targetName.c_str()));

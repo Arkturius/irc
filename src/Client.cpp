@@ -29,6 +29,7 @@ int	Client::_readToBuffer(void)
 void	Client::disconnect()
 {
 	close(_fd);
+	_fd = -1;
 }
 
 void	Client::readBytes(void)
@@ -77,21 +78,8 @@ void	Client::leaveChannel(Channel *channel)
 	s = _channelMap.find(channel->get_name());
 	if (s != _channelMap.end())
 	{
-		delete s->second;
+		if (s->second->get_size() == 0)
+			delete s->second;
 		_channelMap.erase(s);
-	}
-}
-void	Client::leaveChannel(Channel *channel, str comment)
-{
-	std::map<str, Channel * >::iterator s;
-	str									channelName; 
-
-	channelName = channel->get_name();
-	s = _channelMap.find(channelName);
-	if (s != _channelMap.end())
-	{
-		delete s->second;
-		_channelMap.erase(s);
-		(void)comment; //TODO kicked msg
 	}
 }

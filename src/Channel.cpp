@@ -18,15 +18,19 @@ bool	intInVector(std::vector<int> &v, int x)
 bool	removeIfVector(std::vector<int> &v, int x)
 {
 	bool returnValue = 0;
-	std::vector<int>::iterator	it;
-	for (it = v.begin(); it != v.end(); ++it)
+	for (size_t id = 0; id < v.size();)
 	{
-		if (*it == x)
+		if (v[id] == x)
 		{
-			v.erase(it);
+			IRC_WARN("anti crash");
+			v.erase(v.begin() + id);
 			returnValue = 1;
+			IRC_LOG("didnt crash");
+			continue ;
 		}
+		id++;
 	}
+	IRC_OK("finshed");
 	return returnValue;
 }
 
@@ -54,11 +58,9 @@ void	Channel::_addClient(int fdClient, int perm)
 }
 void	Channel::addClient(int fdClient, const str *password)
 {
-	//TODO if password given but not needed? if l inverse
-	//TODO la ca va segfault dans ce cas xd
 	if (removeIfVector(_invitedClient, fdClient))
 		goto addClientLabel;
-	if (_activePassword && *password != _password)
+	if (_activePassword && (!password || *password != _password))
 		throw InvalidChannelKeyException();
 	
 	if (intInVector(_fdClient, fdClient))
@@ -79,6 +81,7 @@ int	Channel::removeClient(int fdClient)
 		goto end;
 	throw ClientNotInChannelException();
 end:
+	IRC_LOG("remove client; nb of client left : %d", get_size());
 	return (get_size());
 }
 

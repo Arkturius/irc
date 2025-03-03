@@ -10,11 +10,12 @@ class Channel;
 
 typedef enum:	uint32_t
 {
-	IRC_CLIENT_AUTH		=	1U,
-	IRC_CLIENT_REGISTER	=	1U << 1,
-	IRC_CLIENT_PINGED	=	1U << 2,
-	IRC_CLIENT_EOT		=	1U << 30,
-	IRC_CLIENT_EOF		=	1U << 31,
+	IRC_CLIENT_AUTH				=	1U,
+	IRC_CLIENT_REGISTER			=	1U << 1,
+	IRC_CLIENT_PINGED			=	1U << 2,
+	IRC_CLIENT_IS_DISCONECTING	=	1U << 3,
+	IRC_CLIENT_EOT				=	1U << 30,
+	IRC_CLIENT_EOF				=	1U << 31,
 }	clientFlag;
 
 #define COMMA	,
@@ -46,7 +47,6 @@ class Client: public ATarget
 		void	disconnect(void);
 		void	joinChannel(Channel *);
 		void	leaveChannel(Channel *);
-		void	leaveChannel(Channel *, str);
 
 		void	sendMsg(const str &string) const
 		{

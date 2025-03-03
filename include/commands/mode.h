@@ -125,6 +125,8 @@ void	Server::modeCmdReturn(bool plus, const char &individualModeChar, Channel *t
 			typeCharMode = "channel inviteOnly"; break ;
 		case ('t'):
 			typeCharMode = "channel TopicRestriction"; break ;
+		case ('o'):
+			typeCharMode = "channel operator"; break ;
 	}
 	target->_broadcast(_architect.CMD_MODE(client.get_nickname(), target->get_name().c_str(), removeSet[plus].c_str(), typeCharMode.c_str()));
 }

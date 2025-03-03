@@ -10,6 +10,7 @@
 IRC_COMMAND_DEF(PRIVMSG)
 {
 	str					targetName;
+	str					msg;
 	std::vector<str>	topics;
 	std::vector<str>	argv;
 	std::vector<str>	targets;
@@ -34,6 +35,7 @@ IRC_COMMAND_DEF(PRIVMSG)
 	if (targets.size() == 0)
 		goto noRecipient;
 
+	msg = topics[0].substr(1);
 	for (IRC_AUTO it = targets.begin(); it != targets.end(); ++it)
 	{
 		ATarget	*target;
@@ -42,8 +44,9 @@ IRC_COMMAND_DEF(PRIVMSG)
 		target = _getTargetByName(targetName);
 		if (!target)
 			goto noSuchNick;
-		target->sendMsg(_architect.CMD_PRIVMSG(client.get_nickname(), target->getTargetName(), topics[0].c_str()));
+		target->sendMsg(_architect.CMD_PRIVMSG(client.get_nickname(), target->getTargetName(), msg.c_str()));
 	}
+	return ;
 
 needMoreParam:
 	return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "PRIVMSG"));
