@@ -196,10 +196,7 @@ class IRCArchitect
 						throw InvalidReplyParameterException();
 				}
 				else
-				{
-					IRC_ERR("build dernier %s", param.c_str());
 					reply += ":";
-				}
 
 				reply += param;
 			}
@@ -222,6 +219,8 @@ class IRCArchitect
 			va_start(list, code);
 			try { reply = _upgradeParams(reply, list); } IRC_CATCH
 
+			IRC_OK(IRC_ARCHITECT "built reply : " ITALIC(COLOR(GREEN,"[%s]")), reply.c_str());
+
 			return (reply);
 		}
 
@@ -232,6 +231,8 @@ class IRCArchitect
 			
 			va_start(list, command);
 			try { reply = _upgradeParams(reply, list); } IRC_CATCH
+
+			IRC_OK(IRC_ARCHITECT "built reply :" ITALIC(COLOR(GREEN,"[%s]")), reply.c_str());
 
 			return (reply);
 		}

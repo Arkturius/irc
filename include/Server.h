@@ -230,7 +230,7 @@ class Server
 			_seeker.rebuild(R_COMMAND_MNEMO);
 			if (!_seeker.consume())
 			{
-				IRC_WARN(BOLD(COLOR(YELLOW,"INVALID MNEMONIC.")));
+				IRC_WARN(IRC_SEEKER "invalid command mnemonic.");
 				return ;
 			}
 
@@ -241,7 +241,7 @@ class Server
 
 			if (func == _commandFuncs.end())
 			{
-				IRC_WARN(BOLD(COLOR(YELLOW,"COMMAND NOT SUPPORTED.")));
+				IRC_WARN(IRC_SEEKER "command not supported.");
 				return ;
 			}
 
@@ -251,12 +251,13 @@ class Server
 				_seeker.rebuild(R_IRC_NOAUTH_COMMANDS);
 				if (!_seeker.consume())
 				{
-					IRC_WARN(BOLD(COLOR(YELLOW,"CLIENT NOT AUTHENTIFIED, IGNORING...")));
+					IRC_WARN(IRC_SEEKER "ignoring non-authentified client command.");
 					return ;
 				}
 			}
+			
+			IRC_LOG(IRC_ANALYST "calling function : " BOLD(COLOR(GRAY,"[%s]")) ":" BOLD(COLOR(GRAY,"{%s}")) , mnemo.c_str(), strip.c_str());
 
-			IRC_OK("called " BOLD(COLOR(GREEN,"[%s")) BOLD(COLOR(CYAN,"%s]")), mnemo.c_str(), strip.c_str());
 			(this->*(func->second))(client, strip);
 		}
 
@@ -284,8 +285,6 @@ class Server
 
 		void	_send(Client &client, const str &string)
 		{
-			IRC_LOG(BOLD(COLOR(CYAN,"%s : ")) BOLD(COLOR(RED,"%s")), __func__, string.c_str());
-	
 			if (string.length() > 4 && string.substr(0, 4) == "PING")
 			{
 				client.sendMsg(string);
@@ -421,7 +420,7 @@ nicknameInUse:
 			IRC_COMMAND_FUNC("MODE", MODE);
 			IRC_COMMAND_FUNC("QUIT", QUIT);
 
-			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) "started.", _hostname.c_str(), _sockfd);
+			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) " started.", _hostname.c_str(), _sockfd);
 		}
 
 		~Server(void)
@@ -531,10 +530,7 @@ void								_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUse
 			IRC_AUTO it = _channelMap.find(Name);
 			IRC_LOG("Channel found at %p", it == _channelMap.end() ? NULL : &it);
 			if (it != _channelMap.end())
-			{
-				IRC_WARN("%s : %p", (*it).first.c_str(), (*it).second);
 				return (*it).second;
-			}
 			return NULL;
 		}
 

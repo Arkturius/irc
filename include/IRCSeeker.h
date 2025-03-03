@@ -43,13 +43,21 @@ class IRCSeeker
 		{
 			_didMatch = !regexec(&_expr, _string.c_str() + _matchIndex, IRC_SEEKER_GROUP_MAX + 2, _hold, 0);
 
-			if (_matchIndex == _string.length())	{_didMatch = false; IRC_WARN("_string fully consumed, aborting."); return; }
-			if (!_didMatch)							{ throw RegExecFailedException(); }
-			if (_hold[1].rm_so == -1)				{ _didMatch = false; IRC_WARN("0 length match, aborting."); return; }
+			if (_matchIndex == _string.length())
+			{
+				_didMatch = false;
+				return;
+			}
+			if (!_didMatch)
+				throw RegExecFailedException();
+			if (_hold[1].rm_so == -1)
+			{
+				_didMatch = false;
+				return;
+			}
 
 			const str	match = _string.substr(_hold[1].rm_so + _matchIndex, _hold[1].rm_eo - _hold[1].rm_so);
-			IRC_OK("match found at %d - %d = [" BOLD(COLOR(GREEN,"%s")) "]", _hold[1].rm_so, _hold[1].rm_eo, match.c_str());
-
+			
 			_matches.push_back(match);
 			_matchIndex += _hold[1].rm_eo;
 			_matchCount++;

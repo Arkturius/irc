@@ -37,6 +37,10 @@ typedef std::string str;
 
 # define IRC_ERR(msg, ...)		_IRC_LOG(RED,	   "error:", msg, ##__VA_ARGS__)
 
+# define IRC_SEEKER		BOLD(ITALIC(COLOR(RED,"<Seeker> ")))
+# define IRC_ARCHITECT	BOLD(ITALIC(COLOR(GREEN,"<Architect> ")))
+# define IRC_ANALYST	BOLD(ITALIC(COLOR(CYAN,"<Analyst> ")))
+
 # define IRC_FLAG_SET(w, f)	(w) = ((w) | (f))
 # define IRC_FLAG_DEL(w, f)	(w) = ((w) & ~(f))
 # define IRC_FLAG_GET(w, f)	((w) & (f))
