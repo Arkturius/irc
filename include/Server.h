@@ -174,7 +174,6 @@ class Server
 		{
 			int fd = client.get_fd();
 
-			IRC_FLAG_SET(client.get_flag(), IRC_CLIENT_IS_DISCONECTING)	;
 			IRC_LOG("client " BOLD(COLOR(GRAY,"[%d]")) " disconnected.", fd);
 
 			std::map<str, Channel *>	&channelOfClient = client.get_channelMap();
@@ -182,6 +181,7 @@ class Server
 			for (size_t i = 0; i < size; i++)
 			{
 				Channel	*chan = channelOfClient.begin()->second;
+				chan->set_ignoredFd(fd);
 				str	cmd = "PART ";
 				cmd += chan->getTargetName();
 				_commandPART(client, cmd);
@@ -286,8 +286,6 @@ class Server
 		{
 			IRC_LOG(BOLD(COLOR(CYAN,"%s : ")) BOLD(COLOR(RED,"%s")), __func__, string.c_str());
 	
-			if (IRC_FLAG_GET(client.get_flag(), IRC_CLIENT_IS_DISCONECTING))
-				return ;
 			if (string.length() > 4 && string.substr(0, 4) == "PING")
 			{
 				client.sendMsg(string);
@@ -303,25 +301,6 @@ class Server
 			IRC_LOG("Server Brodcast " BOLD(COLOR(YELLOW,"%s")), string.c_str());
 			for (; it != _clients.end(); ++it)
 				_send((*it).second, string);
-		}
-
-		void	_channelbroadcast(Channel &chan, const str &string)
-		{
-			IRC_AUTO	it = _clients.begin();
-
-			IRC_LOG("Channel Brodcast %s" BOLD(COLOR(YELLOW,"%s")), chan.getTargetName(), string.c_str());
-			for (; it != _clients.end(); ++it)
-			{
-				Client	target = it->second;
-				try
-				{
-					chan.havePerm(target.get_fd());
-					if (!IRC_FLAG_GET(target.get_flag(), IRC_CLIENT_IS_DISCONECTING))
-						_send((*it).second, string);
-				}
-				catch (std::exception &e) {}
-			}
-			//TODO un peu la fonction de la honte mais bon le sigpipe va bien niquer t mort aussi
 		}
 
 		void			_sendJoin(Client &client, Channel *channel);

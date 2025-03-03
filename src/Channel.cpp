@@ -41,6 +41,7 @@ Channel::Channel(str channelName, int firstClient): ATarget(), _name(channelName
 	IRC_LOG("Channel constructor called : |%s|", channelName.c_str());
 
 	set_targetName(_name);
+	set_ignoredFd(-1);
 	_fdAdminClient.push_back(firstClient);
 }
 
@@ -51,6 +52,7 @@ Channel::~Channel(void)
 
 void	Channel::_addClient(int fdClient, int perm)
 {
+	_ignoredFd = -1;
 	if (perm)
 		_fdAdminClient.push_back(fdClient);
 	else
@@ -58,6 +60,7 @@ void	Channel::_addClient(int fdClient, int perm)
 }
 void	Channel::addClient(int fdClient, const str *password)
 {
+	_ignoredFd = -1;
 	if (removeIfVector(_invitedClient, fdClient))
 		goto addClientLabel;
 	if (_activePassword && (!password || *password != _password))
@@ -123,12 +126,22 @@ void	Channel::_broadcast(const str &string) const
 	IRC_LOG("Channel Brodcast " BOLD(COLOR(YELLOW,"%s")) " to %d client", string.c_str(), get_size());
 
 	for (; it != _fdClient.end(); ++it)
-		write(*it, (string + "\r\n").c_str(), string.size() + 2);
+	{
+		int fd = *it;
+		if (fd == _ignoredFd)
+			continue ;
+		write(fd, (string + "\r\n").c_str(), string.size() + 2);
+	}
 
 	it = _fdAdminClient.begin();
 
 	for (; it != _fdAdminClient.end(); ++it)
-		write(*it, (string + "\r\n").c_str(), string.size() + 2);
+	{
+		int fd = *it;
+		if (fd == _ignoredFd)
+			continue ;
+		write(fd, (string + "\r\n").c_str(), string.size() + 2);
+	}
 
 	IRC_LOG("succesfull Broadcast, it suprisely didnt segfault");
 }

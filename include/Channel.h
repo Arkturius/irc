@@ -28,7 +28,6 @@ class Channel: public ATarget
 
 		std::vector<int>		_fdClient;
 		std::vector<int>		_fdAdminClient;
-
 		std::vector<int>		_invitedClient;		
 
 		void	_addClient(int fdClient, int perm);

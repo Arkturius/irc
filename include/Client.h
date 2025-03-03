@@ -13,7 +13,6 @@ typedef enum:	uint32_t
 	IRC_CLIENT_AUTH				=	1U,
 	IRC_CLIENT_REGISTER			=	1U << 1,
 	IRC_CLIENT_PINGED			=	1U << 2,
-	IRC_CLIENT_IS_DISCONECTING	=	1U << 3,
 	IRC_CLIENT_EOT				=	1U << 30,
 	IRC_CLIENT_EOF				=	1U << 31,
 }	clientFlag;
@@ -69,7 +68,12 @@ class Client: public ATarget
  		GETTER_C(std::map<str COMMA Channel *>, _channelMap);
 
 		SETTER(uint32_t, _flag);
-		SETTER(str, _username);
+
+		void	set_username(str name)
+		{
+			_username = name;
+			_targetName = name;
+		}
 		SETTER(str, _nickname);
 		SETTER(str, _lastPass);
 };

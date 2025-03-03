@@ -29,7 +29,7 @@ IRC_COMMAND_DEF(PRIVMSG)
 		goto noTextToSend;
 
 	_seeker.feedString(argv[0]);
-	_seeker.rebuild(R_CAPTURE_CHANNEL_NAME);
+	_seeker.rebuild(R_CAPTURE_TARGET_NAME);
 	_seeker.findall();
 	targets = _seeker.get_matches();
 	if (targets.size() == 0)
@@ -44,7 +44,9 @@ IRC_COMMAND_DEF(PRIVMSG)
 		target = _getTargetByName(targetName);
 		if (!target)
 			goto noSuchNick;
+		target->set_ignoredFd(client.get_fd());
 		target->sendMsg(_architect.CMD_PRIVMSG(client.get_nickname(), target->getTargetName(), msg.c_str()));
+		target->set_ignoredFd(-1);
 	}
 	return ;
 

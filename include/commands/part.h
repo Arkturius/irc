@@ -47,15 +47,14 @@ IRC_COMMAND_DEF(PART)
 		try {target->havePerm(fd);}
 		catch (std::exception &e) { goto notOnChannel; }
 
-		_channelbroadcast(*target, _architect.CMD_PART(client.get_nickname(), target->getTargetName()));
+		target->sendMsg(_architect.CMD_PART(client.get_nickname(), target->getTargetName()));
 		int size = target->removeClient(fd);
 		if (size == 0)
 			_channelMap.erase(s);
 		client.leaveChannel(target);
 	}
-
-
 	return ;
+
 needMoreParam:
 	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "PART"));
 	return ;
