@@ -363,6 +363,7 @@ erroneusNickname:
 nicknameInUse:
 			return _send(client, _architect.ERR_NICKNAMEINUSE(client.get_nickname().c_str(), argv[0].c_str()));
 		}
+
 		IRC_COMMAND_DECL(USER);
 		IRC_COMMAND_DECL(PING);
 		IRC_COMMAND_DECL(PONG);

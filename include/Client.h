@@ -4,9 +4,7 @@
 
 # include <irc.h>
 # include <map>
-# include <ATarget.h>
-
-class Channel;
+# include <Channel.h>
 
 typedef enum:	uint32_t
 {
@@ -31,21 +29,78 @@ class Client: public ATarget
 		str			_lastPass;
 
 		str			_buffer;
-		int			_readToBuffer(void);
+
+		int	_read(void)
+		{
+			char	tmp[1024] = {0};
+			int 	bytes = 0;
+
+			bytes = read(_fd, tmp, sizeof(tmp) - 1);
+			if (bytes)
+			{
+				tmp[bytes] = 0;
+				_buffer += str(tmp);
+			}
+			return (bytes);
+		}
 
 		std::map<str, Channel *>	_channelMap;
 
 	public:
-		Client(void);
-		Client(uint32_t flag, int32_t fd);
-		~Client(void);
+		Client(void): ATarget() {}
+		~Client(void) {}
+		Client(uint32_t flag, int32_t fd): ATarget(), _flag(flag), _fd(fd), _username(""), _nickname("") {}
 
-		void	readBytes(void);
-		void	resetBuffer(void);
+		void	readBytes(void)
+		{
+			int	bytes;
 
-		void	disconnect(void);
-		void	joinChannel(Channel *);
-		void	leaveChannel(Channel *);
+			bytes = _read();
+			if (bytes == 0 || _buffer.length() == 0)
+			{
+				IRC_FLAG_SET(_flag, IRC_CLIENT_EOF);
+				return ;
+			}
+			if (_buffer.find("\n") != std::string::npos)
+			{
+				IRC_FLAG_SET(_flag, IRC_CLIENT_EOT);
+				return ;
+			}
+		}
+
+		void	resetBuffer(void)
+		{
+			_buffer = "";
+			IRC_FLAG_DEL(_flag, IRC_CLIENT_EOT);
+		}
+
+		void	disconnect()
+		{
+			close(_fd);
+			_fd = -1;
+		}
+
+		void	joinChannel(Channel *channel)
+		{
+			str	channelName = channel->get_name();
+
+			IRC_AUTO s = _channelMap.find(channelName);
+			if (s == _channelMap.end())
+				_channelMap[channelName] = channel;
+		}
+
+		void	leaveChannel(Channel *channel)
+		{
+			std::map<str, Channel * >::iterator s;
+
+			s = _channelMap.find(channel->get_name());
+			if (s != _channelMap.end())
+			{
+				if (s->second->get_size() == 0)
+					delete s->second;
+				_channelMap.erase(s);
+			}
+		}
 
 		void	sendMsg(const str &string) const
 		{
@@ -68,12 +123,8 @@ class Client: public ATarget
  		GETTER_C(std::map<str COMMA Channel *>, _channelMap);
 
 		SETTER(uint32_t, _flag);
-
-		void	set_username(str name)
-		{
-			_username = name;
-			_targetName = name;
-		}
+		SETTER(str, _username);
+		SETTER(str, _targetName);
 		SETTER(str, _nickname);
 		SETTER(str, _lastPass);
 };
