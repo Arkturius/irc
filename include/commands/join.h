@@ -29,7 +29,7 @@ channelExist:
 		goto inviteOnlyChannel;
 	try
 	{
-		if (c->get_size() == c->get_userLimit())
+		if (c->get_size() >= c->get_userLimit())
 			goto channelIsFull;
 		c->addClient(fd, channelKey);
 		goto joinChannel;
