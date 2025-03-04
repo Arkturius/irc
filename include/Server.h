@@ -279,7 +279,11 @@ class Server
 			client.resetBuffer();
 
 			for (IRC_AUTO it = commands.begin(); it != commands.end(); ++it)
+			{
+				if (IRC_FLAG_GET(client.get_flag(), IRC_CLIENT_EOF))
+					break ;
 				_executeCommand(client, *it);
+			}
 		}
 
 		void	_send(Client &client, const str &string)
@@ -391,8 +395,15 @@ class Server
 			IRC_COMMAND_FUNC("JOIN", JOIN);
 			IRC_COMMAND_FUNC("KICK", KICK);
 			IRC_COMMAND_FUNC("MODE", MODE);
+			IRC_COMMAND_FUNC("BJ", BJ);
 
 			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) " started.", _hostname.c_str(), _sockfd);
+		}
+
+		IRC_COMMAND_DECL(BJ)
+		{
+			UNUSED(command);
+			_send(client, client.get_username() + "🂧 🂧 🂧 ");
 		}
 
 		~Server(void)

@@ -1,0 +1,63 @@
+╭
+╮
+╯
+╰
+─
+│
+
+
+╭──┈╭─────╮
+│7♠ │8♠   │       
+│ ir│ irc │       
+│   │   ♠8│
+╰──┈╰─────╯
+
+class Game
+{
+	Hand				dealerHand;
+	std::vector<Hand>	playerHands;
+}
+
+#define SPADE						""
+
+#define CARD_TOP		"╭─────╮"
+#define CARD_ICON		"│" + card.icon(0) "  │"
+#define CARD_MID		"│ irc │"
+#define CARD_RICON		"│  " + card.icon(1) "│"
+#define CARD_BTM		"╰─────╯"
+
+#define CARD_TOP_T		"╭──┈"
+#define CARD_ICON_T		"│" + card.icon(0)
+#define CARD_MID_T		"│ ir"
+#define CARD_RICON_T	"│   "
+#define CARD_BTM_T		"╰──┈"
+
+#define CARD_SPACE		"       "
+
+void	BlackJack::displayGame
+{
+	std::vector<Card>	all;
+
+	all.insert(all.end(), dealer.get_hand().begin(), dealer.get_hand().end());
+	for (IRC_AUTO it = players.begin(); it != players.end(); ++it)
+	{
+		all.insert(all.end(), (*it).get_hand().begin(), (*it).get_hand().begin());
+		all.push_back((Card){.color = 0, .value = 0});
+	}
+
+	str cardbanner = "";
+	str	parts[10] = {CARD_TOP_T, CARD_ICON_T, CARD_MID_T, CARD_RICON_T, CARD_BTM_T, \
+					CARD_TOP, CARD_ICON, CARD_MID, CARD_RICON, CARD_BTM};
+
+	for (int i = 0; i < 5; ++i)
+	{
+		for (int j = 0; j < all.size() - 1; ++j)
+		{
+			Card	card = all[j];
+			Card	nextCard = all[j + 1];
+
+			cardbanner += parts[i + 5 * (nextCard.value == 0)]
+		}
+		cardbanner += "\n";
+	}
+}
