@@ -1,5 +1,6 @@
 #pragma once
 
+#include "bot/blackjack.h"
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -403,7 +404,13 @@ class Server
 		IRC_COMMAND_DECL(BJ)
 		{
 			UNUSED(command);
-			_send(client, client.get_username() + "🂧 🂧 🂧 ");
+			BlackJack	game;
+
+			game.AddPlayer(3);
+
+			str gamestr = game.displayGame();
+
+			_send(client, gamestr);
 		}
 
 		~Server(void)
