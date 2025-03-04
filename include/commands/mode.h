@@ -13,6 +13,8 @@ bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Cha
 		{
 			str TargetName;
 
+			if (modeArguments.size() == 0)
+				goto needMoreParam;
 			_seeker.rebuild(R_NICKNAME);
 			_seeker.feedString(modeArguments);
 			_seeker.consumeMany();
@@ -57,6 +59,8 @@ bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Cha
 		}
 		case ('k'):
 		{	
+			if (modeArguments.size() == 0)
+				goto needMoreParam;
 			if (!plus && (!IRC_FLAG_GET(target->get_flag(), IRC_CHANNEL_ACTIVE_PASSWORD) || target->get_password() == modeArguments))
 				return IRC_FLAG_DEL(target->get_flag(), IRC_CHANNEL_ACTIVE_PASSWORD), 0;
 			else if (plus)
@@ -98,7 +102,7 @@ invalidNewPassword:
 	return 1;
 
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "MODE (l)"));
+	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), (str("MODE (") + mode + str(")")).c_str()));
 	return 1;
 invalidIntParam:
 	_send(client, _architect.ERR_INVALIDMODEPARAM(client.getTargetName(), target->getTargetName(), "l", modeArguments.c_str(), "The limite sould be a possitiv integer"));
@@ -162,7 +166,7 @@ IRC_COMMAND_DEF(MODE)
 	for (size_t i = 1; i < modeString.size(); i++)
 	{
 		const bool	&plus = modeString.c_str()[0] == '+';
-		const str	&modeArguments = argv[i + 1];
+		const str	&modeArguments = i + 1 < argv.size() ? argv[i + 1] : "";
 		const char	&individualModeChar = modeString.c_str()[i];
 		if (_individualMode(plus, individualModeChar, modeArguments, target, client))
 			return ;
