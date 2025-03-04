@@ -59,11 +59,11 @@ setNewTopic:
 	IRC_FLAG_SET(channel->get_flag(), IRC_CHANNEL_TOPIC_SET);
 	if (topic.size() == 1)
 		IRC_FLAG_DEL(channel->get_flag(), IRC_CHANNEL_TOPIC_SET);
-	channel->set_topic(topic.substr(1));
+	channel->set_topic(topic.substr(2));
 	channel->set_topicSetterNickName(client.get_nickname());
 	channel->set_topicSetTime(time(NULL));
 	_sendTopic(client, channel);
-	channel->sendMsg(_architect.CMD_TOPIC(client.get_nickname(), channelName.c_str(), topic.substr(1).c_str()));
+	channel->sendMsg(_architect.CMD_TOPIC(client.get_nickname(), channelName.c_str(), channel->get_topic().c_str()));
 	return ;
 errorNotOnChannel:
 	_send(client, _architect.ERR_NOTONCHANNEL(client.getTargetName(), channelName.c_str()));
