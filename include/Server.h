@@ -406,7 +406,8 @@ class Server
 			UNUSED(command);
 			BlackJack	game;
 
-			game.AddPlayer(3);
+			game.addPlayer(3);
+			game.addPlayer(4);
 
 			str gamestr = game.displayGame();
 

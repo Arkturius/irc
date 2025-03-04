@@ -317,6 +317,7 @@ class BlackJack
 		{
 			IRC_AUTO	it = _players.find(fd);
 			int	money = it->second.getmoney();
+			UNUSED(money);
 			if (IRC_FLAG_GET(_flag, BJ_INGAME))
 			{
 				if (!IRC_FLAG_GET(_players[fd].get_flag(), BJ_STAND))
