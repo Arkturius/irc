@@ -1,9 +1,6 @@
 #pragma once
 
-#include <irc.h>
-
 #include <Server.h>
-#include <Client.h>
 
 IRC_COMMAND_DEF(USER)
 {

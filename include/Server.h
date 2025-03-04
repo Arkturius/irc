@@ -279,7 +279,11 @@ class Server
 			client.resetBuffer();
 
 			for (IRC_AUTO it = commands.begin(); it != commands.end(); ++it)
+			{
+				if (IRC_FLAG_GET(client.get_flag(), IRC_CLIENT_EOF))
+					break ;
 				_executeCommand(client, *it);
+			}
 		}
 
 		void	_send(Client &client, const str &string)
@@ -300,63 +304,8 @@ class Server
 		void	_sendTopic(Client &client, Channel *channel);
 		void	_sendModeIs(Client &client, Channel *channel);
 
-		IRC_COMMAND_DECL(PASS)
-		{
-			_seeker.feedString(command);
-			_seeker.rebuild(R_MIDDLE_PARAM);
-			_seeker.findall();
-			const std::vector<str>	&argv = _seeker.get_matches();
-
-			if (argv.size() == 0)
-				goto needMoreParams;
-
-			if (IRC_FLAG_GET(client.get_flag(), IRC_CLIENT_AUTH))
-				goto alreadyRegistered;
-
-			client.set_flag(client.get_flag() | IRC_CLIENT_REGISTER);
-			client.set_lastPass(argv[0]);
-			return ;
-
-needMoreParams:
-			return _send(client, _architect.ERR_NEEDMOREPARAMS(client.get_nickname().c_str(), "PASS"));
-alreadyRegistered:
-			return _send(client, _architect.ERR_ALREADYREGISTERED(client.get_nickname().c_str()));
-		}
-
-		IRC_COMMAND_DECL(NICK)
-		{
-			_seeker.feedString(command);
-			_seeker.rebuild(R_MIDDLE_PARAM);
-			_seeker.findall();
-			const std::vector<str>	&argv = _seeker.get_matches();
-
-			if (argv.size() == 0)
-				goto noNicknameGiven;
-
-			_seeker.feedString(argv[0]);
-			_seeker.rebuild(R_NICKNAME);
-
-			if (!_seeker.consume())
-				goto erroneusNickname;
-
-			for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
-				if (argv[0] == (*it).second.get_nickname())
-					goto nicknameInUse;
-
-			client.set_nickname(argv[0]);
-			client.set_targetName(argv[0]);
-			if (client.get_username() == "")
-				client.set_username(argv[0]);
-			return ;
-
-noNicknameGiven:
-			return _send(client, _architect.ERR_NONICKNAMEGIVEN(client.get_nickname().c_str()));
-erroneusNickname:
-			return _send(client, _architect.ERR_ERRONEUSNICKNAME(client.get_nickname().c_str(), argv[0].c_str()));
-nicknameInUse:
-			return _send(client, _architect.ERR_NICKNAMEINUSE(client.get_nickname().c_str(), argv[0].c_str()));
-		}
-
+		IRC_COMMAND_DECL(PASS);
+		IRC_COMMAND_DECL(NICK);
 		IRC_COMMAND_DECL(USER);
 		IRC_COMMAND_DECL(PING);
 		IRC_COMMAND_DECL(PONG);
@@ -446,8 +395,15 @@ nicknameInUse:
 			IRC_COMMAND_FUNC("JOIN", JOIN);
 			IRC_COMMAND_FUNC("KICK", KICK);
 			IRC_COMMAND_FUNC("MODE", MODE);
+			IRC_COMMAND_FUNC("BJ", BJ);
 
 			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) " started.", _hostname.c_str(), _sockfd);
+		}
+
+		IRC_COMMAND_DECL(BJ)
+		{
+			UNUSED(command);
+			_send(client, client.get_username() + "🂧 🂧 🂧 ");
 		}
 
 		~Server(void)
