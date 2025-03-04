@@ -193,15 +193,15 @@ class Server
 
 		void	_welcomeClient(Client &client)
 		{
-			const char	*username = client.get_username().c_str();
+			const char	*nickname = client.get_nickname().c_str();
 			const str	created = str(RPL_MSG_CREATED) + str(ctime(&_startTime));
 
-			_send(client, _architect.RPL_WELCOME (username, (RPL_MSG_WELCOME + client.get_username()).c_str()));
-			_send(client, _architect.RPL_YOURHOST(username));
-			_send(client, _architect.RPL_CREATED(username, created.substr(0, created.length() - 1).c_str()));
-			_send(client, _architect.RPL_MYINFO(username, "ft_irc", "0.0", "o", "ikl"));
-			_send(client, _architect.RPL_ISUPPORT(username, "NICKLEN=9"));
-			_send(client, _architect.ERR_NOMOTD(username));
+			_send(client, _architect.RPL_WELCOME (nickname, (RPL_MSG_WELCOME + client.get_nickname()).c_str()));
+			_send(client, _architect.RPL_YOURHOST(nickname));
+			_send(client, _architect.RPL_CREATED(nickname, created.substr(0, created.length() - 1).c_str()));
+			_send(client, _architect.RPL_MYINFO(nickname, "ft_irc", "0.0", "o", "ikl"));
+			_send(client, _architect.RPL_ISUPPORT(nickname, "NICKLEN=9"));
+			_send(client, _architect.ERR_NOMOTD(nickname));
 		}
 
 		void	_registerClient(Client &client)
@@ -215,7 +215,7 @@ class Server
 			}
 
 			_send(client, "PING ft_irc");
-			client.set_flag(client.get_flag() | IRC_CLIENT_PINGED);
+			IRC_FLAG_SET(client.get_flag(), IRC_CLIENT_PINGED);
 		}
 
 		/**
@@ -284,12 +284,7 @@ class Server
 
 		void	_send(Client &client, const str &string)
 		{
-			if (string.length() > 4 && string.substr(0, 4) == "PING")
-			{
-				client.sendMsg(string);
-				return ;
-			}
-			client.sendMsg(":ft_irc@" + _hostname + " " + string);
+			client.sendMsg(":" + _hostname + " " + string);
 		}
 
 		void	_broadcast(const str &string)

@@ -15,7 +15,7 @@ class ATarget
 
 		virtual void	sendMsg(const str &) const = 0;
 		virtual void	ignoredFlag(int fd, int32_t ignored) = 0;
-		const char		*getTargetName() { return _targetName.c_str(); }	
+		const char		*getTargetName() { return _targetName.c_str(); }
 
 		SETTER(str, _targetName);
 		GETTER_C(bool, _targetIsChannel);
