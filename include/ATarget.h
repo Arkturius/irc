@@ -5,19 +5,18 @@
 class ATarget
 {
 	protected:
-		str	_targetName;
-		int	_ignoredFd;
+		str		_targetName;
+		bool	_targetIsChannel;
 
 	public:
-		ATarget(void) {};
+		ATarget(void): _targetIsChannel(0) {};
+		ATarget(str name): _targetName(name), _targetIsChannel(1) {};
 		virtual ~ATarget(void) {};
 
-		virtual void sendMsg(const str &) const = 0;
-		const char	*getTargetName() { return _targetName.c_str(); }	
+		virtual void	sendMsg(const str &) const = 0;
+		virtual void	ignoredFlag(int fd, int32_t ignored) = 0;
+		const char		*getTargetName() { return _targetName.c_str(); }	
 
 		SETTER(str, _targetName);
-		SETTER(int, _ignoredFd);
-
-		GETTER(int, _ignoredFd);
-		GETTER_C(int, _ignoredFd);
+		GETTER_C(bool, _targetIsChannel);
 };

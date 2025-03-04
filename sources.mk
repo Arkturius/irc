@@ -6,9 +6,8 @@
 #    By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/02/08 16:01:29 by rgramati          #+#    #+#              #
-#    Updated: 2025/03/03 15:32:58 by rgramati         ###   ########.fr        #
+#    Updated: 2025/03/04 02:07:37 by yroussea         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-SRCS	:=	ircserv.cpp	\
-	 		Channel.cpp
+SRCS	:=	ircserv.cpp

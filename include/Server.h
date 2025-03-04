@@ -44,18 +44,20 @@ typedef	void	(Server::*IRC_COMMAND_F)(Client &, const str &command);
 class Server
 {
 	private:
-		uint32_t		_flag;
-		IRCSeeker		_seeker;
-		IRCArchitect	_architect;
+		uint32_t					_flag;
+		IRCSeeker					_seeker;
+		IRCArchitect				_architect;
+
+		std::map<str, Channel *>	_channelMap;
 
 		/**
 		 * @ Server config
 		 */
-		int				_port;
-		int				_sockfd;
-		str				_hostname;
-		str				_password;
-		time_t			_startTime;
+		int							_port;
+		int							_sockfd;
+		str							_hostname;
+		str							_password;
+		time_t						_startTime;
 
 		void	_bindSocket()
 		{	
@@ -181,12 +183,9 @@ class Server
 			for (size_t i = 0; i < size; i++)
 			{
 				Channel	*chan = channelOfClient.begin()->second;
-				chan->set_ignoredFd(fd);
-				str	cmd = "PART ";
-				cmd += chan->getTargetName();
-				_commandPART(client, cmd);
+				chan->ignoredFlag(fd, IRC_CHANNEL_IGNORED);
+				_commandPART(client, str("PART ") + chan->getTargetName());
 			}
-
 			client.disconnect();
 			_clients.erase(fd);
 			_delPollFd(fd);
@@ -302,9 +301,9 @@ class Server
 				_send((*it).second, string);
 		}
 
-		void			_sendJoin(Client &client, Channel *channel);
-		void			_sendTopic(Client &client, Channel *channel);
-		void			_sendModeIs(Client &client, Channel *channel);
+		void	_sendJoin(Client &client, Channel *channel);
+		void	_sendTopic(Client &client, Channel *channel);
+		void	_sendModeIs(Client &client, Channel *channel);
 
 		IRC_COMMAND_DECL(PASS)
 		{
@@ -375,6 +374,38 @@ nicknameInUse:
 		IRC_COMMAND_DECL(MODE);
 		IRC_COMMAND_DECL(QUIT);
 
+		void	_UserJoinChannel(const str &, const str *, Client &);
+		void	_kickUserFromChannel(str , Client &, str , str *);
+		bool	_individualMode(bool, char, const str &, Channel *, Client &);
+		
+		Client	*_getClientByName(const str userName)
+		{
+			for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
+			{
+				if (it->second.get_nickname() == userName)
+					return &it->second;
+			}
+			return NULL;
+		}
+
+		Channel	*_getChannelByName(const str Name)
+		{
+			IRC_AUTO it = _channelMap.find(Name);
+			if (it != _channelMap.end())
+				return (*it).second;
+			return NULL;
+		}
+
+		ATarget	*_getTargetByName(const str Name)
+		{
+			ATarget *target;
+
+			if (!(target = _getClientByName(Name)))
+				target = _getChannelByName(Name);
+
+			return target;
+		}
+
 	public:
 
 		Server(int port, str password): _flag(IRC_STATUS_OK), _port(port)
@@ -407,18 +438,19 @@ nicknameInUse:
 			time(&_startTime);
 
 			IRC_COMMAND_FUNC("PASS", PASS);
+
 			IRC_COMMAND_FUNC("NICK", NICK);
 			IRC_COMMAND_FUNC("USER", USER);
 			IRC_COMMAND_FUNC("PING", PING);
 			IRC_COMMAND_FUNC("PONG", PONG);
-			IRC_COMMAND_FUNC("JOIN", JOIN);
-			IRC_COMMAND_FUNC("KICK", KICK);
 			IRC_COMMAND_FUNC("PRIVMSG", PRIVMSG);
 			IRC_COMMAND_FUNC("INVITE", INVITE);
 			IRC_COMMAND_FUNC("TOPIC", TOPIC);
-			IRC_COMMAND_FUNC("PART", PART);
-			IRC_COMMAND_FUNC("MODE", MODE);
 			IRC_COMMAND_FUNC("QUIT", QUIT);
+			IRC_COMMAND_FUNC("PART", PART);
+			IRC_COMMAND_FUNC("JOIN", JOIN);
+			IRC_COMMAND_FUNC("KICK", KICK);
+			IRC_COMMAND_FUNC("MODE", MODE);
 
 			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) " started.", _hostname.c_str(), _sockfd);
 		}
@@ -499,51 +531,6 @@ nicknameInUse:
 	EXCEPTION(ServerListenFailedException,	"listen() failed.");
 	EXCEPTION(ServerPollFailedException,	"poll() failed.");
 	EXCEPTION(ServerAcceptFailedException,	"accept() failed.");
-	
-	private:
-		std::map<str, Channel *>	_channelMap;
-		void						_joinAddAllChannel(std::vector<str> &chanVec, std::vector<str> &keyVec, Client &client);
-		void						_addChannel(const str &channelName, const str *key, Client &client);
-		void						_removeChannel(str channelName, Client &client);
-		void						_kickChannel(str channelName, Client &admin, str kicked, str *comment);
-void								_kickAllChannel(std::vector<str> vecChannel, std::vector<str> vecUser, str *comment, Client &client);
-
-		bool						modePassword(bool plus, const str &modeArguments, Channel *target, Client &client);
-		bool						modePermition(bool plus, const str &modeArguments, Channel *target, Client &client);
-		void						modeCmdReturn(bool plus, const char &individualModeChar, Channel *target, Client &client);
-		bool						_individualMode(bool, char, const str &, Channel *, Client &);
-
-		EXCEPTION(UnexpectedErrorException,	"oops");
-		
-		Client	*_getClientByName(const str userName)
-		{
-			for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
-			{
-				if (it->second.get_nickname() == userName)
-					return &it->second;
-			}
-			return NULL;
-		}
-
-		Channel	*_getChannelByName(const str Name)
-		{
-			IRC_AUTO it = _channelMap.find(Name);
-			IRC_LOG("Channel found at %p", it == _channelMap.end() ? NULL : &it);
-			if (it != _channelMap.end())
-				return (*it).second;
-			return NULL;
-		}
-
-		ATarget	*_getTargetByName(const str Name)
-		{
-			ATarget *target;
-
-			if (!(target = _getClientByName(Name)))
-				target = _getChannelByName(Name);
-
-			return target;
-		}
-
 };
 
 # include <commands/pass.h>

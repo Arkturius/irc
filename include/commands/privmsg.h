@@ -44,9 +44,14 @@ IRC_COMMAND_DEF(PRIVMSG)
 		target = _getTargetByName(targetName);
 		if (!target)
 			goto noSuchNick;
-		target->set_ignoredFd(client.get_fd());
+		
+		if (target->get_targetIsChannel())
+			target->ignoredFlag(client.get_fd(), IRC_CHANNEL_IGNORED);
+
 		target->sendMsg(_architect.CMD_PRIVMSG(client.get_nickname(), target->getTargetName(), msg.c_str()));
-		target->set_ignoredFd(-1);
+
+		if (target->get_targetIsChannel())
+			target->ignoredFlag(client.get_fd(), !IRC_CHANNEL_IGNORED);
 	}
 	return ;
 

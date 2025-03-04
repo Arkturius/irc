@@ -38,14 +38,14 @@ IRC_COMMAND_DEF(TOPIC)
 	}
 	if (newTopic)
 	{
-		if (!perm && channel->get_topicPermNeeded())
+		if (!perm && IRC_FLAG_GET(channel->get_flag(), IRC_CHANNEL_TOPIC_PERM))
 			goto errorPerm;
 		else
 			goto setNewTopic;
 	}
 	else
 	{
-		if (channel->get_topicIsSet())
+		if (IRC_FLAG_GET(channel->get_flag(), IRC_CHANNEL_TOPIC_SET))
 		{
 			str	topic = channel->get_topic();
 			_sendTopic(client, channel);
@@ -56,12 +56,14 @@ IRC_COMMAND_DEF(TOPIC)
 	}
 
 setNewTopic:
-	channel->set_topicIsSet(topic.size() != 1);
+	IRC_FLAG_SET(channel->get_flag(), IRC_CHANNEL_TOPIC_SET);
+	if (topic.size() == 1)
+		IRC_FLAG_DEL(channel->get_flag(), IRC_CHANNEL_TOPIC_SET);
 	channel->set_topic(topic.substr(1));
 	channel->set_topicSetterNickName(client.get_nickname());
 	channel->set_topicSetTime(time(NULL));
 	_sendTopic(client, channel);
-	channel->_broadcast(_architect.CMD_TOPIC(client.get_nickname(), channelName.c_str(), topic.substr(2).c_str()));
+	channel->sendMsg(_architect.CMD_TOPIC(client.get_nickname(), channelName.c_str(), topic.substr(2).c_str()));
 	return ;
 errorNotOnChannel:
 	_send(client, _architect.ERR_NOTONCHANNEL(client.getTargetName(), channelName.c_str()));

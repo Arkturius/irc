@@ -82,7 +82,7 @@ class Client: public ATarget
 
 		void	joinChannel(Channel *channel)
 		{
-			str	channelName = channel->get_name();
+			str	channelName = channel->getTargetName();
 
 			IRC_AUTO s = _channelMap.find(channelName);
 			if (s == _channelMap.end())
@@ -93,7 +93,7 @@ class Client: public ATarget
 		{
 			std::map<str, Channel * >::iterator s;
 
-			s = _channelMap.find(channel->get_name());
+			s = _channelMap.find(channel->getTargetName());
 			if (s != _channelMap.end())
 			{
 				if (s->second->get_size() == 0)
@@ -106,6 +106,7 @@ class Client: public ATarget
 		{
 			write(_fd, (string + "\r\n").c_str(), string.size() + 2);
 		}
+		void	ignoredFlag(int, int32_t) {;}
 		
 		GETTER(uint32_t, _flag);
 		GETTER(int32_t, _fd);

@@ -5,7 +5,6 @@
 # include <Client.h>
 # include <Channel.h>
 # include <poll.h>
-#include <vector>
 
 IRC_COMMAND_DEF(INVITE)
 {
@@ -34,7 +33,7 @@ IRC_COMMAND_DEF(INVITE)
 	{
 		goto errorYouAreNotOnChannel;
 	}
-	if (!perm && channel->get_inviteOnlyChannel())
+	if (!perm && IRC_FLAG_GET(channel->get_flag(), IRC_CHANNEL_INVITE_ONLY))
 		goto errorNoPerm;
 	try
 	{
