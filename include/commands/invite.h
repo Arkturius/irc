@@ -1,10 +1,6 @@
-#ifndef INVITE_H
-# define INVITE_H
+#pragma once
 
 # include <Server.h>
-# include <Client.h>
-# include <Channel.h>
-# include <poll.h>
 
 IRC_COMMAND_DEF(INVITE)
 {
@@ -61,6 +57,3 @@ errorNoSuchNick:
 errorNoSuchChannel:
 	return _send(client, _architect.ERR_NOSUCHCHANNEL(client.getTargetName(), channelName.c_str()));
 }
-
-
-#endif

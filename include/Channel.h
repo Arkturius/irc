@@ -42,6 +42,7 @@ class Channel: public ATarget
 		{
 			_clientsMap[fdClient] = flag;
 		}
+
 		int32_t	_getClient(int fdClient)
 		{
 			IRC_AUTO	it = _clientsMap.find(fdClient);
@@ -164,6 +165,7 @@ class Channel: public ATarget
 		GETTER(str, _topicSetterNickName);
 		GETTER(str, _password);
 		GETTER(int32_t, _flag);
+		GETTER(std::map<int COMMA int32_t>, _clientsMap);
 
 		GETTER_C(int, _userLimit);
 		GETTER_C(str, _topic);

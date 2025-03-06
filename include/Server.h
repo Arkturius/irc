@@ -179,13 +179,20 @@ class Server
 
 			IRC_LOG("client " BOLD(COLOR(GRAY,"[%d]")) " disconnected.", fd);
 
-			std::map<str, Channel *>	&channelOfClient = client.get_channelMap();
-			size_t						size = channelOfClient.size();
-			for (size_t i = 0; i < size; i++)
+			for (IRC_AUTO it = _channelMap.begin(); it != _channelMap.end(); ++it)
 			{
-				Channel	*chan = channelOfClient.begin()->second;
-				chan->ignoredFlag(fd, IRC_CHANNEL_IGNORED);
-				_commandPART(client, str("PART ") + chan->getTargetName());
+				IRC_AUTO	chan = it->second;
+				IRC_AUTO	&clientMap = chan->get_clientsMap();
+				IRC_AUTO	clientIt = clientMap.find(fd);
+
+				if (clientIt != clientMap.end())
+				{
+					IRC_FLAG_SET(clientIt->second, IRC_CHANNEL_IGNORED);
+					if (IRC_FLAG_GET(clientIt->second, IRC_CHANNEL_INVITED))
+						chan->removeClient(fd);
+					else
+						_commandPART(client, str("PART ") + chan->getTargetName());
+				}
 			}
 			client.disconnect();
 			_clients.erase(fd);

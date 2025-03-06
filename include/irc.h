@@ -1,5 +1,6 @@
 #pragma once
 
+# include <assert.h>
 # include <stdio.h>
 # include <stdint.h>
 # include <cstring>
@@ -10,7 +11,7 @@
 typedef std::string str;
 
 # define	UNUSED(X)			(void)(X)
-# define	UNIMPLEMENTED(X)	assert(0 && "Unimplemented")
+# define	UNIMPLEMENTED(X)	assert(0 && "Unimplemented : " X)
 
 # define	BOLD(X)				"\033[1m" X "\033[22m"
 # define 	ITALIC(X)			"\033[3m" X "\033[23m"
