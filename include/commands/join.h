@@ -25,8 +25,6 @@ badChannelKey:
 	return _send(client, _architect.ERR_BADCHANNELKEY(client.getTargetName(), channelName.c_str()));
 
 channelExist:
-	IRC_LOG("channel already exist; joining it");
-	IRC_WARN("channel flag = %d", c->get_flag());
 	if (IRC_FLAG_GET(c->get_flag(), IRC_CHANNEL_INVITE_ONLY) && !c->isInvited(fd))
 		goto inviteOnlyChannel;
 	try
@@ -94,11 +92,15 @@ IRC_COMMAND_DEF(JOIN)
 	if (argv.size() == 1)
 	{
 		if (argv[0] == "0")
+<<<<<<< HEAD
 		{
 			//TODO PART from all channels 
 			// while (channelMap.size())
 			UNIMPLEMENTED("JOIN 0");
 		}
+=======
+			return _partAllChannel(client, 0);
+>>>>>>> eee91e730af21b2b27e11a3ed6791883f0cfdd7f
 		for (size_t j = 0; j < vecChannel.size(); j++)
 			_UserJoinChannel(vecChannel[j], NULL, client);
 		return ;

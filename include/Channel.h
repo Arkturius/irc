@@ -36,7 +36,7 @@ class Channel: public ATarget
 		str						_topicSetterNickName;
 
 		std::map<int, int32_t>	_clientsMap;
-		int32_t				_flag;
+		int32_t					_flag;
 
 		void	_addClient(int fdClient, int32_t flag)
 		{
@@ -103,7 +103,12 @@ class Channel: public ATarget
 
 		int		get_size() const {return _clientsMap.size();}
 		void	invite(int fdClient) {_addClient(fdClient, IRC_CHANNEL_INVITED);}
-		bool	isInvited(int fdClient) {return IRC_FLAG_GET(_getClient(fdClient), IRC_CHANNEL_INVITED);}
+		bool	isInvited(int fdClient) {
+			int flagClient = _getClient(fdClient);
+			if (flagClient == -1)
+				return 0;
+			return IRC_FLAG_GET(flagClient, IRC_CHANNEL_INVITED);
+		}
 
 		int		removeClient(int fdClient)
 		{
