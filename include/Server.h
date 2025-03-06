@@ -173,20 +173,37 @@ class Server
 			_addPollFd(client_fd);
 		}
 
+		void	_partAllChannel(Client &client, int flag)
+		{
+			int fd = client.get_fd();
+
+			std::map<str, Channel *> allChannel = _channelMap;
+			for (IRC_AUTO it = allChannel.begin(); it != allChannel.end(); ++it)
+			{
+				Channel	*chan = it->second;
+				std::map<int, int>	&mapClientOfChannel = chan->get_clientsMap();
+				IRC_AUTO s = mapClientOfChannel.find(fd);
+				if (s == mapClientOfChannel.end())
+					continue ;
+				if (IRC_FLAG_GET(s->second, IRC_CHANNEL_INVITED))
+				{
+					if (IRC_FLAG_GET(flag, IRC_CHANNEL_INVITED))
+						IRC_FLAG_DEL(s->second, IRC_CHANNEL_INVITED);
+				}
+				else
+				{
+					IRC_FLAG_SET(s->second, IRC_CHANNEL_IGNORED);
+					_commandPART(client, str("PART ") + chan->getTargetName());
+				}
+			}
+		}
+
 		void	_disconnectClient(Client &client)
 		{
 			int fd = client.get_fd();
 
 			IRC_LOG("client " BOLD(COLOR(GRAY,"[%d]")) " disconnected.", fd);
-
-			std::map<str, Channel *>	&channelOfClient = client.get_channelMap();
-			size_t						size = channelOfClient.size();
-			for (size_t i = 0; i < size; i++)
-			{
-				Channel	*chan = channelOfClient.begin()->second;
-				chan->ignoredFlag(fd, IRC_CHANNEL_IGNORED);
-				_commandPART(client, str("PART ") + chan->getTargetName());
-			}
+			_partAllChannel(client, IRC_CHANNEL_INVITED);
 			client.disconnect();
 			_clients.erase(fd);
 			_delPollFd(fd);
