@@ -178,9 +178,11 @@ class Server
 		{
 			int fd = client.get_fd();
 
-			std::map<str, Channel *>	allChannel = _channelMap;
-			for (IRC_AUTO it = allChannel.begin(); it != allChannel.end(); ++it)
+			std::map<str, Channel *>::iterator			next;
+			for (IRC_AUTO it = _channelMap.begin(); it != _channelMap.end(); it = next)
 			{
+				next = it;
+				++next;
 				Channel	*chan = it->second;
 				std::map<int, int>	&clientMap = chan->get_clientsMap();
 				IRC_AUTO clientIt = clientMap.find(fd);
