@@ -3,32 +3,27 @@
 # include <Server.h>
 # include <Channel.h>
 #include <exception>
+#include <vector>
 
 IRC_COMMAND_DEF(PART)
 {
-	int					fd = client.get_fd();
-	str					targetName;
-	str					PartReason;
-	std::vector<str>	trailing;
-	std::vector<str>	argv;
-	std::vector<str>	targets;
+	const int				fd = client.get_fd();
+	str						targetName;
+	str						partReason;
+	const std::vector<str>	&param = _parsingParam(command);
+	std::vector<str>		targets;
 
 	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.consumeMany();
-	argv = _seeker.get_matches();
-	if (argv.size() != 1)
+	if (param.size() == 0)
 		goto needMoreParam;
+	if (param.size() > 2)
+	{
+		IRC_WARN("to many params");
+		return ;
+	}
+	partReason = param.size() == 1 ? "" : param[1];
 
-	_seeker.rebuild(R_TRAILING_PARAM);
-	_seeker.consumeMany();
-	trailing = _seeker.get_matches();
-	if (trailing.size() == 0)
-		PartReason = "";
-	else
-		PartReason = trailing[0];
-
-	_seeker.feedString(argv[0]);
+	_seeker.feedString(param[0]);
 	_seeker.rebuild(R_CAPTURE_CHANNEL_NAME);
 	_seeker.findall();
 	targets = _seeker.get_matches();

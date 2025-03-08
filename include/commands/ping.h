@@ -4,30 +4,15 @@
 
 IRC_COMMAND_DEF(PING)
 {
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.consumeMany();
-
-	std::vector<str>	argv = _seeker.get_matches();
-
-	_seeker.rebuild(R_TRAILING_PARAM);
-	_seeker.consume();
-
-	const std::vector<str>	&trail = _seeker.get_matches();
-
-	IRC_WARN("ARGV size before insert = %lu", argv.size());
-	for (IRC_AUTO it = argv.begin(); it != argv.end(); ++it)
-	{
-		IRC_WARN("arg = %s", (*it).c_str());
-	}
-
-	argv.insert(argv.end(), trail.begin(), trail.end());
+	const std::vector<str>	&argv = _parsingParam(command);
 
 	if (argv.size() == 0)
 		goto needMoreParams;
-	
 	if (argv.size() != 1)
+	{
+		IRC_WARN("to many params");
 		return ;
+	}
 
 	_send(client, "PONG " + argv[0]);
 	return ;

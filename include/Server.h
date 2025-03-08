@@ -13,6 +13,7 @@
 # include <Channel.h>
 # include <IRCSeeker.h>
 # include <IRCArchitect.h>
+#include <vector>
 
 # define COMMA	,
 
@@ -177,7 +178,8 @@ class Server
 		{
 			int fd = client.get_fd();
 
-			for (IRC_AUTO it = _channelMap.begin(); it != _channelMap.end(); ++it)
+			std::map<str, Channel *>	allChannel = _channelMap;
+			for (IRC_AUTO it = allChannel.begin(); it != allChannel.end(); ++it)
 			{
 				Channel	*chan = it->second;
 				std::map<int, int>	&clientMap = chan->get_clientsMap();
@@ -193,7 +195,7 @@ class Server
 				else
 				{
 					IRC_FLAG_SET(clientIt->second, IRC_CHANNEL_IGNORED);
-					_commandPART(client, str("PART ") + chan->getTargetName());
+					_commandPART(client, str(" ") + chan->getTargetName());
 				}
 			}
 		}
@@ -321,6 +323,7 @@ class Server
 		void	_sendJoin(Client &client, Channel *channel);
 		void	_sendTopic(Client &client, Channel *channel);
 		void	_sendModeIs(Client &client, Channel *channel);
+		std::vector<str>	_parsingParam(const str &command);
 
 		IRC_COMMAND_DECL(PASS);
 		IRC_COMMAND_DECL(NICK);
@@ -337,7 +340,7 @@ class Server
 		IRC_COMMAND_DECL(QUIT);
 
 		void	_UserJoinChannel(const str &, const str *, Client &);
-		void	_kickUserFromChannel(str , Client &, str , str *);
+		void	_kickUserFromChannel(const str &, Client &, const str &, const str *);
 		bool	_individualMode(bool, char, const str &, Channel *, Client &);
 		
 		Client	*_getClientByName(const str userName)
@@ -516,6 +519,7 @@ class Server
 # include <commands/pong.h>
 # include <commands/ping.h>
 
+# include <IrcParsing.h>
 # include <commands/join.h>
 # include <commands/part.h>
 # include <commands/topic.h>

@@ -2,6 +2,7 @@
 
 # include <Server.h>
 # include <Channel.h>
+#include <vector>
 
 void	Server::_UserJoinChannel(const str &channelName, const str *channelKey, Client &client)
 {
@@ -76,29 +77,26 @@ void	Server::_sendJoin(Client &client, Channel *channel)
 
 IRC_COMMAND_DEF(JOIN)
 {
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.findall();
-	std::vector<str>	argv = _seeker.get_matches();
-	if (argv.size() == 0)
+	const std::vector<str> &param = _parsingParam(command);
+	if (param.size() == 0)
 		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "JOIN"));
 	
-	_seeker.feedString(argv[0]);
+	_seeker.feedString(param[0]);
 	_seeker.rebuild(R_CAPTURE_CHANNEL_NAME);
 	_seeker.findall();
 	std::vector<str>	vecChannel = _seeker.get_matches();
 
-	if (argv.size() == 1)
+	if (param.size() == 1)
 	{
-		if (argv[0] == "0")
+		if (param[0] == "0")
 			return _partAllChannel(client, 0);
 		for (size_t j = 0; j < vecChannel.size(); j++)
 			_UserJoinChannel(vecChannel[j], NULL, client);
 		return ;
 	}
-	if (argv.size() == 2)
+	if (param.size() == 2)
 	{
-		_seeker.feedString(argv[1]);
+		_seeker.feedString(param[1]);
 		_seeker.rebuild(R_CAPTURE_CHANNEL_KEY);
 		_seeker.findall();
 		std::vector<str>	vecKey = _seeker.get_matches();
