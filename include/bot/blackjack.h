@@ -1,12 +1,14 @@
 #pragma once
 
-#include <cstdio>
-#include <cstdlib>
+# include <unistd.h>
 # include <irc.h>
+# include <Server.h>
 # include <algorithm>
 # include <map>
 # include <stdint.h>
 # include <vector>
+# include <Client.h>
+# include <sstream>
 
 # define BLACKJACK 50
 
@@ -14,7 +16,15 @@
 typedef enum:	uint32_t
 {
 	BJ_STAND	=	1,
-	BJ_INGAME	=	1U << 2
+	BJ_AS_BET	=	1U << 1,
+
+	BJ_WAITING	=	1U << 2,
+	BJ_OPERATOR	=	1U << 3,
+	BJ_INVITEED	=	1U << 4,
+
+	BJ_BETTING	=	1U << 6,
+	BJ_PLAYING	=	1U << 7,
+	BJ_INGAME	=	(1U << 8) - 1,
 }	blackJackFlag;
 
 typedef struct
@@ -106,7 +116,18 @@ class	Hand
 		int					money;
 		int					betting;
 
+		int					_fd;
+		str					_name;
+
 	public:
+		void	sendToPlayer(const str &msg)
+		{
+			std::stringstream	stream;
+			stream << money;
+			str string = str(":localhost PRIVMSG #") + _name + str(" :") + msg + + " ($" + stream.str() + str(")\r\n");
+			write(_fd, string.c_str(), string.size());
+		}
+
 		int		handValue()
 		{
 			int	value = 0;
@@ -137,8 +158,8 @@ class	Hand
 			_hand.push_back(secondCard);
 		}
 
-		Hand():money(1000) {};
-		Hand(Card &firstCard, Card &secondCard):money(1000)
+		Hand() {};
+		Hand(int fd, const str &name, Card &firstCard, Card &secondCard):money(1000), _fd(fd), _name(name)
 		{
 			_hand.push_back(firstCard);
 			_hand.push_back(secondCard);
@@ -149,14 +170,17 @@ class	Hand
 		GETTER(uint32_t, _flag);
 		GETTER(int, money);
 		GETTER(int, betting);
+		GETTER(str, _name);
 
 		GETTER_C(std::vector<Card>, _hand);
 		GETTER_C(uint32_t, _flag);
 		GETTER_C(int, money);
 		GETTER_C(int, betting);
+		GETTER_C(str, _name);
 
 		SETTER(int, money);
 		SETTER(int, betting);
+		SETTER(str, _name);
 };
 
 # define CARD_TOP		"╭─────╮"
@@ -176,13 +200,23 @@ class	Hand
 class BlackJack
 {
 	private:
-		Deck				_deck;
-		Hand				_dealer;
-		std::map<int, Hand>	_players;
-		size_t				_standingPlayers;
-		uint32_t			_flag;
+		Deck					_deck;
+		Hand					_dealer;
+		std::map<str, Hand>		_players;
+		size_t					_standingPlayers;
+		uint32_t				_flag;
 
-		void	_end()
+		void	_startRound()
+		{
+			IRC_FLAG_SET(_flag, BJ_PLAYING);
+			IRC_AUTO it = _players.begin();
+			for (; it != _players.end(); ++it)
+			{
+				if (!IRC_FLAG_GET(it->second.get_flag(), BJ_WAITING))
+					it->second.sendToPlayer("every player as bet; you can now [stand|hit|double]");
+			}
+		}
+		void	_endRound()
 		{
 			while (_dealer.handValue() < 17)
 				_dealer.addCard(_deck.drawCard());
@@ -202,7 +236,10 @@ class BlackJack
 				else if (it->second.handValue() >= value)
 					newmoney = 2 * it->second.getbetting();
 				it->second.getmoney() += newmoney;
-				//you have won : newmoney
+				std::stringstream	stream;
+				stream << newmoney;
+				it->second.sendToPlayer(str("you have won ") + stream.str());
+				it->second.sendToPlayer(displayGame());
 			}
 			_restart();
 		}
@@ -212,68 +249,106 @@ class BlackJack
 			IRC_AUTO it = _players.begin();
 			for (; it != _players.end(); ++it)
 			{
-				IRC_FLAG_DEL(it->second.get_flag(), BJ_STAND);
+				it->second.get_flag() = 0;
 				it->second.redraw(_deck.drawCard(), _deck.drawCard());
-				//afficher argent et dire que on t attend
+				it->second.sendToPlayer("waiting for the host to restart the game");
 			}
-			IRC_FLAG_DEL(_flag, BJ_INGAME);
+			_flag = 0;
 			_standingPlayers = 0;
 		}
-
-	public:
-		~BlackJack() {}
-
-		BlackJack(): _deck(Deck())
+		size_t	_getInGamePlayer() const
 		{
-			_dealer = Hand(_deck.drawCard(), _deck.drawCard());
-		}
-
-		void addPlayer(int fd)
-		{
-			if (IRC_FLAG_GET(_flag, BJ_INGAME))
-				; //inside game
-			_players[fd] = Hand(_deck.drawCard(), _deck.drawCard());
-		}
-
-		void	bet(int fd, int money)
-		{
-			if (IRC_FLAG_GET(_players[fd].get_flag(), BJ_STAND))
-				return ;
-			_players[fd].setbetting(money);
-			_players[fd].getmoney() -= money;
-			IRC_FLAG_SET(_players[fd].get_flag(), BJ_STAND);
-			if (_standingPlayers++ == _players.size())
-				start();
-		}
-		void	start()
-		{
-			IRC_FLAG_SET(_flag, BJ_INGAME);
+			int	i = 0;
 			IRC_AUTO it = _players.begin();
 			for (; it != _players.end(); ++it)
 			{
-				IRC_FLAG_DEL(it->second.get_flag(), BJ_STAND);
+				if (!IRC_FLAG_GET(it->second.get_flag(), BJ_WAITING))
+					i++;
+			}
+			return i;
+		}
+
+
+	public:
+		void	setDealerName(str &name)
+		{
+			_dealer.set_name(name);
+		}
+
+		~BlackJack() {
+			const str	msg = "Your leaving table of " + _dealer.get_name() + " with";
+			for (IRC_AUTO it = _players.begin(); it != _players.begin(); ++it)
+				it->second.sendToPlayer(msg);
+
+		}
+
+		BlackJack(): _deck(Deck())
+		{
+			_dealer = Hand(-1, "dealer", _deck.drawCard(), _deck.drawCard());
+		}
+
+		void addPlayer(const str &name, int fd)
+		{
+			_players[name] = Hand(fd, name, _deck.drawCard(), _deck.drawCard());
+			_players[name].sendToPlayer("starting the game with $1000");
+			if (IRC_FLAG_GET(_flag, BJ_INGAME))
+			{
+				_players[name].get_flag() = BJ_WAITING;
+				_players[name].sendToPlayer("waiting the game end");
+			}
+		}
+
+		void	start()
+		{
+			IRC_FLAG_SET(_flag, BJ_BETTING);
+			IRC_AUTO it = _players.begin();
+			for (; it != _players.end(); ++it)
+			{
+				it->second.get_flag() = 0;
 				it->second.redraw(_deck.drawCard(), _deck.drawCard());
+				it->second.sendToPlayer(displayGame());
+				it->second.sendToPlayer("you can now bet");
 			}
 			_standingPlayers = 0;
-			//send to all player their card
 		}
-
-		void	hit(int fd)
+		void	bet(const str &name, int money)
 		{
-			if (IRC_FLAG_GET(_players[fd].get_flag(), BJ_STAND))
+			money = std::max(1, std::min(money, 1000));
+			if (IRC_FLAG_GET(_players[name].get_flag(), BJ_AS_BET))
 				return ;
-			_players[fd].addCard(_deck.drawCard());
-			if (_players[fd].handValue() > 21 || _players[fd].handValue() == BLACKJACK)
-				stand(fd);
+			_players[name].setbetting(money);
+			_players[name].getmoney() -= money;
+			IRC_FLAG_SET(_players[name].get_flag(), BJ_AS_BET);
+			std::stringstream	stream;
+			stream << money;
+			_players[name].sendToPlayer(str("you bet $") + stream.str());
+			if (_standingPlayers++ == _players.size())
+				_startRound();
 		}
 
-		void	stand(int fd)
+		void	hit(const str &name)
 		{
-			UNUSED(fd);
-			IRC_FLAG_SET(_players[fd].get_flag(), BJ_STAND);
+			if (IRC_FLAG_GET(_players[name].get_flag(), BJ_STAND))
+				return ;
+			_players[name].addCard(_deck.drawCard());
+			if (_players[name].handValue() > 21 || _players[name].handValue() == BLACKJACK)
+				stand(name);
+		}
+
+		void	stand(const str &name)
+		{
+			IRC_FLAG_SET(_players[name].get_flag(), BJ_STAND);
 			_standingPlayers++;
 			if (_standingPlayers == _players.size())
-				_end();
+				_endRound();
+		}
+		void	doubleDown(const str &name)
+		{
+			if (IRC_FLAG_GET(_players[name].get_flag(), BJ_STAND))
+				return ;
+			hit(name);
+			_players[name].getbetting() *= 2;
+			stand(name);
 		}
 
 		str	displayGame()
@@ -313,34 +388,74 @@ class BlackJack
 			return cardbanner;
 		}
 
-		void	quit(int fd)
+		void	quit(const str &name)
 		{
-			IRC_AUTO	it = _players.find(fd);
-			int	money = it->second.getmoney();
-			UNUSED(money);
-			if (IRC_FLAG_GET(_flag, BJ_INGAME))
+			IRC_AUTO	it = _players.find(name);
+			if (IRC_FLAG_GET(it->second.get_flag(), BJ_WAITING))
+				goto quiting;
+			IRC_FLAG_SET(it->second.get_flag(), BJ_WAITING);
+			if (IRC_FLAG_GET(_flag, BJ_PLAYING))
 			{
-				if (!IRC_FLAG_GET(_players[fd].get_flag(), BJ_STAND))
+				if (!IRC_FLAG_GET(_players[name].get_flag(), BJ_STAND))
 					_standingPlayers++;
-				if (_standingPlayers == _players.size())
-					_end();
-				_players.erase(it);
+				if (_standingPlayers == _getInGamePlayer())
+					_endRound();
 			}
-			else
+			else if (IRC_FLAG_GET(_flag, BJ_BETTING))
 			{	
-				if (!IRC_FLAG_GET(_players[fd].get_flag(), BJ_STAND))
+				if (!IRC_FLAG_GET(_players[name].get_flag(), BJ_AS_BET))
 					_standingPlayers++;
-				if (_standingPlayers == _players.size())
-					start();
-				_players.erase(it);
+				if (_standingPlayers == _getInGamePlayer())
+					_startRound();
 			}
-			//quittting with (money)
-		}
-		void	doubleDown(int fd)
-		{
-			hit(fd);
-			_players[fd].getbetting() *= 2;
-			stand(fd);
+quiting:
+			it->second.sendToPlayer("your quitting the game");
+			_players.erase(it);
 		}
 
+		void	stop()
+		{
+			const str	msg = "Your leaving table of " + _dealer.get_name() + " with";
+			for (IRC_AUTO it = _players.begin(); it != _players.begin(); ++it)
+				it->second.sendToPlayer(msg);
+			_players.clear();
+		}
 };
+
+IRC_COMMAND_DEF(BJ)
+{
+	const std::vector<str>	&param = _parsingParam(command);
+	BlackJack				Target;
+
+	if (param.size() == 0)
+		goto needMoreParam;
+
+	else if (param[0] == "START")
+	{
+	}
+	else if (param[0] == "STOP")
+	{
+	}
+	else if (param[0] == "INVITE")
+	{
+	}
+	if (param[0] == "JOIN")
+	{
+	}
+	else if (param[0] == "HIT")
+	{
+
+	}
+	else if (param[0] == "STAND")
+	{
+	}
+	else if (param[0] == "DOUBLE")
+	{
+	}
+	else if (param[0] == "QUIT")
+	{
+	}
+
+	needMoreParam:
+		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "BJ"));
+}

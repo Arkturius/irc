@@ -19,9 +19,6 @@ std::vector<str>	Server::_parsingParam(const str &command)
 	std::vector<str>	&trailingParam = _seeker.get_matches();
 
 	result.insert(result.end(), trailingParam.begin(), trailingParam.end());
-	IRC_LOG("|%s| => %zu:", command.c_str(), result.size());
-	for (IRC_AUTO i = result.begin(); i < result.end(); ++i)
-		IRC_LOG("{%s}", i->c_str());
 	return result;
 }
 

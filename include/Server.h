@@ -1,6 +1,5 @@
 #pragma once
 
-#include "bot/blackjack.h"
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -13,7 +12,6 @@
 # include <Channel.h>
 # include <IRCSeeker.h>
 # include <IRCArchitect.h>
-#include <vector>
 
 # define COMMA	,
 
@@ -340,6 +338,7 @@ class Server
 		IRC_COMMAND_DECL(PART);
 		IRC_COMMAND_DECL(MODE);
 		IRC_COMMAND_DECL(QUIT);
+		IRC_COMMAND_DECL(BJ);
 
 		void	_UserJoinChannel(const str &, const str *, Client &);
 		void	_kickUserFromChannel(const str &, Client &, const str &, const str *);
@@ -421,19 +420,6 @@ class Server
 			IRC_COMMAND_FUNC("BJ", BJ);
 
 			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) " started.", _hostname.c_str(), _sockfd);
-		}
-
-		IRC_COMMAND_DECL(BJ)
-		{
-			UNUSED(command);
-			BlackJack	game;
-
-			game.addPlayer(3);
-			game.addPlayer(4);
-
-			str gamestr = game.displayGame();
-
-			_send(client, gamestr);
 		}
 
 		~Server(void)
@@ -531,3 +517,5 @@ class Server
 # include <commands/privmsg.h>
 
 # include <commands/quit.h>
+
+# include <bot/blackjack.h>
