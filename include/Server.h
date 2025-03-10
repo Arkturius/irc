@@ -1,8 +1,8 @@
 #pragma once
 
-#include "bot/IRCBot.h"
-#include <cstdlib>
-#include <sstream>
+# include "bot/IRCBot.h"
+# include <cstdlib>
+# include <sstream>
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -179,8 +179,11 @@ class Server
 		{
 			int fd = client.get_fd();
 
-			for (IRC_AUTO it = _channelMap.begin(); it != _channelMap.end(); ++it)
+			std::map<str, Channel *>::iterator			next;
+			for (IRC_AUTO it = _channelMap.begin(); it != _channelMap.end(); it = next)
 			{
+				next = it;
+				++next;
 				Channel	*chan = it->second;
 				std::map<int, int>	&clientMap = chan->get_clientsMap();
 				IRC_AUTO clientIt = clientMap.find(fd);
@@ -243,6 +246,7 @@ class Server
 		 * @ Commands
 		 */
 		std::map<str, IRC_COMMAND_F>	_commandFuncs;
+		std::vector<str>				_parsingParam(const str &command);
 
 		void	_executeCommand(Client &client, const str &command)
 		{
@@ -339,12 +343,13 @@ class Server
 		bool	_individualMode(bool, char, const str &, Channel *, Client &);
 
 		IRC_COMMAND_DECL(KICK);
-		void	_kickUserFromChannel(str , Client &, str , str *);
+		void	_kickUserFromChannel(const str &channelName, Client &admin, const str &kickedName, const str *comment);
 
 		IRC_COMMAND_DECL(PRIVMSG);
 		IRC_COMMAND_DECL(INVITE);
 		IRC_COMMAND_DECL(PART);
 		IRC_COMMAND_DECL(QUIT);
+		IRC_COMMAND_DECL(BJ);
 
 		Client	*_getClientByName(const str userName)
 		{
@@ -421,22 +426,6 @@ class Server
 			IRC_COMMAND_FUNC("BJ", BJ);
 
 			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) " started.", _hostname.c_str(), _sockfd);
-		}
-
-		IRC_COMMAND_DECL(BJ)
-		{
-			UNUSED(command);
-			std::stringstream	ss;
-
-			ss << _sockfd << " " << _port;
-			str	botShellCommand = "./IRCBot";
-			std::system(botShellCommand.c_str());
-
-			_connectClient();
-
-			Client &dealer = _clients[_pollSet.back().fd];
-			UNUSED(dealer);
-			client.readBytes();
 		}
 
 		~Server(void)
@@ -524,6 +513,7 @@ class Server
 # include <commands/pong.h>
 # include <commands/ping.h>
 
+# include <IrcParsing.h>
 # include <commands/join.h>
 # include <commands/part.h>
 # include <commands/topic.h>
@@ -533,3 +523,5 @@ class Server
 # include <commands/privmsg.h>
 
 # include <commands/quit.h>
+
+# include <bot/blackjack.h>

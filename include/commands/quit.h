@@ -7,12 +7,8 @@
 
 IRC_COMMAND_DEF(QUIT)
 {
-	_seeker.feedString(command);
-	_seeker.rebuild(R_TRAILING_PARAM);
-	if (!_seeker.consume())
-		return ;
+	const std::vector<str>	&argv = _parsingParam(command);
 
-	const std::vector<str>	&argv = _seeker.get_matches();
 	if (argv.size() != 1)
 		return ;
 

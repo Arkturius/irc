@@ -133,15 +133,11 @@ void	Server::_sendModeIs(Client &client, Channel *channel)
 
 IRC_COMMAND_DEF(MODE)
 {
-	str					targetName;
-	str					modeString;
-	Channel				*target;
-	std::vector<str>	argv;
+	str						targetName;
+	str						modeString;
+	Channel					*target;
+	const std::vector<str>	&argv = _parsingParam(command);
 
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.consumeMany();
-	argv = _seeker.get_matches();
 	if (!argv.size())
 		goto needMoreParam;
 

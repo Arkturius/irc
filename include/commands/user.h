@@ -4,13 +4,13 @@
 
 IRC_COMMAND_DEF(USER)
 {
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.findall();
-	std::vector<str>	&argv = _seeker.get_matches();
+	const std::vector<str>	&argv = _parsingParam(command);
 
-	if (argv.size() != 3)
+	if (argv.size() != 4)
 		goto needMoreParams;
+
+	if (argv[1] != "0" || argv[2] != "*")
+		return ;
 
 	if (IRC_FLAG_GET(client.get_flag(), IRC_CLIENT_AUTH))
 		goto alreadyRegistered;

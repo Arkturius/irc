@@ -2,7 +2,7 @@
 
 # include <Server.h>
 
-void	Server::_kickUserFromChannel(str channelName, Client &admin, str kickedName, str *comment)
+void	Server::_kickUserFromChannel(const str &channelName, Client &admin, const str &kickedName, const str *comment)
 {
 	str				reason = comment != NULL ? *comment : "";
 	Client	*kicked = _getClientByName(kickedName);
@@ -56,28 +56,27 @@ adminNotInChannel:
 
 IRC_COMMAND_DEF(KICK)
 {
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.findall();
-	std::vector<str>	argv = _seeker.get_matches();
-	if (argv.size() != 2)
+	const std::vector<str>	&param = _parsingParam(command);
+
+	if (param.size() < 2)
 		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "KICK"));
+	if (param.size() > 3)
+	{
+		IRC_WARN("too many params");
+		return ;
+	}
 
-
-	_seeker.feedString(argv[0]);
+	_seeker.feedString(param[0]);
 	_seeker.rebuild(R_CAPTURE_CHANNEL_NAME);
 	_seeker.findall();
 	std::vector<str>	vecChannel = _seeker.get_matches();
 
-	_seeker.feedString(argv[1]);
+	_seeker.feedString(param[1]);
 	_seeker.rebuild(R_NICKNAME);
 	_seeker.findall();
 	std::vector<str>	vecUser = _seeker.get_matches();
 
-	_seeker.feedString(command);
-	_seeker.rebuild(R_TRAILING_PARAM);
-	_seeker.findall();
-	str	*comment = _seeker.get_matchCount() ? &_seeker.get_matches()[0] : NULL;
+	const str	*comment = param.size() == 3 ? &param[2] : NULL;
 	
 	bool	i;
 	size_t	k = 0;

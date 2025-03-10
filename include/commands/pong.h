@@ -9,13 +9,7 @@ IRC_COMMAND_DEF(PONG)
 	if ((client.get_flag() & IRC_CAN_PONG) != IRC_CAN_PONG)
 		return ;
 
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-
-	if (!_seeker.consume())
-		return ;
-
-	const std::vector<str>	&argv = _seeker.get_matches();
+	const std::vector<str>	&argv = _parsingParam(command);
 
 	if (argv.size() != 1 || argv[0] != "ft_irc")
 		return ;

@@ -4,31 +4,25 @@
 
 IRC_COMMAND_DEF(TOPIC)
 {
+	const std::vector<str>	&param = _parsingParam(command);
+
 	str		channelName;
 	str		topic;
-	bool	newTopic = 0;
 
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.consumeMany();
-	std::vector<str>	&argv = _seeker.get_matches();
-	if (argv.size() == 1)
-		channelName = argv[0];
-	else
-		return ;
-
-	_seeker.rebuild(R_TRAILING_PARAM);
-	_seeker.findall();
-	std::vector<str>	&topics = _seeker.get_matches();
-	if (topics.size() == 1)
+	if (param.size() < 1)
+		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "TOPIC"));
+	if (param.size() > 2)
 	{
-		topic = topics[0];
-		newTopic = 1;
-	}
-	if (topics.size() > 1)
+		IRC_WARN("to many params");
 		return ;
+	}
+	channelName = param[0];
+	if (param.size() == 2)
+		topic = param[1];
+
 	Channel	*channel = _getChannelByName(channelName);
 	int		perm = 0;
+
 	if (!channel)
 		goto errorNoSuchChannel;
 	try { perm = channel->havePerm(client.get_fd()); }
@@ -36,7 +30,7 @@ IRC_COMMAND_DEF(TOPIC)
 	{
 		goto errorNotOnChannel;
 	}
-	if (newTopic)
+	if (param.size() == 2)
 	{
 		if (!perm && IRC_FLAG_GET(channel->get_flag(), IRC_CHANNEL_TOPIC_PERM))
 			goto errorPerm;
@@ -47,7 +41,7 @@ IRC_COMMAND_DEF(TOPIC)
 	{
 		if (IRC_FLAG_GET(channel->get_flag(), IRC_CHANNEL_TOPIC_SET))
 		{
-			str	topic = channel->get_topic();
+			topic = channel->get_topic();
 			_sendTopic(client, channel);
 			return ;
 		}

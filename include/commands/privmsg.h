@@ -11,31 +11,28 @@ IRC_COMMAND_DEF(PRIVMSG)
 {
 	str					targetName;
 	str					msg;
-	std::vector<str>	topics;
-	std::vector<str>	argv;
 	std::vector<str>	targets;
+	const std::vector<str>	param = _parsingParam(command);
 
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.consumeMany();
-	argv = _seeker.get_matches();
-	if (argv.size() != 1)
+	if (param.size() == 0)
 		goto needMoreParam;
-
-	_seeker.rebuild(R_TRAILING_PARAM);
-	_seeker.consumeMany();
-	topics = _seeker.get_matches();
-	if (topics.size() != 1)
+	if (param.size() == 1)
 		goto noTextToSend;
+	if (param.size() > 2)
+	{
+		IRC_WARN("to many params");
+		return ;
+	}
 
-	_seeker.feedString(argv[0]);
+	msg = param[1].substr(1);
+
+	_seeker.feedString(param[0]);
 	_seeker.rebuild(R_CAPTURE_TARGET_NAME);
 	_seeker.findall();
 	targets = _seeker.get_matches();
 	if (targets.size() == 0)
 		goto noRecipient;
 
-	msg = topics[0].substr(1);
 	for (IRC_AUTO it = targets.begin(); it != targets.end(); ++it)
 	{
 		ATarget	*target;

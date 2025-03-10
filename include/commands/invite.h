@@ -4,17 +4,17 @@
 
 IRC_COMMAND_DEF(INVITE)
 {
-	std::vector<str>	argv;
+	const std::vector<str>	&param = _parsingParam(command);
 
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.consumeMany();
-	argv = _seeker.get_matches();
-	if (argv.size() != 2)
+	if (param.size() < 2)
 		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "INVITE"));
-
-	str	&nickName = argv[0];
-	str	&channelName = argv[1];
+	if (param.size() > 2)
+	{
+		IRC_WARN("to many params");
+		return ;
+	}
+	const str	&nickName = param[0];
+	const str	&channelName = param[1];
 
 	Channel *channel = _getChannelByName(channelName);
 	Client	*target = _getClientByName(nickName);

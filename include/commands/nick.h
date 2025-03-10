@@ -4,10 +4,7 @@
 
 IRC_COMMAND_DEF(NICK)
 {
-	_seeker.feedString(command);
-	_seeker.rebuild(R_MIDDLE_PARAM);
-	_seeker.findall();
-	const std::vector<str>	&argv = _seeker.get_matches();
+	const std::vector<str>	&argv = _parsingParam(command);
 
 	if (argv.size() == 0)
 		goto noNicknameGiven;
