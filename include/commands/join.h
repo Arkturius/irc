@@ -3,9 +3,9 @@
 # include <Server.h>
 # include <Channel.h>
 
-void	Server::_UserJoinChannel(const str &channelName, const str *channelKey, Client &client)
+void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Client &client)
 {
-	IRC_OK("joinning channel: %s with key :%s", channelName.c_str(), channelKey ? channelKey->c_str() : "NULL");
+	IRC_LOG(IRC_ANALYST "joinning channel: %s with key %s", channelName.c_str(), channelKey ? channelKey->c_str() : "NULL");
 	int32_t			fd = client.get_fd();
 	Channel			*c = _getChannelByName(channelName);
 
@@ -39,6 +39,7 @@ channelExist:
 			goto badChannelKey;
 		return ;
 	}
+
 channelDoesntExist:
 	c = new Channel(channelName, fd);
 	_channelMap[channelName] = c;
@@ -93,7 +94,7 @@ IRC_COMMAND_DEF(JOIN)
 		if (argv[0] == "0")
 			return _partAllChannel(client, 0);
 		for (size_t j = 0; j < vecChannel.size(); j++)
-			_UserJoinChannel(vecChannel[j], NULL, client);
+			_userJoinChannel(vecChannel[j], NULL, client);
 		return ;
 	}
 	if (argv.size() == 2)
@@ -106,13 +107,12 @@ IRC_COMMAND_DEF(JOIN)
 		if (vecKey.size() > vecChannel.size())
 			goto needMoreParam;
 		for (j = 0; j < vecKey.size(); j++)
-			_UserJoinChannel(vecChannel[j], &vecKey[j], client);
+			_userJoinChannel(vecChannel[j], &vecKey[j], client);
 		for (; j < vecChannel.size(); j++)
-			_UserJoinChannel(vecChannel[j], NULL, client);
+			_userJoinChannel(vecChannel[j], NULL, client);
 		return ;
 
 	needMoreParam:
 		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "JOIN"));
 	}
-	IRC_WARN("error too many args");
 }

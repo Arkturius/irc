@@ -6,7 +6,7 @@
 #    By: rgramati <rgramati@student.42angouleme.fr  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/07/05 17:09:56 by rgramati          #+#    #+#              #
-#    Updated: 2025/02/28 14:45:08 by rgramati         ###   ########.fr        #
+#    Updated: 2025/03/06 14:04:46 by rgramati         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,18 +34,22 @@ ifeq ($(VERBOSE), 1)
 	CFLAGS	+=	-DIRC_VERBOSE=1
 endif
 
-IFLAGS		:=	-I$(INC_DIR) -I$(SRC_DIR)/commands
+IFLAGS		:=	-I$(INC_DIR) -I$(SRC_DIR)/commands 
 
 RM			:=	rm -rf
 
 #
 # Rules
 #
-all:			$(NAME)
+all:			$(NAME) bot
 
 $(NAME):	 	$(OBJS)
 	@$(CC) $(CFLAGS) $(IFLAGS) -o $(NAME) $^
 	@echo " $(GREEN)$(BOLD)$(ITALIC)■$(RESET)  building	$(GRAY)$(BOLD)$(ITALIC)$(NAME)$(RESET)"
+
+bot:			build/src/IRCBot.o
+	@$(CC) $(CFLAGS) $(IFLAGS) -o IRCBot $^
+	@echo " $(GREEN)$(BOLD)$(ITALIC)■$(RESET)  building	$(GRAY)$(BOLD)$(ITALIC)IRCBot$(RESET)"
 
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(@D)

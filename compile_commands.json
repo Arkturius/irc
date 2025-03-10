@@ -8,84 +8,16 @@
    "-Werror",
    "-gdwarf-2",
    "-std=c++98",
+   "-MMD",
+   "-MP",
    "-DIRC_VERBOSE=1",
    "-Iinclude",
+   "-Isrc/commands",
    "-o",
    "build/src/ircserv.o",
    "-c",
    "src/ircserv.cpp"
   ],
   "file": "src/ircserv.cpp"
- },
- {
-  "directory": "/nfs/homes/rgramati/Documents/42cursus/irc",
-  "arguments": [
-   "clang++",
-   "-Wall",
-   "-Wextra",
-   "-Werror",
-   "-gdwarf-2",
-   "-std=c++98",
-   "-DIRC_VERBOSE=1",
-   "-Iinclude",
-   "-o",
-   "build/src/Server.o",
-   "-c",
-   "src/Server.cpp"
-  ],
-  "file": "src/Server.cpp"
- },
- {
-  "directory": "/nfs/homes/rgramati/Documents/42cursus/irc",
-  "arguments": [
-   "clang++",
-   "-Wall",
-   "-Wextra",
-   "-Werror",
-   "-gdwarf-2",
-   "-std=c++98",
-   "-DIRC_VERBOSE=1",
-   "-Iinclude",
-   "-o",
-   "build/src/Client.o",
-   "-c",
-   "src/Client.cpp"
-  ],
-  "file": "src/Client.cpp"
- },
- {
-  "directory": "/nfs/homes/rgramati/Documents/42cursus/irc",
-  "arguments": [
-   "clang++",
-   "-Wall",
-   "-Wextra",
-   "-Werror",
-   "-std=c++98",
-   "-DIRC_VERBOSE=1",
-   "-Iinclude",
-   "-o",
-   "build/src/Channel.o",
-   "-c",
-   "src/Channel.cpp"
-  ],
-  "file": "src/Channel.cpp"
- },
- {
-  "directory": "/nfs/homes/rgramati/Documents/42cursus/irc",
-  "arguments": [
-   "clang++",
-   "-Wall",
-   "-Wextra",
-   "-Werror",
-   "-gdwarf-2",
-   "-std=c++98",
-   "-DIRC_VERBOSE=1",
-   "-Iinclude",
-   "-o",
-   "build/src/Send.o",
-   "-c",
-   "src/Send.cpp"
-  ],
-  "file": "src/Send.cpp"
  }
 ]

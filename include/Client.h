@@ -11,6 +11,9 @@ typedef enum:	uint32_t
 	IRC_CLIENT_AUTH				=	1U,
 	IRC_CLIENT_REGISTER			=	1U << 1,
 	IRC_CLIENT_PINGED			=	1U << 2,
+
+	IRC_CLIENT_BOT				=	1U << 15,
+	
 	IRC_CLIENT_EOT				=	1U << 30,
 	IRC_CLIENT_EOF				=	1U << 31,
 }	clientFlag;

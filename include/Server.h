@@ -1,6 +1,8 @@
 #pragma once
 
-#include "bot/blackjack.h"
+#include "bot/IRCBot.h"
+#include <cstdlib>
+#include <sstream>
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/socket.h>
@@ -40,7 +42,7 @@ typedef	void	(Server::*IRC_COMMAND_F)(Client &, const str &command);
 # define	IRC_CLIENT_OFFLINE(c)		IRC_FLAG_GET((c).get_flag(), IRC_CLIENT_EOF)
 # define	IRC_CLIENT_PENDING(c)		IRC_FLAG_GET((c).get_flag(), IRC_CLIENT_EOT)
 
-# define IRC_NICKLEN	9
+# define	IRC_NICKLEN	9
 
 class Server
 {
@@ -192,8 +194,9 @@ class Server
 				}
 				else
 				{
+					IRC_ERR("ICI CA DEVRAIT PAS MARCHER");
 					IRC_FLAG_SET(clientIt->second, IRC_CHANNEL_IGNORED);
-					_commandPART(client, str("PART ") + chan->getTargetName());
+					_commandPART(client, chan->getTargetName());
 				}
 			}
 		}
@@ -318,28 +321,31 @@ class Server
 				_send((*it).second, string);
 		}
 
-		void	_sendJoin(Client &client, Channel *channel);
-		void	_sendTopic(Client &client, Channel *channel);
-		void	_sendModeIs(Client &client, Channel *channel);
-
 		IRC_COMMAND_DECL(PASS);
 		IRC_COMMAND_DECL(NICK);
 		IRC_COMMAND_DECL(USER);
 		IRC_COMMAND_DECL(PING);
 		IRC_COMMAND_DECL(PONG);
+
 		IRC_COMMAND_DECL(JOIN);
+		void	_sendJoin(Client &client, Channel *channel);
+		void	_userJoinChannel(const str &, const str *, Client &);
+
+		IRC_COMMAND_DECL(TOPIC);
+		void	_sendTopic(Client &client, Channel *channel);
+
+		IRC_COMMAND_DECL(MODE);
+		void	_sendModeIs(Client &client, Channel *channel);
+		bool	_individualMode(bool, char, const str &, Channel *, Client &);
+
 		IRC_COMMAND_DECL(KICK);
+		void	_kickUserFromChannel(str , Client &, str , str *);
+
 		IRC_COMMAND_DECL(PRIVMSG);
 		IRC_COMMAND_DECL(INVITE);
-		IRC_COMMAND_DECL(TOPIC);
 		IRC_COMMAND_DECL(PART);
-		IRC_COMMAND_DECL(MODE);
 		IRC_COMMAND_DECL(QUIT);
 
-		void	_UserJoinChannel(const str &, const str *, Client &);
-		void	_kickUserFromChannel(str , Client &, str , str *);
-		bool	_individualMode(bool, char, const str &, Channel *, Client &);
-		
 		Client	*_getClientByName(const str userName)
 		{
 			for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
@@ -400,7 +406,6 @@ class Server
 			time(&_startTime);
 
 			IRC_COMMAND_FUNC("PASS", PASS);
-
 			IRC_COMMAND_FUNC("NICK", NICK);
 			IRC_COMMAND_FUNC("USER", USER);
 			IRC_COMMAND_FUNC("PING", PING);
@@ -421,14 +426,17 @@ class Server
 		IRC_COMMAND_DECL(BJ)
 		{
 			UNUSED(command);
-			BlackJack	game;
+			std::stringstream	ss;
 
-			game.addPlayer(3);
-			game.addPlayer(4);
+			ss << _sockfd << " " << _port;
+			str	botShellCommand = "./IRCBot";
+			std::system(botShellCommand.c_str());
 
-			str gamestr = game.displayGame();
+			_connectClient();
 
-			_send(client, gamestr);
+			Client &dealer = _clients[_pollSet.back().fd];
+			UNUSED(dealer);
+			client.readBytes();
 		}
 
 		~Server(void)

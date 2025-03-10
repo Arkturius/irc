@@ -13,6 +13,7 @@ IRC_COMMAND_DEF(PART)
 	std::vector<str>	argv;
 	std::vector<str>	targets;
 
+	IRC_ERR("command PART:  <%s>", command.c_str());
 	_seeker.feedString(command);
 	_seeker.rebuild(R_MIDDLE_PARAM);
 	_seeker.consumeMany();
@@ -56,12 +57,9 @@ IRC_COMMAND_DEF(PART)
 	return ;
 
 needMoreParam:
-	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "PART"));
-	return ;
+	return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "PART"));
 notOnChannel:
-	_send(client, _architect.ERR_NOTONCHANNEL(client.getTargetName(), targetName.c_str()));
-	return ;
+	return _send(client, _architect.ERR_NOTONCHANNEL(client.getTargetName(), targetName.c_str()));
 noSuchChannel:
-	_send(client, _architect.ERR_NOSUCHCHANNEL(client.getTargetName(), targetName.c_str()));
-	return ;
+	return _send(client, _architect.ERR_NOSUCHCHANNEL(client.getTargetName(), targetName.c_str()));
 }
