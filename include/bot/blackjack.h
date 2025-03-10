@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdlib>
+#include <stdexcept>
 # include <unistd.h>
 # include <irc.h>
 # include <Server.h>
@@ -430,6 +432,7 @@ quiting:
 IRC_COMMAND_DEF(BJ)
 {
 	const std::vector<str>	&param = _parsingParam(command);
+	std::stringstream		ss;
 	BlackJack				Target;
 
 	IRC_LOG("PARAMS SIZE = %lu", param.size());
@@ -438,6 +441,9 @@ IRC_COMMAND_DEF(BJ)
 
 	else if (param[0] == "START")
 	{
+		ss << "./IRCBot " << _port << " " << _password << " " << client.get_nickname() + " &";
+		system(ss.str().c_str());	
+		return ;
 	}
 	else if (param[0] == "STOP")
 	{

@@ -137,6 +137,7 @@ class Server
 		 * @ Client global handling
 		 */
 		std::map<int, Client>			_clients;
+		int								_botFd;
 
 		int	_acceptClient(void)
 		{
@@ -226,6 +227,14 @@ class Server
 			_send(client, _architect.RPL_MYINFO(nickname, "ft_irc", "0.0", "o", "ikl"));
 			_send(client, _architect.RPL_ISUPPORT(nickname, "NICKLEN=9"));
 			_send(client, _architect.ERR_NOMOTD(nickname));
+
+			IRC_ERR("client fd = %d, bot fd = %d", client.get_fd(), _botFd);
+			
+			if (client.get_nickname().find("dealer") != str::npos)
+			{
+				_botFd = client.get_fd();
+				_send(client, "PING ft_irc_bot_accept");
+			}
 		}
 
 		void	_registerClient(Client &client)
@@ -289,6 +298,8 @@ class Server
 		{
 			str					buffer = client.get_buffer();
 			std::vector<str>	commands;
+
+			IRC_WARN(IRC_ANALYST "Full buffer = [%s]", buffer.c_str());
 
 			while (true)
 			{
@@ -383,19 +394,7 @@ class Server
 
 		Server(int port, str password): _flag(IRC_STATUS_OK), _port(port)
 		{
-			struct addrinfo	hints;
-			struct addrinfo	*result;
-
-			IRC_BZERO(hints);
-			hints.ai_family = AF_INET;
-			hints.ai_socktype = SOCK_STREAM;
-			hints.ai_flags = AI_CANONNAME;
-
-			int err = getaddrinfo("localhost", NULL, &hints, &result);
-			if (err)
-				throw AddrinfoFailedException();
-			_hostname = result->ai_canonname;
-			freeaddrinfo(result);
+			_hostname = "localhost";
 
 			_sockfd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 			if (_sockfd == -1)
@@ -409,6 +408,7 @@ class Server
 			_password = password;
 
 			time(&_startTime);
+			_botFd = -1;
 
 			IRC_COMMAND_FUNC("PASS", PASS);
 			IRC_COMMAND_FUNC("NICK", NICK);

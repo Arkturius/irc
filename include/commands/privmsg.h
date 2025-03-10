@@ -20,11 +20,12 @@ IRC_COMMAND_DEF(PRIVMSG)
 		goto noTextToSend;
 	if (param.size() > 2)
 	{
-		IRC_WARN("to many params");
+		IRC_WARN("too many params");
 		return ;
 	}
 
-	msg = param[1].substr(1);
+	if (msg.at(0) == ':')
+		msg = param[1].substr(1);
 
 	_seeker.feedString(param[0]);
 	_seeker.rebuild(R_CAPTURE_TARGET_NAME);
