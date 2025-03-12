@@ -1,6 +1,7 @@
 .cache
 build
 ircserv
+IRCBot
 *.o
 *.json
 *.py

@@ -4,6 +4,7 @@
 # include <Channel.h>
 #include <vector>
 
+
 void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Client &client)
 {
 	IRC_LOG(IRC_ANALYST "joinning channel: %s with key %s", channelName.c_str(), channelKey ? channelKey->c_str() : "NULL");
@@ -42,6 +43,8 @@ channelExist:
 	}
 
 channelDoesntExist:
+	if (channelName.find("_table") == (channelName.size() - 6) && client.get_fd() != _botFd)
+		goto inviteOnlyChannel;
 	c = new Channel(channelName, fd);
 	_channelMap[channelName] = c;
 	goto joinChannel;
