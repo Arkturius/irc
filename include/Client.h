@@ -20,6 +20,8 @@ typedef enum:	uint32_t
 
 #define COMMA	,
 
+class BlackJack ;
+
 class Client: public ATarget
 {
 	private:
@@ -48,11 +50,12 @@ class Client: public ATarget
 		}
 
 		std::map<str, Channel *>	_channelMap;
+		BlackJack					*_bjTable;
 
 	public:
 		Client(void): ATarget() {}
 		~Client(void) {}
-		Client(uint32_t flag, int32_t fd): ATarget(), _flag(flag), _fd(fd), _username(""), _nickname("") {}
+		Client(uint32_t flag, int32_t fd): ATarget(), _flag(flag), _fd(fd), _username(""), _nickname(""),_bjTable(0) {}
 
 		void	readBytes(void)
 		{
@@ -118,6 +121,7 @@ class Client: public ATarget
 		GETTER(str, _lastPass);
 		GETTER(str, _buffer);
 		GETTER(std::map<str COMMA Channel *>, _channelMap);
+		GETTER(BlackJack *, _bjTable);
 		
 		GETTER_C(uint32_t, _flag);
 		GETTER_C(str, _username);
@@ -131,4 +135,5 @@ class Client: public ATarget
 		SETTER(str, _targetName);
 		SETTER(str, _nickname);
 		SETTER(str, _lastPass);
+		SETTER(BlackJack *, _bjTable);
 };

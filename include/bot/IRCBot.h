@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 13:11:04 by rgramati          #+#    #+#             */
-/*   Updated: 2025/03/10 18:43:38 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/03/12 18:29:53 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,7 +175,7 @@ class IRCBot
 			str authPayload;
 			authPayload += "PASS " + pass + "\r\n";
 			authPayload += "NICK " + nickname + "\r\n"; 
-			authPayload += "USER " + nickname + " 0 * :real_" + nickname + "\r\n";
+			authPayload += "USER " + summoner + " 0 * :real_" + nickname + "\r\n";
 			_send(authPayload);
 
 			_table = summoner + "_table";

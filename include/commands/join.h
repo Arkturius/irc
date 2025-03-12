@@ -16,6 +16,8 @@ void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Cli
 	goto channelDoesntExist;
 
 joinChannel:
+	if (channelName.find("_table") == (channelName.size() - 6) && client.get_fd() != _botFd)
+		client.set_bjTable(0); //TODO fill
 	client.joinChannel(c);
 	return _sendJoin(client, c);
 inviteOnlyChannel:

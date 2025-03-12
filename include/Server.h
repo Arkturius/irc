@@ -1,6 +1,7 @@
 #pragma once
 
 # include "bot/IRCBot.h"
+#include "bot/blackjack.h"
 # include <cstdlib>
 # include <sstream>
 # include <unistd.h>
@@ -234,6 +235,7 @@ class Server
 			{
 				_botFd = client.get_fd();
 				_send(client, "PING ft_irc_bot_accept");
+				client.set_bjTable(new BlackJack(client));
 			}
 		}
 
@@ -360,6 +362,8 @@ class Server
 		IRC_COMMAND_DECL(INVITE);
 		IRC_COMMAND_DECL(PART);
 		IRC_COMMAND_DECL(QUIT);
+
+		void	_blackJackCommands(Client &, BlackJack *, const std::vector<str> &);
 		IRC_COMMAND_DECL(BJ);
 
 		Client	*_getClientByName(const str userName)
@@ -525,3 +529,4 @@ class Server
 # include <commands/quit.h>
 
 # include <bot/blackjack.h>
+# include <bot/BJcommand.h>
