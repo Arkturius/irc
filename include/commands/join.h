@@ -10,14 +10,19 @@ void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Cli
 	IRC_LOG(IRC_ANALYST "joinning channel: %s with key %s", channelName.c_str(), channelKey ? channelKey->c_str() : "NULL");
 	int32_t			fd = client.get_fd();
 	Channel			*c = _getChannelByName(channelName);
+	size_t			findTable;
 
 	if (c)
 		goto channelExist;
 	goto channelDoesntExist;
 
 joinChannel:
-	if (channelName.find("_table") == (channelName.size() - 6) && client.get_fd() != _botFd)
-		client.set_bjTable(0); //TODO fill
+	findTable = channelName.find("_table");
+	if (findTable != str::npos && findTable == (channelName.size() - 6) && client.get_fd() != _botFd)
+	{
+		client.set_bjTable(c->get_bjTable());
+		c->get_bjTable()->addPlayer(client);
+	}
 	client.joinChannel(c);
 	return _sendJoin(client, c);
 inviteOnlyChannel:
@@ -45,10 +50,13 @@ channelExist:
 	}
 
 channelDoesntExist:
-	if (channelName.find("_table") == (channelName.size() - 6) && client.get_fd() != _botFd)
+	findTable = channelName.find("_table");
+	if (findTable != str::npos && findTable == (channelName.size() - 6) && client.get_fd() != _botFd)
 		goto inviteOnlyChannel;
 	c = new Channel(channelName, fd);
 	_channelMap[channelName] = c;
+	if (findTable != str::npos && findTable == (channelName.size() - 6))
+		c->set_bjTable(new BlackJack(client));
 	goto joinChannel;
 }
 

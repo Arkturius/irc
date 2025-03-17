@@ -1,0 +1,7 @@
+tester bj;
+
+bj summon -> join -> bj start -> bj stop -> Ctrl C = leak wtf je comprend pas
+bj start -> bj stop
+bj stop pendant la game
+join #other_table -> bj summon
+

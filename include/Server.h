@@ -199,9 +199,8 @@ class Server
 				}
 				else
 				{
-					IRC_ERR("ICI CA DEVRAIT PAS MARCHER");
 					IRC_FLAG_SET(clientIt->second, IRC_CHANNEL_IGNORED);
-					_commandPART(client, chan->getTargetName());
+					_commandPART(client, str(" ") + chan->getTargetName());
 				}
 			}
 		}

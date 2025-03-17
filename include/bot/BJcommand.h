@@ -5,14 +5,26 @@
 
 void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vector<str> &param)
 {
-	if (param[0] == "START")
+	//invite other player 2
+	if (!table)
+		throw "bro faut summon dabord";
+	if (param[0] == "INVITE")
 	{
-		return table->start(user);
 	}
+	if (param[0] == "KICK")
+	{
+	}
+	if (param[0] == "START")
+		return table->start(user);
 	if (param[0] == "STOP")
 	{
+		if (user.get_nickname() != table->get_dealer().get_client().get_username())
+			throw "Your not the Operator";
+
 		//TODO unsummon?
-		return table->stop(user);
+		table->stop(user);
+		delete table;
+		return ;
 	}
 	if (param[0] == "HIT")
 		return table->hit(user);
@@ -24,7 +36,7 @@ void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vecto
 		return table->doubleDown(user);
 	if (param[0] == "BET")
 	{
-		if (param.size() == 0)
+		if (param.size() == 1)
 			throw _architect.ERR_NEEDMOREPARAMS(user.getTargetName(), "BJ");
 		long	ele;
 		char	*tmp;
@@ -51,6 +63,7 @@ IRC_COMMAND_DEF(BJ)
 			; //already on a table
 		ss << "./IRCBot " << _port << " " << _password << " " << client.get_nickname() + " &";
 		system(ss.str().c_str());	
+
 		return ;
 	}
 	try
@@ -65,6 +78,7 @@ IRC_COMMAND_DEF(BJ)
 	catch (const char *e)
 	{
 		IRC_LOG("%s", e);
+		return ;
 	}
 
 	needMoreParam:

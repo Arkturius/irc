@@ -75,7 +75,6 @@ class Channel: public ATarget
 		Channel(str channelName, int firstClient): ATarget(channelName), _userLimit(100), _flag(0)
 		{
 			IRC_LOG("Channel constructor called : |%s|", channelName.c_str());
-
 			_addClient(firstClient, IRC_CHANNEL_OPERATOR);
 		}
 
