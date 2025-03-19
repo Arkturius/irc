@@ -1,8 +1,10 @@
 #pragma once
 
 # include "bot/IRCBot.h"
-#include "bot/blackjack.h"
+# include "bot/blackjack.h"
+
 # include <cstdlib>
+# include <deque>
 # include <sstream>
 # include <unistd.h>
 # include <sys/types.h>
@@ -138,7 +140,7 @@ class Server
 		 * @ Client global handling
 		 */
 		std::map<int, Client>			_clients;
-		int								_botFd;
+		std::deque<int>					_botFd;
 
 		int	_acceptClient(void)
 		{
@@ -228,11 +230,11 @@ class Server
 			_send(client, _architect.RPL_ISUPPORT(nickname, "NICKLEN=9"));
 			_send(client, _architect.ERR_NOMOTD(nickname));
 
-			IRC_ERR("client fd = %d, bot fd = %d", client.get_fd(), _botFd);
+			IRC_ERR("client fd = %d", client.get_fd());
 			
 			if (client.get_nickname().find("dealer") != str::npos)
 			{
-				_botFd = client.get_fd();
+				_botFd.push_back(client.get_fd());
 				_send(client, "PING ft_irc_bot_accept");
 				client.set_bjTable(new BlackJack(client));
 			}
@@ -411,7 +413,6 @@ class Server
 			_password = password;
 
 			time(&_startTime);
-			_botFd = -1;
 
 			IRC_COMMAND_FUNC("PASS", PASS);
 			IRC_COMMAND_FUNC("NICK", NICK);

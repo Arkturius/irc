@@ -4,21 +4,32 @@
 # include <Channel.h>
 #include <vector>
 
+static bool	channelIsATable(const str &channelName)
+{
+	const size_t	&findTable = channelName.find("_table");
+	return (findTable != str::npos && findTable == (channelName.size() - 6));
+}
+
+static bool	userIsDealer(int &fd, std::deque<int> &botFds)
+{
+	for (size_t i = 0; i < botFds.size(); i++)
+		if (fd == botFds[i])
+			return true;
+	return false;
+}
 
 void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Client &client)
 {
 	IRC_LOG(IRC_ANALYST "joinning channel: %s with key %s", channelName.c_str(), channelKey ? channelKey->c_str() : "NULL");
 	int32_t			fd = client.get_fd();
 	Channel			*c = _getChannelByName(channelName);
-	size_t			findTable;
 
 	if (c)
 		goto channelExist;
 	goto channelDoesntExist;
 
 joinChannel:
-	findTable = channelName.find("_table");
-	if (findTable != str::npos && findTable == (channelName.size() - 6) && client.get_fd() != _botFd)
+	if (channelIsATable(channelName) && !userIsDealer(client.get_fd(), _botFd))
 	{
 		client.set_bjTable(c->get_bjTable());
 		c->get_bjTable()->addPlayer(client);
@@ -50,12 +61,11 @@ channelExist:
 	}
 
 channelDoesntExist:
-	findTable = channelName.find("_table");
-	if (findTable != str::npos && findTable == (channelName.size() - 6) && client.get_fd() != _botFd)
+	if (channelIsATable(channelName) && !userIsDealer(client.get_fd(), _botFd))
 		goto inviteOnlyChannel;
 	c = new Channel(channelName, fd);
 	_channelMap[channelName] = c;
-	if (findTable != str::npos && findTable == (channelName.size() - 6))
+	if (channelIsATable(channelName))
 		c->set_bjTable(new BlackJack(client));
 	goto joinChannel;
 }
