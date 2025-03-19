@@ -1,8 +1,10 @@
 tester bj:
 
 [] bj summon -> join -> bj start -> bj stop -> Ctrl C = leak wtf je comprend pas
-[] bj start -> bj stop
-[] bj stop pendant la game
-[] join #other_table -> bj summon
-[] bj STOP => unsommon the bot!
+[] bj stop pendant la game?
+
 [] PART x_table => proprely quit table
+[] PART your_table => BJ STOP => unsommon
+
+[] si le bot est un programme, le static marche pas trop; dealer0++ => dealer0 (=/= programme) => erreur
+	->peut etre ecrire dans un fichier / lire le resultat du server!
