@@ -5,12 +5,9 @@
 
 void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vector<str> &param)
 {
-	//invite other player 2
+	//invite other player 2: INVITE work!
 	if (!table)
 		throw "bro faut summon dabord";
-	if (param[0] == "INVITE")
-	{
-	}
 	if (param[0] == "KICK")
 	{
 	}

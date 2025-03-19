@@ -257,6 +257,8 @@ class BlackJack
 					newmoney = it->second->getbetting();
 				else if (it->second->handValue() >= value)
 					newmoney = 2 * it->second->getbetting();
+				if (it->second->handValue() > 21 && it->second->handValue() != BLACKJACK)
+					newmoney = 0;
 				it->second->getmoney() += newmoney;
 				std::stringstream	stream;
 				stream << newmoney;
