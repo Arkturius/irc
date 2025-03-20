@@ -29,13 +29,14 @@ void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Cli
 	goto channelDoesntExist;
 
 joinChannel:
+	client.joinChannel(c);
+	_sendJoin(client, c);
 	if (channelIsATable(channelName) && !userIsDealer(client.get_fd(), _botFd))
 	{
 		client.set_bjTable(c->get_bjTable());
 		c->get_bjTable()->addPlayer(client);
 	}
-	client.joinChannel(c);
-	return _sendJoin(client, c);
+	return ;
 inviteOnlyChannel:
 	return _send(client, _architect.ERR_INVITEONLYCHAN(client.getTargetName(), channelName.c_str()));
 channelIsFull:

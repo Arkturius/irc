@@ -62,7 +62,7 @@ class Channel: public ATarget
 
 			for (IRC_AUTO it = _clientsMap.begin(); it != _clientsMap.end(); ++it)
 			{
-				if (IRC_FLAG_GET(it->second, IRC_CHANNEL_IGNORED))
+				if (IRC_FLAG_GET(it->second, IRC_CHANNEL_IGNORED | IRC_CHANNEL_INVITED))
 					ignoredClient++;
 				else
 					_write(it->first, newString);
@@ -105,7 +105,7 @@ class Channel: public ATarget
 			size_t	size = 0;
 			for (IRC_AUTO it = _clientsMap.begin(); it != _clientsMap.end(); ++it)
 			{
-				if (IRC_FLAG_GET(it->second, IRC_CHANNEL_IGNORED))
+				if (!IRC_FLAG_GET(it->second, IRC_CHANNEL_INVITED))
 					size++;
 			}
 			return size;

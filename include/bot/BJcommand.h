@@ -23,6 +23,20 @@ void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vecto
 		if (user.get_nickname() == table->get_dealer().get_client().get_username())
 		{
 			table->stop(user);
+			std::map<int, Hand *>	&players = table->get_players();
+			std::map<int, Hand *>::iterator next;
+			for (IRC_AUTO it = players.begin(); it != players.end(); it = next)
+			{
+				next = it;
+				next++;
+				Client	&client = it->second->get_client();
+				if (client.get_fd() != user.get_fd())
+					_commandKICK(client, str(" #") + user.get_nickname() + "_table");
+				client.set_bjTable(0);
+				delete it->second;
+				players.erase(it);
+			}
+			players.clear();
 			_disconnectClient(table->get_dealer().get_client());
 			//TODO unsummon!!! il tourne dans le vide je crois?
 		}
