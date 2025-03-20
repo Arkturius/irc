@@ -6,12 +6,12 @@
 
 --
 
-(y)	bj summon -> join -> bj start -> bj stop -> Ctrl C = leak wtf je comprend pas
+(X)	bj summon -> join -> bj start -> bj stop -> Ctrl C = leak wtf je comprend pas
 {}	bj stop pendant la game?
 {}	bj summon -> ne jamais join
 
 {}	KICK dans un channel BJ
-{}	PART x_table => proprely quit table
+{X}	PART x_table => proprely quit table
 
 []	PART your_table => BJ STOP => unsommon
 

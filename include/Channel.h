@@ -100,7 +100,16 @@ class Channel: public ATarget
 			_addClient(fdClient, 0);
 		}
 
-		int		get_size() const {return _clientsMap.size();}
+		int		get_size() const
+		{
+			size_t	size = 0;
+			for (IRC_AUTO it = _clientsMap.begin(); it != _clientsMap.end(); ++it)
+			{
+				if (IRC_FLAG_GET(it->second, IRC_CHANNEL_IGNORED))
+					size++;
+			}
+			return size;
+		}
 		void	invite(int fdClient) {_addClient(fdClient, IRC_CHANNEL_INVITED);}
 		bool	isInvited(int fdClient) {
 			int flagClient = _getClient(fdClient);

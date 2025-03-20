@@ -22,8 +22,7 @@ typedef enum:	uint32_t
 	BJ_AS_BET	=	1U << 1,
 
 	BJ_WAITING	=	1U << 2,
-	BJ_OPERATOR	=	1U << 3,
-	BJ_INVITEED	=	1U << 4,
+	BJ_PLAYER	=	1U << 3,
 
 	BJ_BETTING	=	1U << 6,
 	BJ_PLAYING	=	1U << 7,
@@ -325,6 +324,7 @@ class BlackJack
 				_players[fd]->get_flag() = BJ_WAITING;
 				_players[fd]->sendToPlayer("waiting the game end");
 			}
+			IRC_FLAG_SET(_players[fd]->get_flag(), BJ_PLAYER);
 		}
 
 		void	start(Client &client)
@@ -466,7 +466,7 @@ class BlackJack
 
 		void	quit(Client &client)
 		{
-			if (client.get_fd() == _dealer.get_client().get_fd())
+			if (IRC_FLAG_GET(client.get_flag(), BJ_PLAYER))
 				return ;
 			str	summoner_name =  _dealer.get_client().get_username();
 			if (client.get_nickname() == summoner_name)
@@ -502,6 +502,8 @@ quiting:
 
 		void	stop(Client &client)
 		{
+			if (IRC_FLAG_GET(client.get_flag(), BJ_PLAYER))
+				return ;
 			str	summoner_name =  _dealer.get_client().get_username();
 			
 			std::map<int, Hand *>::iterator next;

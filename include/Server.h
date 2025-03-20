@@ -208,6 +208,7 @@ class Server
 					_commandPART(client, str(" ") + chan->getTargetName());
 				}
 			}
+			//should kick is bot if summoned?
 		}
 
 		void	_disconnectClient(Client &client)

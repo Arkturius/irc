@@ -20,12 +20,16 @@ void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vecto
 		throw "bro faut summon dabord";
 	if (param.size() == 0)
 	{
-		if (user.get_nickname() != table->get_dealer().get_client().get_username())
-			return table->quit(user);
-		//TODO unsummon!!! il tourne dans le vide je crois?
-		table->stop(user);
-		_disconnectClient(table->get_dealer().get_client());
-		delete table;
+		if (user.get_nickname() == table->get_dealer().get_client().get_username())
+		{
+			table->stop(user);
+			_disconnectClient(table->get_dealer().get_client());
+			//TODO unsummon!!! il tourne dans le vide je crois?
+		}
+		else if (user.get_nickname() == table->get_dealer().get_client().get_nickname())
+			delete table;
+		else
+			table->quit(user);
 		return ;
 	}
 	if (param[0] == "START")
