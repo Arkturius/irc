@@ -45,7 +45,8 @@ IRC_COMMAND_DEF(INVITE)
 
 	_send(client, _architect.RPL_INVITING(client.getTargetName(), target->getTargetName(), channelName.c_str()));
 	channel->invite(target->get_fd());
-	return _send(*target, client.get_nickname() + " invited you to channel " + channelName);
+	target->sendMsg(client.get_nickname() + " invited you to channel " + channelName);
+	return ;
 
 errorUserOnChannel:
 	return _send(client, _architect.ERR_USERONCHANNEL(client.getTargetName(), target->getTargetName(), channelName.c_str()));

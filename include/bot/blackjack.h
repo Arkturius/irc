@@ -123,12 +123,11 @@ class	Hand
 		Client				&_client;
 
 	public:
-		void	sendToPlayer(const str &msg)
+		void	sendToPlayer(const str &msg, const str &dealer, const str &channel) const
 		{
-			//pk c du localhost???? ca devrai etre le dealer imo
 			std::stringstream	stream;
 			stream << money;
-			str string = str(":localhost PRIVMSG #") + _client.getTargetName();
+			str string = str(":") + dealer + str(" PRIVMSG #") + channel;
 			string += str(" :") + msg + str(" ($");
 			string += stream.str() + str(")\r\n");
 			write(_client.get_fd(), string.c_str(), string.size());
@@ -232,6 +231,14 @@ class BlackJack
 		size_t					_standingPlayers;
 		uint32_t				_flag;
 
+		void	_sendToPlayer(const Hand *hand, const str &msg)
+		{
+			const str	&dealer = _dealer.get_client().get_nickname();
+			const str	&channel = _dealer.get_client().get_username() + str("_table");
+
+			hand->sendToPlayer(msg, dealer, channel);
+		}
+
 		void	_startRound()
 		{
 			IRC_FLAG_SET(_flag, BJ_PLAYING);
@@ -240,7 +247,7 @@ class BlackJack
 			for (; it != _players.end(); ++it)
 			{
 				if (!IRC_FLAG_GET(it->second->get_flag(), BJ_WAITING))
-					it->second->sendToPlayer("every player as bet; you can now [stand|hit|double]");
+					_sendToPlayer(it->second, "every player as bet; you can now [stand|hit|double]");
 			}
 			_standingPlayers = 0;
 		}
@@ -272,8 +279,8 @@ class BlackJack
 				it->second->getmoney() += newmoney;
 				std::stringstream	stream;
 				stream << newmoney;
-				it->second->sendToPlayer(displayGame());
-				it->second->sendToPlayer(str("you have won ") + stream.str());
+				_sendToPlayer(it->second, displayGame());
+				_sendToPlayer(it->second,str("you have won ") + stream.str());
 			}
 			_restart();
 		}
@@ -286,7 +293,7 @@ class BlackJack
 			{
 				it->second->get_flag() = 0;
 				it->second->redraw(_deck.drawCard(), _deck.drawCard());
-				it->second->sendToPlayer("waiting for the host to restart the game");
+				_sendToPlayer(it->second,"waiting for the host to restart the game");
 			}
 			_flag = 0;
 			_standingPlayers = 0;
@@ -306,12 +313,12 @@ class BlackJack
 		{
 			int	fd = client.get_fd();
 			_players[fd] = new Hand(client, _deck.drawCard(), _deck.drawCard());
-			_players[fd]->sendToPlayer("starting the game with $1000");
+			_sendToPlayer(_players[fd], "starting the game with $1000");
 			_players[fd]->get_flag() = 0;
 			if (IRC_FLAG_GET(_flag, BJ_INGAME))
 			{
 				_players[fd]->get_flag() = BJ_WAITING;
-				_players[fd]->sendToPlayer("waiting the game end");
+				_sendToPlayer(_players[fd], "waiting the game end");
 			}
 		}
 
@@ -332,8 +339,8 @@ class BlackJack
 			{
 				//pk c pas un broadcast? car faut montrer la money
 				it->second->get_flag() = 0;
-				it->second->sendToPlayer(game);
-				it->second->sendToPlayer("you can now bet"); //WHY?
+				_sendToPlayer(it->second,game);
+				_sendToPlayer(it->second,"you can now bet"); //WHY?
 			}
 			_standingPlayers = 0;
 		}
@@ -350,7 +357,7 @@ class BlackJack
 			IRC_FLAG_SET(_players[fd]->get_flag(), BJ_AS_BET);
 			std::stringstream	stream;
 			stream << money;
-			_players[fd]->sendToPlayer(str("you bet $") + stream.str());
+			_sendToPlayer(_players[fd], str("you bet $") + stream.str());
 			if (++_standingPlayers == size())
 				_startRound();
 			IRC_LOG("BETTING STATS %zu/%zu", _standingPlayers,size());
@@ -364,7 +371,7 @@ class BlackJack
 			if (IRC_FLAG_GET(_players[fd]->get_flag(), BJ_STAND))
 				return ;
 			_players[fd]->addCard(_deck.drawCard());
-			_players[fd]->sendToPlayer(displayGame());
+			_sendToPlayer(_players[fd], displayGame());
 			if (_players[fd]->handValue() > 21 || _players[fd]->handValue() == BLACKJACK)
 				stand(client);
 		}
@@ -486,7 +493,7 @@ class BlackJack
 					_startRound();
 			}
 quiting:
-			it->second->sendToPlayer(str("your quitting the game of ") + summoner_name);
+			_sendToPlayer(it->second,str("your quitting the game of ") + summoner_name);
 		}
 
 		void	stop(Client &client)
@@ -501,7 +508,7 @@ quiting:
 				if (it->second->get_client().get_fd() != client.get_fd())
 					quit(it->second->get_client());
 				else
-					it->second->sendToPlayer("your stoping your game");
+					_sendToPlayer(it->second,"your stoping your game");
 			}
 		}
 
