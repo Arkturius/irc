@@ -92,9 +92,9 @@ class Deck
 					_allCard.push_back((Card){.color = j, .value = i});
 			}
 			_shuffleDeck(_allCard.begin(), _allCard.end(), std::rand);
-		};
+		}
 
-		~Deck() {};
+		~Deck() {}
 
 		Card	&drawCard()
 		{
@@ -160,12 +160,14 @@ class	Hand
 			_hand.push_back(secondCard);
 		}
 
-		Hand(Client &client, Card &firstCard, Card &secondCard):money(1000), _client(client)
+		Hand(Client &client, Card &firstCard, Card &secondCard): money(1000), _client(client)
 		{
 			_hand.push_back(firstCard);
 			_hand.push_back(secondCard);
 		}
+
 		~Hand() {}
+
 		Hand	&operator=(Hand const &other)
 		{
 			if (this != &other)
@@ -204,7 +206,7 @@ class	Hand
 
 # define CARD_TOP_T		"╭──┈"
 # define CARD_ICON_T	"│\x02" + cardIcon(0, card) + "\x02"
-# define CARD_MID_T		"│ \x02\x1d\x03" "15ir" "\x03\x1d\x02"
+# define CARD_MID_T		"│ \x02\x1d\x03""15ir\x03\x1d\x02"
 # define CARD_RICON_T	"│   "
 # define CARD_BTM_T		"╰──┈"
 
@@ -222,8 +224,7 @@ class BlackJack
 		void	_startRound()
 		{
 			IRC_FLAG_SET(_flag, BJ_PLAYING);
-			IRC_AUTO it = _players.begin();
-			for (; it != _players.end(); ++it)
+			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
 				if (!IRC_FLAG_GET(it->second->get_flag(), BJ_WAITING))
 					it->second->sendToPlayer("every player as bet; you can now [stand|hit|double]");
@@ -238,9 +239,7 @@ class BlackJack
 			int	value = _dealer.handValue();
 			if (value > 21 && value != BLACKJACK)
 				value = -1;
-
-			IRC_AUTO it = _players.begin();
-			for (; it != _players.end(); ++it)
+			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
 				int newmoney = 0;
 				if (it->second->handValue() == BLACKJACK && value != BLACKJACK)
@@ -293,9 +292,7 @@ class BlackJack
 
 		}
 
-		BlackJack(Client &dealer): _deck(Deck()), _dealer(dealer, _deck.drawCard(), _deck.drawCard())
-		{
-		}
+		BlackJack(Client &dealer): _deck(Deck()), _dealer(dealer, _deck.drawCard(), _deck.drawCard()) {}
 
 		void addPlayer(Client client)
 		{
@@ -415,7 +412,6 @@ class BlackJack
 				stop(client);
 				return ;
 			}
-
 
 			int fd = client.get_fd();
 			IRC_AUTO	it = _players.find(fd);

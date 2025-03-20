@@ -237,5 +237,5 @@ class IRCArchitect
 			return (reply);
 		}
 	
-	EXCEPTION(InvalidReplyParameterException, "Invalid reply parameter.");
+	EXCEPTION(InvalidReplyParameterException,	"Invalid reply parameter.");
 };
