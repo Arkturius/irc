@@ -43,7 +43,15 @@ void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vecto
 		else if (user.get_nickname() == table->get_dealer().get_client().get_nickname())
 			delete table;
 		else
+		{
 			table->quit(user);
+			std::map<int, Hand *>	&players = table->get_players();
+			int fd = user.get_fd();
+			IRC_AUTO	it = players.find(fd);
+			user.set_bjTable(0);
+			delete it->second;
+			players.erase(it);
+		}
 		return ;
 	}
 	if (param[0] == "START")

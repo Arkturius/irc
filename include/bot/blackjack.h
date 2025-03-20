@@ -325,14 +325,15 @@ class BlackJack
 				throw "Your not the Operator";
 
 			_flag =  BJ_BETTING;
-			IRC_AUTO it = _players.begin();
-			for (; it != _players.end(); ++it)
+			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
+				it->second->redraw(_deck.drawCard(), _deck.drawCard());
+			str	game = displayGame();
+			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
 				//pk c pas un broadcast? car faut montrer la money
 				it->second->get_flag() = 0;
-				it->second->redraw(_deck.drawCard(), _deck.drawCard());
+				it->second->sendToPlayer(game);
 				it->second->sendToPlayer("you can now bet"); //WHY?
-				it->second->sendToPlayer(displayGame());
 			}
 			_standingPlayers = 0;
 		}
@@ -352,6 +353,7 @@ class BlackJack
 			_players[fd]->sendToPlayer(str("you bet $") + stream.str());
 			if (++_standingPlayers == size())
 				_startRound();
+			IRC_LOG("BETTING STATS %zu/%zu", _standingPlayers,size());
 		}
 
 		void	hit(Client &client)
@@ -377,6 +379,7 @@ class BlackJack
 			IRC_FLAG_SET(_players[fd]->get_flag(), BJ_STAND);
 			if (++_standingPlayers == size())
 				_endRound();
+			IRC_LOG("STANDING STATS %zu/%zu", _standingPlayers,size());
 		}
 		void	doubleDown(Client &client)
 		{
@@ -507,7 +510,7 @@ quiting:
 			size_t	i = 0;
 			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
-				if (it->second->get_flag() == 0)
+				if (it->second->get_flag() != BJ_WAITING)
 					i++;
 			}
 			return i;
