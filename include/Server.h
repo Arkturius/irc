@@ -250,7 +250,7 @@ class Server
 			{
 				_send(client, _architect.ERR_PASSWDMISMATCH(client.get_nickname().c_str()));
 				_send(client, "ERROR");
-				_disconnectClient(client);
+				IRC_FLAG_SET((client).get_flag(), IRC_CLIENT_EOF);
 				return ;
 			}
 
