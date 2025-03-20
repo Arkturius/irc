@@ -19,7 +19,12 @@ void	Server::_kickUserFromChannel(const str &channelName, Client &admin, const s
 	try
 	{
 		if (!c->havePerm(admin.get_fd()))
-			goto clientDontHaveThePerm;
+		{
+			if (channelName == str("#") + admin.get_nickname() + str("_table"))
+				IRC_LOG("your not +o; but its still your table");
+			else
+				goto clientDontHaveThePerm;
+		}
 	}
 	catch (std::exception &e)
 	{
@@ -37,6 +42,7 @@ void	Server::_kickUserFromChannel(const str &channelName, Client &admin, const s
 
 succesfullKick:
 	IRC_LOG("kicked for %s", reason.c_str());
+	_clientPartBj(*kicked);
 	c->sendMsg(_architect.CMD_KICK(admin.get_nickname(), c->getTargetName(), kickedName.c_str(), reason.c_str()));
 	size = c->removeClient(kicked->get_fd());
 	if (size == 0)

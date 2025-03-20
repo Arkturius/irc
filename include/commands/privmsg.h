@@ -14,6 +14,9 @@ IRC_COMMAND_DEF(PRIVMSG)
 	std::vector<str>	targets;
 	const std::vector<str>	param = _parsingParam(command);
 
+	for (IRC_AUTO it = param.begin(); it != param.end(); ++it)
+		IRC_WARN("[%s]", it->c_str());
+
 	if (param.size() == 0)
 		goto needMoreParam;
 	if (param.size() == 1)
@@ -24,8 +27,9 @@ IRC_COMMAND_DEF(PRIVMSG)
 		return ;
 	}
 
-	if (msg.at(0) == ':')
+	if (param[1].at(0) == ':')
 		msg = param[1].substr(1);
+
 
 	_seeker.feedString(param[0]);
 	_seeker.rebuild(R_CAPTURE_TARGET_NAME);

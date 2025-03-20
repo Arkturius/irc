@@ -4,6 +4,19 @@
 # include <Channel.h>
 #include <vector>
 
+static bool	channelIsATable(const str &channelName)
+{
+	const size_t	&findTable = channelName.find("_table");
+	return (findTable != str::npos && findTable == (channelName.size() - 6));
+}
+
+static bool	userIsDealer(int &fd, std::deque<int> &botFds)
+{
+	for (size_t i = 0; i < botFds.size(); i++)
+		if (fd == botFds[i])
+			return true;
+	return false;
+}
 
 void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Client &client)
 {
@@ -16,10 +29,14 @@ void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Cli
 	goto channelDoesntExist;
 
 joinChannel:
-	if (channelName.find("_table") == (channelName.size() - 6) && client.get_fd() != _botFd)
-		client.set_bjTable(0); //TODO fill
 	client.joinChannel(c);
-	return _sendJoin(client, c);
+	_sendJoin(client, c);
+	if (channelIsATable(channelName) && !userIsDealer(client.get_fd(), _botFd))
+	{
+		client.set_bjTable(c->get_bjTable());
+		c->get_bjTable()->addPlayer(client);
+	}
+	return ;
 inviteOnlyChannel:
 	return _send(client, _architect.ERR_INVITEONLYCHAN(client.getTargetName(), channelName.c_str()));
 channelIsFull:
@@ -45,10 +62,12 @@ channelExist:
 	}
 
 channelDoesntExist:
-	if (channelName.find("_table") == (channelName.size() - 6) && client.get_fd() != _botFd)
+	if (channelIsATable(channelName) && !userIsDealer(client.get_fd(), _botFd))
 		goto inviteOnlyChannel;
 	c = new Channel(channelName, fd);
 	_channelMap[channelName] = c;
+	if (channelIsATable(channelName))
+		c->set_bjTable(client.get_bjTable());
 	goto joinChannel;
 }
 

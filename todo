@@ -1,0 +1,21 @@
+[] = a faire
+{} = a tester
+() = corriger erreur
+[y/r] = y/r le fait rn
+[X] = fini (autant enlever la ligne)
+
+--
+
+{}	bj stop pendant la game?
+
+[]	si le bot est un programme, le static marche pas trop; dealer0++ => dealer0 (=/= programme) => erreur
+		->peut etre ecrire dans un fichier / lire le resultat du server!
+
+[]	affichage sur pls ligne du BJ
+
+{}	USER name deLa merde en3parite
+{}	Toutes les commandes
+		COMMANDES FINI DE TESTER:
+{}	NICK en plein mileu (en gen; dans un channel; dans une game)
+
+{}	Faire plein de Playload pour tester les leaks eventuelle!

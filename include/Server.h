@@ -1,8 +1,10 @@
 #pragma once
 
 # include "bot/IRCBot.h"
-#include "bot/blackjack.h"
+# include "bot/blackjack.h"
+
 # include <cstdlib>
+# include <deque>
 # include <sstream>
 # include <unistd.h>
 # include <sys/types.h>
@@ -138,7 +140,7 @@ class Server
 		 * @ Client global handling
 		 */
 		std::map<int, Client>			_clients;
-		int								_botFd;
+		std::deque<int>					_botFd;
 
 		int	_acceptClient(void)
 		{
@@ -177,6 +179,7 @@ class Server
 			_addPollFd(client_fd);
 		}
 
+		void	_clientPartBj(Client &client);
 		void	_partAllChannel(Client &client, int flag)
 		{
 			int fd = client.get_fd();
@@ -190,6 +193,8 @@ class Server
 				std::map<int, int>	&clientMap = chan->get_clientsMap();
 				IRC_AUTO clientIt = clientMap.find(fd);
 
+				IRC_WARN("need to quit: %s", chan->getTargetName());
+
 				if (clientIt == clientMap.end())
 					continue ;
 				if (IRC_FLAG_GET(clientIt->second, IRC_CHANNEL_INVITED))
@@ -199,11 +204,11 @@ class Server
 				}
 				else
 				{
-					IRC_ERR("ICI CA DEVRAIT PAS MARCHER");
 					IRC_FLAG_SET(clientIt->second, IRC_CHANNEL_IGNORED);
-					_commandPART(client, chan->getTargetName());
+					_commandPART(client, str(" ") + chan->getTargetName());
 				}
 			}
+			//should kick is bot if summoned?
 		}
 
 		void	_disconnectClient(Client &client)
@@ -229,11 +234,11 @@ class Server
 			_send(client, _architect.RPL_ISUPPORT(nickname, "NICKLEN=9"));
 			_send(client, _architect.ERR_NOMOTD(nickname));
 
-			IRC_ERR("client fd = %d, bot fd = %d", client.get_fd(), _botFd);
+			IRC_ERR("client fd = %d", client.get_fd());
 			
 			if (client.get_nickname().find("dealer") != str::npos)
 			{
-				_botFd = client.get_fd();
+				_botFd.push_back(client.get_fd());
 				_send(client, "PING ft_irc_bot_accept");
 				client.set_bjTable(new BlackJack(client));
 			}
@@ -245,7 +250,7 @@ class Server
 			{
 				_send(client, _architect.ERR_PASSWDMISMATCH(client.get_nickname().c_str()));
 				_send(client, "ERROR");
-				_disconnectClient(client);
+				IRC_FLAG_SET((client).get_flag(), IRC_CLIENT_EOF);
 				return ;
 			}
 
@@ -412,7 +417,6 @@ class Server
 			_password = password;
 
 			time(&_startTime);
-			_botFd = -1;
 
 			IRC_COMMAND_FUNC("PASS", PASS);
 			IRC_COMMAND_FUNC("NICK", NICK);

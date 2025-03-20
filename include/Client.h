@@ -50,12 +50,11 @@ class Client: public ATarget
 		}
 
 		std::map<str, Channel *>	_channelMap;
-		BlackJack					*_bjTable;
 
 	public:
 		Client(void): ATarget() {}
 		~Client(void) {}
-		Client(uint32_t flag, int32_t fd): ATarget(), _flag(flag), _fd(fd), _username(""), _nickname(""), _bjTable(0) {}
+		Client(uint32_t flag, int32_t fd): ATarget(), _flag(flag), _fd(fd), _username(""), _nickname("") {} 
 
 		void	readBytes(void)
 		{
@@ -121,9 +120,9 @@ class Client: public ATarget
 		GETTER(str, _lastPass);
 		GETTER(str, _buffer);
 		GETTER(std::map<str COMMA Channel *>, _channelMap);
-		GETTER(BlackJack *, _bjTable);
 		
 		GETTER_C(uint32_t, _flag);
+		GETTER_C(int32_t, _fd);
 		GETTER_C(str, _username);
 		GETTER_C(str, _nickname);
 		GETTER_C(str, _lastPass);
@@ -135,5 +134,4 @@ class Client: public ATarget
 		SETTER(str, _targetName);
 		SETTER(str, _nickname);
 		SETTER(str, _lastPass);
-		SETTER(BlackJack *, _bjTable);
 };

@@ -1,0 +1,1 @@
+PASS test\r\nNICK a\r\nUSER a 0 * :r\r\nPONG ft_irc\r\nJOIN #test\r\nTOPIC #test :new topic\r\nTOPIC #test\r\nTOPIC #existepas :test\r\nTOPIC #test nouveautopic\t\nTOPIC\r\n

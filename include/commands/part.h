@@ -13,7 +13,6 @@ IRC_COMMAND_DEF(PART)
 	const std::vector<str>	&param = _parsingParam(command);
 	std::vector<str>		targets;
 
-	IRC_ERR("command PART:  <%s>", command.c_str());
 	_seeker.feedString(command);
 	if (param.size() == 0)
 		goto needMoreParam;
@@ -43,6 +42,7 @@ IRC_COMMAND_DEF(PART)
 		try {target->havePerm(fd);}
 		catch (std::exception &e) { goto notOnChannel; }
 
+		_clientPartBj(client);
 		target->sendMsg(_architect.CMD_PART(client.get_nickname(), target->getTargetName()));
 		int size = target->removeClient(fd);
 		if (size == 0)

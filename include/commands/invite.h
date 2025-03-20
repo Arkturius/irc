@@ -29,8 +29,13 @@ IRC_COMMAND_DEF(INVITE)
 	{
 		goto errorYouAreNotOnChannel;
 	}
-	if (!perm && IRC_FLAG_GET(channel->get_flag(), IRC_CHANNEL_INVITE_ONLY))
-		goto errorNoPerm;
+	if (!perm)
+	{
+		if (channelName == str("#") + client.get_nickname() + str("_table"))
+			IRC_LOG("your not +o; but its still your table");
+		else if (IRC_FLAG_GET(channel->get_flag(), IRC_CHANNEL_INVITE_ONLY))
+			goto errorNoPerm;
+	}
 	try
 	{
 		channel->havePerm(target->get_fd());

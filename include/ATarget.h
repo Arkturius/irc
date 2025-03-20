@@ -2,15 +2,19 @@
 
 # include <irc.h>
 
+class BlackJack;
+
 class ATarget
 {
 	protected:
-		str		_targetName;
-		bool	_targetIsChannel;
+		str			_targetName;
+		bool		_targetIsChannel;
+		BlackJack	*_bjTable;
 
 	public:
-		ATarget(void): _targetIsChannel(0) {};
-		ATarget(str name): _targetName(name), _targetIsChannel(1) {};
+		ATarget(void): _targetIsChannel(0), _bjTable(0) {};
+		ATarget(str name): _targetName(name), _targetIsChannel(1), _bjTable(0) {};
+
 
 		ATarget &operator=(ATarget const &other) 
 		{
@@ -30,4 +34,7 @@ class ATarget
 		SETTER(str, _targetName);
 		GETTER_C(str, _targetName);
 		GETTER_C(bool, _targetIsChannel);
+		GETTER(BlackJack *, _bjTable);
+		SETTER(BlackJack *, _bjTable);
 };
+

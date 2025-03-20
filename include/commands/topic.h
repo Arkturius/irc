@@ -18,7 +18,7 @@ IRC_COMMAND_DEF(TOPIC)
 	}
 	channelName = param[0];
 	if (param.size() == 2)
-		topic = param[1];
+		topic = param[1].at(0) == ':' ? param[1].substr(1) : param[1];
 
 	Channel	*channel = _getChannelByName(channelName);
 	int		perm = 0;
@@ -51,9 +51,9 @@ IRC_COMMAND_DEF(TOPIC)
 
 setNewTopic:
 	IRC_FLAG_SET(channel->get_flag(), IRC_CHANNEL_TOPIC_SET);
-	if (topic.size() == 1)
+	if (topic.size() == 0)
 		IRC_FLAG_DEL(channel->get_flag(), IRC_CHANNEL_TOPIC_SET);
-	channel->set_topic(topic.substr(2));
+	channel->set_topic(topic);
 	channel->set_topicSetterNickName(client.get_nickname());
 	channel->set_topicSetTime(time(NULL));
 	_sendTopic(client, channel);
