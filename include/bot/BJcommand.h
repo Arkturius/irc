@@ -7,6 +7,8 @@
 void	Server::_clientPartBj(Client &client)
 {
 	BlackJack				*table = client.get_bjTable();
+	if (!table)
+		return ;
 	const std::vector<str>	vec;
 	_blackJackCommands(client, table, vec);
 }

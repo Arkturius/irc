@@ -66,7 +66,7 @@ channelDoesntExist:
 	c = new Channel(channelName, fd);
 	_channelMap[channelName] = c;
 	if (channelIsATable(channelName))
-		c->set_bjTable(new BlackJack(client));
+		c->set_bjTable(client.get_bjTable());
 	goto joinChannel;
 }
 
