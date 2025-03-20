@@ -466,6 +466,11 @@ class BlackJack
 
 		void	quit(Client &client)
 		{
+			if (client.get_fd() == _dealer.get_client().get_fd())
+			{
+				client.set_bjTable(0);
+				return ;
+			}
 			str	summoner_name =  _dealer.get_client().get_username();
 			if (client.get_nickname() == summoner_name)
 			{
@@ -525,4 +530,3 @@ quiting:
 		GETTER(Hand, _dealer);
 		GETTER_C(Hand, _dealer);
 };
-

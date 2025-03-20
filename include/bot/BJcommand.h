@@ -2,33 +2,36 @@
 
 #include <Server.h>
 #include <bot/blackjack.h>
+#include <vector>
+
+void	Server::_clientPartBj(Client &client)
+{
+	BlackJack				*table = client.get_bjTable();
+	const std::vector<str>	vec;
+	_blackJackCommands(client, table, vec);
+}
 
 void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vector<str> &param)
 {
 	//invite other player 2: INVITE work!
 	if (!table)
 		throw "bro faut summon dabord";
-	if (param[0] == "KICK")
-	{
-	}
-	if (param[0] == "START")
-		return table->start(user);
-	if (param[0] == "STOP")
+	if (param.size() == 0)
 	{
 		if (user.get_nickname() != table->get_dealer().get_client().get_username())
-			throw "Your not the Operator";
-
-		//TODO unsummon?
+			return table->quit(user);
+		//TODO unsummon!!! il tourne dans le vide je crois?
 		table->stop(user);
+		_disconnectClient(table->get_dealer().get_client());
 		delete table;
 		return ;
 	}
+	if (param[0] == "START")
+		return table->start(user);
 	if (param[0] == "HIT")
 		return table->hit(user);
 	if (param[0] == "STAND")
 		return table->stand(user);
-	if (param[0] == "QUIT")
-		return table->quit(user);
 	if (param[0] == "DOUBLE")
 		return table->doubleDown(user);
 	if (param[0] == "BET")
@@ -57,7 +60,7 @@ IRC_COMMAND_DEF(BJ)
 	else if (param[0] == "SUMMON")
 	{
 		if (table)
-			; //already on a table
+			return ; //already on a table
 		ss << "./IRCBot " << _port << " " << _password << " " << client.get_nickname() + " &";
 		system(ss.str().c_str());	
 

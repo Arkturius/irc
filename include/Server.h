@@ -179,6 +179,7 @@ class Server
 			_addPollFd(client_fd);
 		}
 
+		void	_clientPartBj(Client &client);
 		void	_partAllChannel(Client &client, int flag)
 		{
 			int fd = client.get_fd();
@@ -191,6 +192,8 @@ class Server
 				Channel	*chan = it->second;
 				std::map<int, int>	&clientMap = chan->get_clientsMap();
 				IRC_AUTO clientIt = clientMap.find(fd);
+
+				IRC_WARN("need to quit: %s", chan->getTargetName());
 
 				if (clientIt == clientMap.end())
 					continue ;
