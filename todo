@@ -1,10 +1,27 @@
-tester bj:
+[] = a faire
+{} = a tester
+() = corriger erreur
+[y/r] = y/r le fait rn
+[X] = fini (autant enlever la ligne)
 
-[] bj summon -> join -> bj start -> bj stop -> Ctrl C = leak wtf je comprend pas
-[] bj stop pendant la game?
+--
 
-[] PART x_table => proprely quit table
-[] PART your_table => BJ STOP => unsommon
+()	bj summon -> join -> bj start -> bj stop -> Ctrl C = leak wtf je comprend pas
+{}	bj stop pendant la game?
 
-[] si le bot est un programme, le static marche pas trop; dealer0++ => dealer0 (=/= programme) => erreur
-	->peut etre ecrire dans un fichier / lire le resultat du server!
+[]	PART x_table => proprely quit table
+[]	PART your_table => BJ STOP => unsommon
+
+[]	si le bot est un programme, le static marche pas trop; dealer0++ => dealer0 (=/= programme) => erreur
+		->peut etre ecrire dans un fichier / lire le resultat du server!
+
+[]	affichage sur pls ligne du BJ
+[y]	affichage des noms et tunes des user dans Game Bj
+
+{}	USER name deLa merde en3parite
+{}	Toutes les commandes
+		COMMANDES FINI DE TESTER:
+
+{}	NICK en plein mileu (en gen; dans un channel; dans une game)
+
+{}	Faire plein de Playload pour tester les leaks eventuelle!
