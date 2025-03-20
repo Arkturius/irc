@@ -95,9 +95,9 @@ class Deck
 					_allCard.push_back((Card){.color = j, .value = i});
 			}
 			_shuffleDeck(_allCard.begin(), _allCard.end(), std::rand);
-		};
+		}
 
-		~Deck() {};
+		~Deck() {}
 
 		Card	&drawCard()
 		{
@@ -165,15 +165,14 @@ class	Hand
 			_hand.push_back(secondCard);
 		}
 
-		Hand(Client &client, Card &firstCard, Card &secondCard):money(1000), _client(client)
+		Hand(Client &client, Card &firstCard, Card &secondCard): money(1000), _client(client)
 		{
 			_hand.push_back(firstCard);
 			_hand.push_back(secondCard);
 		}
-		~Hand()
-		{
-			IRC_LOG("hand destructor");
-		}
+
+		~Hand() {}
+
 		Hand	&operator=(Hand const &other)
 		{
 			if (this != &other)
@@ -209,18 +208,18 @@ class	Hand
 };
 
 # define CARD_TOP		"╭─────╮"
-# define CARD_ICON		"│\x02" + cardIcon(0, card) + "\x02  │"
-# define CARD_MID		"│ \x02\x1d\x03" "irc" "\x03\x1d\x02 │"
-# define CARD_RICON		"│  \x02" + cardIcon(1, card) + "\x02│"
+# define CARD_ICON		"│" + cardIcon(0, card) + "  │"
+# define CARD_MID		"│ irc │"
+# define CARD_RICON		"│  " + cardIcon(1, card) + "│"
 # define CARD_BTM		"╰─────╯"
 
 # define CARD_TOP_T		"╭──┈"
-# define CARD_ICON_T	"│\x02" + cardIcon(0, card) + "\x02"
-# define CARD_MID_T		"│ \x02\x1d\x03" "ir" "\x03\x1d\x02"
+# define CARD_ICON_T	"│" + cardIcon(0, card) 
+# define CARD_MID_T		"│ ir"
 # define CARD_RICON_T	"│   "
 # define CARD_BTM_T		"╰──┈"
 
-# define CARD_SPACE		"       "
+# define CARD_SPACE		"		"
 
 class BlackJack
 {
@@ -242,9 +241,7 @@ class BlackJack
 		void	_startRound()
 		{
 			IRC_FLAG_SET(_flag, BJ_PLAYING);
-			IRC_FLAG_DEL(_flag, BJ_BETTING);
-			IRC_AUTO it = _players.begin();
-			for (; it != _players.end(); ++it)
+			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
 				if (!IRC_FLAG_GET(it->second->get_flag(), BJ_WAITING))
 					_sendToPlayer(it->second, "every player as bet; you can now [stand|hit|double]");
@@ -261,9 +258,7 @@ class BlackJack
 			int	value = _dealer.handValue();
 			if (value > 21 && value != BLACKJACK)
 				value = -1;
-
-			IRC_AUTO it = _players.begin();
-			for (; it != _players.end(); ++it)
+			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
 				if (IRC_FLAG_GET(it->second->get_flag(), BJ_WAITING))
 					continue ;
@@ -304,10 +299,7 @@ class BlackJack
 			IRC_LOG("bj destructor");
 		}
 
-		BlackJack(Client &dealer): _deck(Deck()), _dealer(dealer, _deck.drawCard(), _deck.drawCard()), _flag(0)
-		{
-			IRC_LOG("summoning blackjack game");
-		}
+		BlackJack(Client &dealer): _deck(Deck()), _dealer(dealer, _deck.drawCard(), _deck.drawCard()) {}
 
 		void addPlayer(Client &client)
 		{
@@ -528,5 +520,4 @@ quiting:
 
 		GETTER_C(Hand, _dealer);
 		GETTER_C(std::map<int COMMA Hand *>, _players);
-
 };

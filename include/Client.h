@@ -54,7 +54,7 @@ class Client: public ATarget
 	public:
 		Client(void): ATarget() {}
 		~Client(void) {}
-		Client(uint32_t flag, int32_t fd): ATarget(), _flag(flag), _fd(fd), _username(""), _nickname("") {}
+		Client(uint32_t flag, int32_t fd): ATarget(), _flag(flag), _fd(fd), _username(""), _nickname("") {} 
 
 		void	readBytes(void)
 		{
