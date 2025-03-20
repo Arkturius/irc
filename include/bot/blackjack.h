@@ -8,6 +8,7 @@
 # include <algorithm>
 # include <map>
 # include <stdint.h>
+#include <utility>
 # include <vector>
 # include <Client.h>
 # include <sstream>
@@ -26,7 +27,7 @@ typedef enum:	uint32_t
 
 	BJ_BETTING	=	1U << 6,
 	BJ_PLAYING	=	1U << 7,
-	BJ_INGAME	=	(1U << 8) - 1,
+	BJ_INGAME	=	(1U << 6) + (1U << 7),
 }	blackJackFlag;
 
 typedef struct
@@ -45,6 +46,8 @@ str	cardIcon(int reverse, const Card &card)
 	const str	icons[4] = { "♤ ", "♡ ", "♧ ", "♢ " }	;
 	str			value = "";
 
+	if (card.value == 63)
+		return "???";
 	switch (card.value)
 	{
 		case 10:
@@ -124,6 +127,7 @@ class	Hand
 	public:
 		void	sendToPlayer(const str &msg)
 		{
+			//pk c du localhost???? ca devrai etre le dealer imo
 			std::stringstream	stream;
 			stream << money;
 			str string = str(":localhost PRIVMSG #") + _client.getTargetName();
@@ -185,6 +189,10 @@ class	Hand
 			}
 			return *this;
 		}
+		size_t	size() const
+		{
+			return _hand.size();
+		}
 
 		GETTER(std::vector<Card>, _hand);
 		GETTER(uint32_t, _flag);
@@ -229,6 +237,7 @@ class BlackJack
 		void	_startRound()
 		{
 			IRC_FLAG_SET(_flag, BJ_PLAYING);
+			IRC_FLAG_DEL(_flag, BJ_BETTING);
 			IRC_AUTO it = _players.begin();
 			for (; it != _players.end(); ++it)
 			{
@@ -240,6 +249,7 @@ class BlackJack
 
 		void	_endRound()
 		{
+			IRC_FLAG_DEL(_flag, BJ_PLAYING);
 			while (_dealer.handValue() < 17)
 				_dealer.addCard(_deck.drawCard());
 
@@ -328,6 +338,7 @@ class BlackJack
 			IRC_AUTO it = _players.begin();
 			for (; it != _players.end(); ++it)
 			{
+				IRC_FLAG_DEL(it->second->get_flag(), BJ_WAITING);
 				//pk c pas un broadcast? car faut montrer la money
 				it->second->get_flag() = 0;
 				it->second->redraw(_deck.drawCard(), _deck.drawCard());
@@ -389,17 +400,34 @@ class BlackJack
 			stand(client);
 		}
 
+		str	nickNamesDisplay(str &name, char nbCard)
+		{
+			str	result = " ";
+			result += name;
+			char	spaces = 17 - name.size() + (nbCard - 2) * 4;
+			while (spaces--)
+				result += " ";
+			return result;
+		}
+
 		str	displayGame()
 		{
+			std::vector<std::pair<str, char> >	nickNames;
 			std::vector<Card>	all;
 
+			nickNames.push_back(std::make_pair("dealer", _dealer.size()));
 			all.insert(all.end(), _dealer.get_hand().begin(), _dealer.get_hand().end());
+			if (IRC_FLAG_GET(_flag, BJ_INGAME))
+				all[1].value = 63;
+
 			all.push_back((Card){.color = 0, .value = 0});
 
 			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
-				all.insert(all.end(), (*it).second->get_hand().begin(), (*it).second->get_hand().end());
+				Hand	*player = it->second;
+				all.insert(all.end(), player->get_hand().begin(), player->get_hand().end());
 				all.push_back((Card){.color = 0, .value = 0});
+				nickNames.push_back(std::make_pair(player->get_client().get_nickname(), player->size()));
 			}
 
 			str cardbanner = "\n";
@@ -423,6 +451,16 @@ class BlackJack
 				}
 				cardbanner += "\n";
 			}
+
+			for (size_t j = 0; j < nickNames.size(); j++)
+			{
+				char	size = nickNames[j].second;
+				if (j + 1 == nickNames.size())
+					size -= 2;
+				cardbanner += nickNamesDisplay(nickNames[j].first, size);
+			}
+			cardbanner += "\n";
+
 			return cardbanner;
 		}
 
@@ -434,13 +472,11 @@ class BlackJack
 				stop(client);
 				return ;
 			}
-
-
 			int fd = client.get_fd();
 			IRC_AUTO	it = _players.find(fd);
-			if (IRC_FLAG_GET(it->second->get_flag(), BJ_WAITING))
+			if (IRC_FLAG_GET(it->second->get_flag(), BJ_WAITING) || 
+				!IRC_FLAG_GET(_flag, BJ_INGAME))
 				goto quiting;
-			IRC_FLAG_SET(it->second->get_flag(), BJ_WAITING);
 			if (IRC_FLAG_GET(_flag, BJ_PLAYING))
 			{
 				if (!IRC_FLAG_GET(_players[fd]->get_flag(), BJ_STAND))
