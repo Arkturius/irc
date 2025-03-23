@@ -123,6 +123,10 @@ class	Hand
 		Client				&_client;
 
 	public:
+		void	sendMsg(const str &msg) const
+		{
+			write(_client.get_fd(), msg.c_str(), msg.size());
+		}
 		void	sendToPlayer(const str &msg, const str &dealer, const str &channel) const
 		{
 			std::stringstream	stream;
@@ -130,7 +134,7 @@ class	Hand
 			str string = str(":") + dealer + str(" PRIVMSG #") + channel;
 			string += str(" :") + msg + str(" ($");
 			string += stream.str() + str(")\r\n");
-			write(_client.get_fd(), string.c_str(), string.size());
+			sendMsg(string);
 		}
 
 		int		handValue()
@@ -237,11 +241,19 @@ class BlackJack
 
 			hand->sendToPlayer(msg, dealer, channel);
 		}
+		void	_sendDisplay(const Hand *hand)
+		{
+			const str	&msg = displayGame();
+
+			hand->sendMsg(msg);
+		}
+
 
 		void	_startRound()
 		{
 			IRC_FLAG_DEL(_flag, BJ_BETTING);
 			IRC_FLAG_SET(_flag, BJ_PLAYING);
+			IRC_FLAG_DEL(_flag, BJ_BETTING);
 			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
 				if (!IRC_FLAG_GET(it->second->get_flag(), BJ_WAITING))
@@ -275,7 +287,7 @@ class BlackJack
 				it->second->getmoney() += newmoney;
 				std::stringstream	stream;
 				stream << newmoney;
-				_sendToPlayer(it->second, displayGame());
+				_sendDisplay(it->second);
 				_sendToPlayer(it->second,str("you have won ") + stream.str());
 			}
 			_restart();
@@ -319,20 +331,19 @@ class BlackJack
 		{
 			if (IRC_FLAG_GET(_flag, BJ_INGAME))
 				return ;
-			IRC_LOG("starting the game");
 			str	summoner_name =  _dealer.get_client().get_username();
 			if (client.get_nickname() != summoner_name)
 				throw "Your not the Operator";
+			IRC_LOG("starting the game");
 
 			_flag =  BJ_BETTING;
 			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 				it->second->redraw(_deck.drawCard(), _deck.drawCard());
-			str	game = displayGame();
 			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
 				//pk c pas un broadcast? car faut montrer la money
 				it->second->get_flag() = 0;
-				_sendToPlayer(it->second,game);
+				_sendDisplay(it->second);
 				_sendToPlayer(it->second,"you can now bet"); //WHY?
 			}
 			_standingPlayers = 0;
@@ -364,7 +375,7 @@ class BlackJack
 			if (IRC_FLAG_GET(_players[fd]->get_flag(), BJ_STAND))
 				return ;
 			_players[fd]->addCard(_deck.drawCard());
-			_sendToPlayer(_players[fd], displayGame());
+			_sendDisplay(_players[fd]);
 			if (_players[fd]->handValue() > 21 || _players[fd]->handValue() == BLACKJACK)
 				stand(client);
 		}
@@ -397,14 +408,19 @@ class BlackJack
 		{
 			str	result = " ";
 			result += name;
-			char	spaces = 17 - name.size() + (nbCard - 2) * 4;
+			char	spaces = 10 - name.size() + (nbCard - 2) * 4;
 			while (spaces--)
 				result += " ";
+			result += CARD_SPACE;
 			return result;
 		}
 
 		str	displayGame()
-		{
+		{	
+			const str	&dealer = _dealer.get_client().get_nickname();
+			const str	&channel = _dealer.get_client().get_username() + str("_table");
+			const str	&start = str(":") + dealer + str(" PRIVMSG #") + channel +  str(" :");
+
 			std::vector<std::pair<str, char> >	nickNames;
 			std::vector<Card>	all;
 
@@ -423,7 +439,7 @@ class BlackJack
 				nickNames.push_back(std::make_pair(player->get_client().get_nickname(), player->size()));
 			}
 
-			str cardbanner = "\n";
+			str cardbanner = start;
 			for (int i = 0; i < 5; ++i)
 			{
 				for (size_t j = 0; j < all.size() - 1; ++j)
@@ -442,15 +458,16 @@ class BlackJack
 
 					cardbanner += parts[i + 5 * (nextCard.value == 0)];
 				}
-				cardbanner += "\n";
+				cardbanner += "\n" + start;
 			}
 
 			for (size_t j = 0; j < nickNames.size(); j++)
 			{
 				char	size = nickNames[j].second;
 				if (j + 1 == nickNames.size())
-					size -= 2;
-				cardbanner += nickNamesDisplay(nickNames[j].first, size);
+					cardbanner += " " + nickNames[j].first;
+				else
+					cardbanner += nickNamesDisplay(nickNames[j].first, size);
 			}
 			cardbanner += "\n";
 
