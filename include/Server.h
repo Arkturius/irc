@@ -112,6 +112,14 @@ class Server
 
 		void	_delPollFd(int fd)
 		{
+			for (IRC_AUTO it = _botFd.begin(); it != _botFd.end(); ++it)
+			{
+				if (fd == *it)
+				{
+					_botFd.erase(it);
+					break ;
+				}
+			}
 			for (size_t id = 0; id < _pollSet.size(); ++id)
 			{
 				if (_pollSet[id].fd == fd)
