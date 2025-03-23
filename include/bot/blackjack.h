@@ -341,10 +341,9 @@ class BlackJack
 				it->second->redraw(_deck.drawCard(), _deck.drawCard());
 			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
-				//pk c pas un broadcast? car faut montrer la money
 				it->second->get_flag() = 0;
 				_sendDisplay(it->second);
-				_sendToPlayer(it->second,"you can now bet"); //WHY?
+				_sendToPlayer(it->second,"you can now bet");
 			}
 			_standingPlayers = 0;
 		}

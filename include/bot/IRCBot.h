@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 13:11:04 by rgramati          #+#    #+#             */
-/*   Updated: 2025/03/20 14:49:29 by rgramati         ###   ########.fr       */
+/*   Updated: 2025/03/23 19:17:09 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,8 +62,6 @@ class IRCBot
 		void	_configTable()
 		{
 			str tablePayload;
-
-			// TODO : BLOCK "X's table" channels for all users
 
 			tablePayload += "JOIN #" + _table + "\r\n";
 			tablePayload += "MODE #" + _table + " +i" + "\r\n";

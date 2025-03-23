@@ -12,7 +12,7 @@ IRC_COMMAND_DEF(NICK)
 	_seeker.feedString(argv[0]);
 	_seeker.rebuild(R_NICKNAME);
 
-	if (!_seeker.consume() || !argv[0].compare(0, 6, "dealer"))
+	if (!_seeker.consume())
 		goto erroneusNickname;
 
 	for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)

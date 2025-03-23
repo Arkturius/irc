@@ -15,7 +15,6 @@ void	Server::_clientPartBj(Client &client)
 
 void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vector<str> &param)
 {
-	//invite other player 2: INVITE work!
 	if (!table)
 		throw "bro faut summon dabord";
 	if (param.size() == 0)
@@ -38,7 +37,6 @@ void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vecto
 			}
 			players.clear();
 			_disconnectClient(table->get_dealer().get_client());
-			//TODO unsummon!!! il tourne dans le vide je crois?
 		}
 		else if (user.get_nickname() == table->get_dealer().get_client().get_nickname())
 			delete table;
@@ -89,7 +87,7 @@ IRC_COMMAND_DEF(BJ)
 	else if (param[0] == "SUMMON")
 	{
 		if (table)
-			return ; //already on a table
+			return ;
 		IRC_LOG("Summoning blackjack dealer.");
 		ss << "./IRCBot " << "dealer" << dealerId++ << " " << _port << " " << _password << " " << client.get_nickname() + " &";
 		system(ss.str().c_str());	

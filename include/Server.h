@@ -47,6 +47,14 @@ typedef	void	(Server::*IRC_COMMAND_F)(Client &, const str &command);
 
 # define	IRC_NICKLEN	9
 
+static bool	userIsDealer(const int &fd, std::deque<int> &botFds)
+{
+	for (size_t i = 0; i < botFds.size(); i++)
+		if (fd == botFds[i])
+			return true;
+	return false;
+}
+
 class Server
 {
 	private:
@@ -205,10 +213,11 @@ class Server
 
 				if (clientIt == clientMap.end())
 					continue ;
+				chan->get_size();
 				if (IRC_FLAG_GET(clientIt->second, IRC_CHANNEL_INVITED))
 				{
 					if (IRC_FLAG_GET(flag, IRC_CHANNEL_INVITED))
-						IRC_FLAG_DEL(clientIt->second, IRC_CHANNEL_INVITED);
+						chan->removeClient(clientIt->second);
 				}
 				else
 				{
@@ -216,7 +225,14 @@ class Server
 					_commandPART(client, str(" ") + chan->getTargetName());
 				}
 			}
-			//should kick is bot if summoned?
+			for (IRC_AUTO it = _clients.begin(); it != _clients.end(); ++it)
+			{
+				if (client.get_nickname() == it->second.get_username() && userIsDealer(it->first, _botFd))
+				{
+					_disconnectClient(it->second);
+					return ;
+				}
+			}
 		}
 
 		void	_disconnectClient(Client &client)

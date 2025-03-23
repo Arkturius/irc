@@ -46,9 +46,6 @@ void	ircSigHandler(int sig)
 {
 	if (sig == SIGINT)
 	{
-		// TODO :	clear channels, disconnect clients properly etc ...
-		//			maybe have a function to do al of it cause we could exit from another place
-		//
 		IRC_OK("Server has been shut down by ^C.");
 		ircIO(IRC_STOP);
 		interrupt = true;

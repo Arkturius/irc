@@ -2,20 +2,12 @@
 
 # include <Server.h>
 # include <Channel.h>
-#include <vector>
+# include <vector>
 
 static bool	channelIsATable(const str &channelName)
 {
 	const size_t	&findTable = channelName.find("_table");
 	return (findTable != str::npos && findTable == (channelName.size() - 6));
-}
-
-static bool	userIsDealer(int &fd, std::deque<int> &botFds)
-{
-	for (size_t i = 0; i < botFds.size(); i++)
-		if (fd == botFds[i])
-			return true;
-	return false;
 }
 
 void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Client &client)
@@ -83,6 +75,8 @@ void	Server::_sendJoin(Client &client, Channel *channel)
 	IRC_AUTO fdList = channel->get_clientsMap();
 	for (IRC_AUTO it = fdList.begin(); it != fdList.end(); ++it)
 	{
+		if (IRC_FLAG_GET(it->first, IRC_CHANNEL_INVITED))
+			continue ;
 		IRC_AUTO s = _clients.find(it->first);
 		if (s != _clients.end())
 		{

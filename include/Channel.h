@@ -43,7 +43,7 @@ class Channel: public ATarget
 			_clientsMap[fdClient] = flag;
 		}
 
-		int32_t	_getClient(int fdClient)
+		int32_t	_getClient(int fdClient) const
 		{
 			IRC_AUTO	it = _clientsMap.find(fdClient);
 			if (it == _clientsMap.end())
@@ -110,8 +110,10 @@ class Channel: public ATarget
 			}
 			return size;
 		}
-		void	invite(int fdClient) {_addClient(fdClient, IRC_CHANNEL_INVITED);}
-		bool	isInvited(int fdClient) {
+		void	invite(int fdClient) {
+			_addClient(fdClient, IRC_CHANNEL_INVITED);
+		}
+		bool	isInvited(int fdClient) const {
 			int flagClient = _getClient(fdClient);
 			if (flagClient == -1)
 				return 0;
