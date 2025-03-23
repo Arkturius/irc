@@ -78,6 +78,7 @@ void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vecto
 
 IRC_COMMAND_DEF(BJ)
 {
+	static					int dealerId = 0;
 	const std::vector<str>	&param = _parsingParam(command);
 	std::stringstream		ss;
 	BlackJack				*table = client.get_bjTable();
@@ -89,7 +90,8 @@ IRC_COMMAND_DEF(BJ)
 	{
 		if (table)
 			return ; //already on a table
-		ss << "./IRCBot " << _port << " " << _password << " " << client.get_nickname() + " &";
+		IRC_LOG("Summoning blackjack dealer.");
+		ss << "./IRCBot " << "dealer" << dealerId++ << " " << _port << " " << _password << " " << client.get_nickname() + " &";
 		system(ss.str().c_str());	
 
 		return ;

@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 13:11:04 by rgramati          #+#    #+#             */
-/*   Updated: 2025/03/16 15:02:10 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/03/20 14:49:29 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,7 +152,7 @@ class IRCBot
 
 	public:
 
-		IRCBot(const str &port, const str &pass, const str &summoner): _flag(0), _summoner(summoner)
+		IRCBot(const str &nickname, const str &port, const str &pass, const str &summoner): _flag(0), _summoner(summoner)
 		{
 			IRC_LOG("Bot constructor called.");
 
@@ -169,8 +169,6 @@ class IRCBot
 
 			std::stringstream	ss;
 			ss << id;
-
-			str nickname = "dealer" + ss.str();
 
 			str authPayload;
 			authPayload += "PASS " + pass + "\r\n";

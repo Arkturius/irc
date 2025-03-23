@@ -240,6 +240,7 @@ class BlackJack
 
 		void	_startRound()
 		{
+			IRC_FLAG_DEL(_flag, BJ_BETTING);
 			IRC_FLAG_SET(_flag, BJ_PLAYING);
 			for (IRC_AUTO it = _players.begin(); it != _players.end(); ++it)
 			{
@@ -299,7 +300,7 @@ class BlackJack
 			IRC_LOG("bj destructor");
 		}
 
-		BlackJack(Client &dealer): _deck(Deck()), _dealer(dealer, _deck.drawCard(), _deck.drawCard()) {}
+		BlackJack(Client &dealer): _deck(Deck()), _dealer(dealer, _deck.drawCard(), _deck.drawCard()), _flag(0) {}
 
 		void addPlayer(Client &client)
 		{
