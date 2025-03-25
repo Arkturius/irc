@@ -75,7 +75,7 @@ void	Server::_sendJoin(Client &client, Channel *channel)
 	IRC_AUTO fdList = channel->get_clientsMap();
 	for (IRC_AUTO it = fdList.begin(); it != fdList.end(); ++it)
 	{
-		if (IRC_FLAG_GET(it->first, IRC_CHANNEL_INVITED))
+		if (IRC_FLAG_GET(it->second, IRC_CHANNEL_INVITED))
 			continue ;
 		IRC_AUTO s = _clients.find(it->first);
 		if (s != _clients.end())
