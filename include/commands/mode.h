@@ -98,7 +98,7 @@ invalidNewPassword:
 			return 0;
 		}
 	}
-	_send(client, _architect.ERR_UNKNOWNMODE(client.getTargetName(), mode));
+	_send(client, _architect.ERR_UNKNOWNMODE(client.getTargetName(), &mode));
 	return 1;
 
 needMoreParam:
@@ -167,13 +167,7 @@ IRC_COMMAND_DEF(MODE)
 		if (_individualMode(plus, individualModeChar, modeArguments, target, client))
 			return ;
 		const str	removeSet = str(plus ? "+" : "-") + individualModeChar;
-		switch (individualModeChar)
-		{
-			case ('k'):
-				return target->sendMsg(_architect.CMD_MODE(client.get_nickname(), target->getTargetName(), removeSet.c_str(), modeArguments.c_str()));
-			default:
-				return target->sendMsg(_architect.CMD_MODE(client.get_nickname(), target->getTargetName(), removeSet.c_str()));
-		}
+		target->sendMsg(_architect.CMD_MODE(client.get_nickname(), target->getTargetName(), removeSet.c_str(), modeArguments.c_str()));
 	}
 	return ;
 
