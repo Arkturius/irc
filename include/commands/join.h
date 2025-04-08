@@ -1,5 +1,6 @@
 #pragma once
 
+#include "irc.h"
 # include <Server.h>
 # include <Channel.h>
 # include <vector>
@@ -69,14 +70,16 @@ void	Server::_sendJoin(Client &client, Channel *channel)
 	str channelName = channel->getTargetName();
 	str topic = channel->get_topic();
 
-	str					clientListString;
+	str					clientListString = "";
 	int					addSpace = 0;
 
 	IRC_AUTO fdList = channel->get_clientsMap();
 	for (IRC_AUTO it = fdList.begin(); it != fdList.end(); ++it)
 	{
+		IRC_WARN("treating client..., flag = %u", it->first);
 		if (IRC_FLAG_GET(it->first, IRC_CHANNEL_INVITED))
 			continue ;
+		IRC_WARN("client in channel...");
 		IRC_AUTO s = _clients.find(it->first);
 		if (s != _clients.end())
 		{
@@ -85,8 +88,11 @@ void	Server::_sendJoin(Client &client, Channel *channel)
 			if (addSpace++)
 				clientListString += " ";
 			clientListString += name;
+			IRC_WARN("Name of client = [%s]", name.c_str());
 		}
 	}
+
+	IRC_WARN("client list is [%s]", clientListString.c_str());
 
 	channel->sendMsg(_architect.CMD_JOIN(clientName, channelName.c_str()));
 	_send(client, _architect.RPL_TOPIC(clientName.c_str(), channelName.c_str(), topic.c_str()));

@@ -12,9 +12,6 @@ IRC_COMMAND_DEF(QUIT)
 	if (argv.size() != 1)
 		return ;
 
-	if (!_seeker.get_didMatch())
-		return ;
-	
 	_send(client, "ERROR");
 	if (client.get_channelMap().size() != 0)
 		_broadcast("QUIT Quit: " + argv[0]);

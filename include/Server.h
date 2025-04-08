@@ -196,6 +196,7 @@ class Server
 		}
 
 		void	_clientPartBj(Client &client);
+
 		void	_partAllChannel(Client &client, int flag)
 		{
 			int fd = client.get_fd();
