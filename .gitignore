@@ -7,3 +7,4 @@ IRCBot
 *.py
 payload
 test.cpp
+*.log
