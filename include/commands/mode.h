@@ -86,19 +86,17 @@ invalidNewPassword:
 			long	ele;
 			char	*tmp;
 
+			if (!plus)
+				return target->set_userLimit(INT_MAX), 0;
 			if (modeArguments.size() == 0)
 				goto needMoreParam;
 			ele = strtol(modeArguments.c_str(), &tmp, 10);
 			if (errno == ERANGE || ele < 0 || ele > INT_MAX || *tmp)
 				goto invalidIntParam;
-			if (plus)
-				target->set_userLimit(ele);
-			else
-				target->set_userLimit(INT_MAX);
-			return 0;
+			return target->set_userLimit(ele), 0;
 		}
 	}
-	_send(client, _architect.ERR_UNKNOWNMODE(client.getTargetName(), &mode));
+	_send(client, _architect.ERR_UNKNOWNMODE(client.getTargetName(), (str("(") + mode + str(")")).c_str()));
 	return 1;
 
 needMoreParam:
@@ -137,6 +135,7 @@ IRC_COMMAND_DEF(MODE)
 	str						modeString;
 	Channel					*target;
 	const std::vector<str>	&argv = _parsingParam(command);
+	bool					plus;
 
 	if (!argv.size())
 		goto needMoreParam;
@@ -159,15 +158,28 @@ IRC_COMMAND_DEF(MODE)
 		goto invalidChannel;
 	}
 
+	if (modeString.at(0) == '+')
+		plus = 1;
+	else if (modeString.at(0) == '-')
+		plus = 0;
+	else
+		return ;
 	for (size_t i = 1; i < modeString.size(); i++)
 	{
-		const bool	&plus = modeString.c_str()[0] == '+';
-		const str	&modeArguments = i + 1 < argv.size() ? argv[i + 1] : "";
-		const char	&individualModeChar = modeString.c_str()[i];
-		if (_individualMode(plus, individualModeChar, modeArguments, target, client))
-			return ;
-		const str	removeSet = str(plus ? "+" : "-") + individualModeChar;
-		target->sendMsg(_architect.CMD_MODE(client.get_nickname(), target->getTargetName(), removeSet.c_str(), modeArguments.c_str()));
+		if (modeString.at(i) == '+')
+			plus = 1;
+		else if (modeString.at(i) == '-')
+			plus = 0;
+		else
+		{
+			const str	&modeArguments = i + 1 < argv.size() ? argv[i + 1] : "";
+			const char	&individualModeChar = modeString.c_str()[i];
+			IRC_LOG("simbol is [%c] for [%c] with [%s] as arg", plus ? '+' : '-', individualModeChar, modeArguments.c_str());
+			if (_individualMode(plus, individualModeChar, modeArguments, target, client))
+				return ;
+			const str	removeSet = str(plus ? "+" : "-") + individualModeChar;
+			target->sendMsg(_architect.CMD_MODE(client.get_nickname(), target->getTargetName(), removeSet.c_str(), modeArguments.c_str()));
+		}
 	}
 	return ;
 
