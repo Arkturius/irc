@@ -13,7 +13,6 @@ static bool	channelIsATable(const str &channelName)
 
 void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Client &client)
 {
-	IRC_LOG(IRC_ANALYST "joinning channel: %s with key %s", channelName.c_str(), channelKey ? channelKey->c_str() : "NULL");
 	int32_t			fd = client.get_fd();
 	Channel			*c = _getChannelByName(channelName);
 
@@ -78,7 +77,6 @@ void	Server::_sendJoin(Client &client, Channel *channel)
 	{
 		if (IRC_FLAG_GET(it->second, IRC_CHANNEL_INVITED))
 			continue ;
-		IRC_WARN("client in channel...");
 		IRC_AUTO s = _clients.find(it->first);
 		if (s != _clients.end())
 		{

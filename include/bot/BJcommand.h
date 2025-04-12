@@ -68,7 +68,7 @@ void	Server::_blackJackCommands(Client &user, BlackJack *table, const std::vecto
 		char	*tmp;
 		ele = strtol(param[1].c_str(), &tmp, 10);
 		if (errno == ERANGE || ele < 0 || ele > INT_MAX || *tmp)
-			throw "TODO parsing bet";
+			throw "invalid bet range";
 		return table->bet(user, ele);
 	}
 	throw "invalid cmd bj";
@@ -81,7 +81,6 @@ IRC_COMMAND_DEF(BJ)
 	std::stringstream		ss;
 	BlackJack				*table = client.get_bjTable();
 
-	IRC_LOG("PARAMS SIZE = %lu", param.size());
 	if (param.size() == 0)
 		goto needMoreParam;
 	else if (param[0] == "SUMMON")

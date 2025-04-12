@@ -1,1 +1,1 @@
-PASS test\r\nNICK youenn\r\nUSER a 0 * :r\r\nPONG ft_irc\r\nJOIN #test\r\nMODE #test -l+b\r\nCMDTEST #test
+PASS test\r\nNICK youenn\r\nUSER a 0 * :r\r\nPONG ft_irc\r\nJOIN #test\r\nIMODE #test -aa\r\n

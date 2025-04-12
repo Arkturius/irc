@@ -41,7 +41,6 @@ void	Server::_kickUserFromChannel(const str &channelName, Client &admin, const s
 	}
 
 succesfullKick:
-	IRC_LOG("kicked for %s", reason.c_str());
 	_clientPartBj(*kicked);
 	c->sendMsg(_architect.CMD_KICK(admin.get_nickname(), c->getTargetName(), kickedName.c_str(), reason.c_str()));
 	size = c->removeClient(kicked->get_fd());

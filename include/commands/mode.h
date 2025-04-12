@@ -174,7 +174,6 @@ IRC_COMMAND_DEF(MODE)
 		{
 			const str	&modeArguments = i + 1 < argv.size() ? argv[i + 1] : "";
 			const char	&individualModeChar = modeString.c_str()[i];
-			IRC_LOG("simbol is [%c] for [%c] with [%s] as arg", plus ? '+' : '-', individualModeChar, modeArguments.c_str());
 			if (_individualMode(plus, individualModeChar, modeArguments, target, client))
 				return ;
 			const str	removeSet = str(plus ? "+" : "-") + individualModeChar;
