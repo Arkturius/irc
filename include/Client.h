@@ -52,6 +52,7 @@ class Client: public ATarget
 		std::map<str, Channel *>	_channelMap;
 
 	public:
+
 		Client(void): ATarget() {}
 		~Client(void) {}
 		Client(uint32_t flag, int32_t fd): ATarget(), _flag(flag), _fd(fd), _username(""), _nickname("") {} 
@@ -111,7 +112,8 @@ class Client: public ATarget
 		{
 			write(_fd, (string + "\r\n").c_str(), string.size() + 2);
 		}
-		void	ignoredFlag(int, int32_t) {;}
+
+		void	ignoredFlag(int, int32_t) {}
 		
 		GETTER(uint32_t, _flag);
 		GETTER(int32_t, _fd);

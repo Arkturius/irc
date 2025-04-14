@@ -10,7 +10,7 @@ IRC_COMMAND_DEF(INVITE)
 		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "INVITE"));
 	if (param.size() > 2)
 	{
-		IRC_WARN("to many params");
+		IRC_WARN("INVITE: too many params");
 		return ;
 	}
 	const str	&nickName = param[0];
@@ -32,7 +32,7 @@ IRC_COMMAND_DEF(INVITE)
 	if (!perm)
 	{
 		if (channelName == str("#") + client.get_nickname() + str("_table"))
-			IRC_LOG("your not +o; but its still your table");
+			IRC_LOG("you're not operator, but it's still your table.");
 		else if (IRC_FLAG_GET(channel->get_flag(), IRC_CHANNEL_INVITE_ONLY))
 			goto errorNoPerm;
 	}

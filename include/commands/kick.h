@@ -21,7 +21,7 @@ void	Server::_kickUserFromChannel(const str &channelName, Client &admin, const s
 		if (!c->havePerm(admin.get_fd()))
 		{
 			if (channelName == str("#") + admin.get_nickname() + str("_table"))
-				IRC_LOG("your not +o; but its still your table");
+				IRC_LOG("you're not operator, but it's still your table.");
 			else
 				goto clientDontHaveThePerm;
 		}
@@ -41,7 +41,7 @@ void	Server::_kickUserFromChannel(const str &channelName, Client &admin, const s
 	}
 
 succesfullKick:
-	IRC_LOG("kicked for %s", reason.c_str());
+	IRC_LOG("%s kicked from %s for : %s", kickedName.c_str(), channelName.c_str(), reason.c_str());
 	_clientPartBj(*kicked);
 	c->sendMsg(_architect.CMD_KICK(admin.get_nickname(), c->getTargetName(), kickedName.c_str(), reason.c_str()));
 	size = c->removeClient(kicked->get_fd());
@@ -68,7 +68,7 @@ IRC_COMMAND_DEF(KICK)
 		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "KICK"));
 	if (param.size() > 3)
 	{
-		IRC_WARN("too many params");
+		IRC_WARN("KICK: too many params");
 		return ;
 	}
 

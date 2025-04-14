@@ -18,7 +18,7 @@ IRC_COMMAND_DEF(PART)
 		goto needMoreParam;
 	if (param.size() > 2)
 	{
-		IRC_WARN("to many params");
+		IRC_WARN("PART: too many params");
 		return ;
 	}
 	partReason = param.size() == 1 ? "" : param[1];

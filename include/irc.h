@@ -59,6 +59,6 @@ typedef std::string str;
 
 # define IRC_AUTO __auto_type
 
-# define IRC_CLIENT_CAP		9
+# define IRC_CLIENT_CAP		256
 
 # define	IRC_ERRNO_NOT_FATAL(e)	(e == ENETDOWN || e == EPROTO || e == ENOPROTOOPT || e == EHOSTDOWN || e == ENONET || e == EHOSTUNREACH || e == EOPNOTSUPP || e == ENETUNREACH)

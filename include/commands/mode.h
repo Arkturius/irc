@@ -76,7 +76,7 @@ bool	Server::_individualMode(bool plus, char mode, const str &modeArguments, Cha
 
 invalidPassword:
 			return _send(client, _architect.ERR_INVALIDMODEPARAM(client.getTargetName(), target->getTargetName(),
-						"k", modeArguments.c_str(), "To disable the password you need to enter the correct password")), 1;
+						"k", modeArguments.c_str(), "old password is needed to disable password.")), 1;
 invalidNewPassword:
 			return _send(client, _architect.ERR_INVALIDMODEPARAM(client.getTargetName(), target->getTargetName(),
 						"k", modeArguments.c_str(), "invalid input password")), 1;
@@ -105,7 +105,7 @@ needMoreParam:
 	_send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), (str("MODE (") + mode + str(")")).c_str()));
 	return 1;
 invalidIntParam:
-	_send(client, _architect.ERR_INVALIDMODEPARAM(client.getTargetName(), target->getTargetName(), "l", modeArguments.c_str(), "The limite sould be a possitiv integer"));
+	_send(client, _architect.ERR_INVALIDMODEPARAM(client.getTargetName(), target->getTargetName(), "l", modeArguments.c_str(), "the limit sould be a possitive integer."));
 	return 1;
 }
 

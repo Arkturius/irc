@@ -55,33 +55,26 @@ class Channel: public ATarget
 		{
 			write(fd, string.c_str(), string.size());
 		}
+
 		void	_broadcast(const str &string) const
 		{
-			int			ignoredClient = 0;
 			const str	newString = string + "\r\n";
 
 			for (IRC_AUTO it = _clientsMap.begin(); it != _clientsMap.end(); ++it)
 			{
-				if (IRC_FLAG_GET(it->second, IRC_CHANNEL_IGNORED | IRC_CHANNEL_INVITED))
-					ignoredClient++;
-				else
+				if (!(IRC_FLAG_GET(it->second, IRC_CHANNEL_IGNORED | IRC_CHANNEL_INVITED)))
 					_write(it->first, newString);
 			}
-			IRC_LOG("Channel Brodcast " BOLD(COLOR(YELLOW,"%s")) " to %d client (%d) ignored", string.c_str(), get_size(), ignoredClient);
 		}
 	
 	public:
 
 		Channel(str channelName, int firstClient): ATarget(channelName), _userLimit(100), _flag(0)
 		{
-			IRC_LOG("Channel constructor called : |%s|", channelName.c_str());
 			_addClient(firstClient, IRC_CHANNEL_OPERATOR);
 		}
 
-		~Channel(void)
-		{
-			IRC_LOG("Channel destructor called.");
-		}
+		~Channel(void) {}
 
 		void	addClient(int fdClient, const str *password)
 		{
@@ -108,16 +101,22 @@ class Channel: public ATarget
 				if (!IRC_FLAG_GET(it->second, IRC_CHANNEL_INVITED))
 					size++;
 			}
-			return size;
+			return (size);
 		}
-		void	invite(int fdClient) {
+
+		void	invite(int fdClient)
+		{
 			_addClient(fdClient, IRC_CHANNEL_INVITED);
 		}
-		bool	isInvited(int fdClient) const {
+
+		bool	isInvited(int fdClient) const
+		{
 			int flagClient = _getClient(fdClient);
+
 			if (flagClient == -1)
-				return 0;
-			return IRC_FLAG_GET(flagClient, IRC_CHANNEL_INVITED);
+				return (0);
+
+			return (IRC_FLAG_GET(flagClient, IRC_CHANNEL_INVITED));
 		}
 
 		int		removeClient(int fdClient)
@@ -126,6 +125,7 @@ class Channel: public ATarget
 
 			if (it == _clientsMap.end())
 				throw ClientNotInChannelException();
+
 			_clientsMap.erase(it);
 			return (get_size());
 		}
@@ -149,6 +149,7 @@ class Channel: public ATarget
 				IRC_FLAG_SET(it->second, IRC_CHANNEL_OPERATOR);
 			}
 		}
+
 		void	removePerm(int targetClient)
 		{
 			IRC_AUTO	it = _clientsMap.find(targetClient);
@@ -157,6 +158,7 @@ class Channel: public ATarget
 				throw ClientNotInChannelException();
 			IRC_FLAG_DEL(it->second, IRC_CHANNEL_OPERATOR);
 		}
+
 		void	ignoredFlag(int fd, int32_t ignored)
 		{
 			IRC_AUTO	it = _clientsMap.find(fd);

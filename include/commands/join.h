@@ -13,7 +13,7 @@ static bool	channelIsATable(const str &channelName)
 
 void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Client &client)
 {
-	IRC_LOG(IRC_ANALYST "joinning channel: %s with key %s", channelName.c_str(), channelKey ? channelKey->c_str() : "NULL");
+	IRC_LOG(BOLD(COLOR(CYAN,"%s"))" joinning channel: %s with key %s", client.get_nickname().c_str(), channelName.c_str(), channelKey ? channelKey->c_str() : "(none)");
 	int32_t			fd = client.get_fd();
 	Channel			*c = _getChannelByName(channelName);
 
@@ -76,10 +76,8 @@ void	Server::_sendJoin(Client &client, Channel *channel)
 	IRC_AUTO fdList = channel->get_clientsMap();
 	for (IRC_AUTO it = fdList.begin(); it != fdList.end(); ++it)
 	{
-		IRC_WARN("treating client..., flag = %u", it->first);
 		if (IRC_FLAG_GET(it->first, IRC_CHANNEL_INVITED))
 			continue ;
-		IRC_WARN("client in channel...");
 		IRC_AUTO s = _clients.find(it->first);
 		if (s != _clients.end())
 		{
@@ -88,11 +86,8 @@ void	Server::_sendJoin(Client &client, Channel *channel)
 			if (addSpace++)
 				clientListString += " ";
 			clientListString += name;
-			IRC_WARN("Name of client = [%s]", name.c_str());
 		}
 	}
-
-	IRC_WARN("client list is [%s]", clientListString.c_str());
 
 	channel->sendMsg(_architect.CMD_JOIN(clientName, channelName.c_str()));
 	_send(client, _architect.RPL_TOPIC(clientName.c_str(), channelName.c_str(), topic.c_str()));

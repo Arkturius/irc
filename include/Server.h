@@ -210,8 +210,6 @@ class Server
 				std::map<int, int>	&clientMap = chan->get_clientsMap();
 				IRC_AUTO clientIt = clientMap.find(fd);
 
-				IRC_WARN("need to quit: %s", chan->getTargetName());
-
 				if (clientIt == clientMap.end())
 					continue ;
 				chan->get_size();
@@ -259,8 +257,6 @@ class Server
 			_send(client, _architect.RPL_ISUPPORT(nickname, "NICKLEN=9"));
 			_send(client, _architect.ERR_NOMOTD(nickname));
 
-			IRC_ERR("client fd = %d", client.get_fd());
-			
 			if (client.get_nickname().find("dealer") != str::npos)
 			{
 				_botFd.push_back(client.get_fd());
@@ -320,9 +316,6 @@ class Server
 					return ;
 				}
 			}
-			
-			IRC_LOG(IRC_ANALYST "calling function : " BOLD(COLOR(GRAY,"[%s]")) ":" BOLD(COLOR(GRAY,"{%s}")) , mnemo.c_str(), strip.c_str());
-
 			(this->*(func->second))(client, strip);
 		}
 
@@ -330,8 +323,6 @@ class Server
 		{
 			str					buffer = client.get_buffer();
 			std::vector<str>	commands;
-
-			IRC_WARN(IRC_ANALYST "Full buffer = [%s]", buffer.c_str());
 
 			while (true)
 			{
@@ -363,7 +354,7 @@ class Server
 		{
 			IRC_AUTO	it = _clients.begin();
 
-			IRC_LOG("Server Brodcast " BOLD(COLOR(YELLOW,"%s")), string.c_str());
+			// Log server broadcast
 			for (; it != _clients.end(); ++it)
 				_send((*it).second, string);
 		}
@@ -458,7 +449,7 @@ class Server
 			IRC_COMMAND_FUNC("MODE", MODE);
 			IRC_COMMAND_FUNC("BJ", BJ);
 
-			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) " started.", _hostname.c_str(), _sockfd);
+			IRC_OK("ft_irc server " BOLD(COLOR(GRAY,"[%d]")) " started.", _sockfd);
 		}
 
 		~Server(void)
@@ -471,7 +462,7 @@ class Server
 			if (_sockfd > STDERR_FILENO)
 				close(_sockfd);
 
-			IRC_OK("ft_irc@%s server " BOLD(COLOR(GRAY,"[%d]")) " stopped.", _hostname.c_str(), _sockfd);
+			IRC_OK("ft_irc server " BOLD(COLOR(GRAY,"[%d]")) " stopped.", _sockfd);
 		}
 
 		void	init(void)
@@ -539,6 +530,8 @@ class Server
 	EXCEPTION(ServerAcceptFailedException,	"accept() failed.");
 };
 
+# include <IRCParsing.h>
+
 # include <commands/pass.h>
 # include <commands/nick.h>
 # include <commands/user.h>
@@ -546,7 +539,6 @@ class Server
 # include <commands/pong.h>
 # include <commands/ping.h>
 
-# include <IrcParsing.h>
 # include <commands/join.h>
 # include <commands/part.h>
 # include <commands/topic.h>

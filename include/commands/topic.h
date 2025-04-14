@@ -13,7 +13,7 @@ IRC_COMMAND_DEF(TOPIC)
 		return _send(client, _architect.ERR_NEEDMOREPARAMS(client.getTargetName(), "TOPIC"));
 	if (param.size() > 2)
 	{
-		IRC_WARN("to many params");
+		IRC_WARN("TOPIC: too many params");
 		return ;
 	}
 	channelName = param[0];
@@ -60,17 +60,13 @@ setNewTopic:
 	channel->sendMsg(_architect.CMD_TOPIC(client.get_nickname(), channelName.c_str(), channel->get_topic().c_str()));
 	return ;
 errorNotOnChannel:
-	_send(client, _architect.ERR_NOTONCHANNEL(client.getTargetName(), channelName.c_str()));
-	return ;
+	return _send(client, _architect.ERR_NOTONCHANNEL(client.getTargetName(), channelName.c_str()));
 errorNoSuchChannel:
-	_send(client, _architect.ERR_NOSUCHCHANNEL(client.getTargetName(), channelName.c_str()));
-	return ;
+	return _send(client, _architect.ERR_NOSUCHCHANNEL(client.getTargetName(), channelName.c_str()));
 errorPerm:
-	_send(client, _architect.ERR_CHANOPRIVSNEEDED(client.getTargetName(), channelName.c_str()));
-	return ;
+	return _send(client, _architect.ERR_CHANOPRIVSNEEDED(client.getTargetName(), channelName.c_str()));
 topicNotSet:
-	_send(client, _architect.RPL_NOTOPIC(client.getTargetName(), channelName.c_str()));
-	return ;
+	return _send(client, _architect.RPL_NOTOPIC(client.getTargetName(), channelName.c_str()));
 }
 
 void	Server::_sendTopic(Client &client, Channel *channel)

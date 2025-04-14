@@ -10,7 +10,7 @@ IRC_COMMAND_DEF(PING)
 		goto needMoreParams;
 	if (argv.size() != 1)
 	{
-		IRC_WARN("too many params.");
+		IRC_WARN("PING: too many params.");
 		return ;
 	}
 
