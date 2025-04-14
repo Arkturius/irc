@@ -309,7 +309,6 @@ class BlackJack
 
 	public:
 		~BlackJack() {
-			IRC_LOG("bj destructor");
 		}
 
 		BlackJack(Client &dealer): _deck(Deck()), _dealer(dealer, _deck.drawCard(), _deck.drawCard()), _flag(0) {}

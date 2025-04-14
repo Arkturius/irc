@@ -302,6 +302,7 @@ class Server
 
 			if (func == _commandFuncs.end())
 			{
+				_send(client, _architect.ERR_UNKNOWNCOMMAND(client.getTargetName(), mnemo.c_str()));
 				IRC_WARN(IRC_SEEKER "command not supported.");
 				return ;
 			}
