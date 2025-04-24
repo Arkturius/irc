@@ -42,7 +42,8 @@ IRC_COMMAND_DEF(PART)
 		try {target->havePerm(fd);}
 		catch (std::exception &e) { goto notOnChannel; }
 
-		_clientPartBj(client);
+		if (channelIsATable(targetName))
+			_clientPartBj(client);
 		target->sendMsg(_architect.CMD_PART(client.get_nickname(), target->getTargetName()));
 		int size = target->removeClient(fd);
 		if (size == 0)

@@ -5,12 +5,6 @@
 # include <Channel.h>
 # include <vector>
 
-static bool	channelIsATable(const str &channelName)
-{
-	const size_t	&findTable = channelName.find("_table");
-	return (findTable != str::npos && findTable == (channelName.size() - 6));
-}
-
 void	Server::_userJoinChannel(const str &channelName, const str *channelKey, Client &client)
 {
 	IRC_LOG(BOLD(COLOR(CYAN,"%s"))" joinning channel: %s with key %s", client.get_nickname().c_str(), channelName.c_str(), channelKey ? channelKey->c_str() : "(none)");

@@ -317,7 +317,7 @@ class BlackJack
 		{
 			int	fd = client.get_fd();
 			_players[fd] = new Hand(client, _deck.drawCard(), _deck.drawCard());
-			_sendToPlayer(_players[fd], "starting the game with $1000");
+			_sendToPlayer(_players[fd], "Joining the table with $1000");
 			_players[fd]->get_flag() = 0;
 			if (IRC_FLAG_GET(_flag, BJ_INGAME))
 			{

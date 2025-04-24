@@ -55,6 +55,12 @@ static bool	userIsDealer(const int &fd, std::deque<int> &botFds)
 	return false;
 }
 
+static bool	channelIsATable(const str &channelName)
+{
+	const size_t	&findTable = channelName.find("_table");
+	return (findTable != str::npos && findTable == (channelName.size() - 6));
+}
+
 class Server
 {
 	private:
