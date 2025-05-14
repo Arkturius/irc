@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 13:11:04 by rgramati          #+#    #+#             */
-/*   Updated: 2025/05/14 17:25:32 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/05/14 18:25:43 by rgramati         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,6 @@ class IRCBot
 
 		void	_send(const str &msg)
 		{
-			IRC_WARN("BOT sending - <%s>", msg.c_str());
 			write(_serverFd, msg.c_str(), msg.length());
 		}
 
@@ -86,8 +85,6 @@ class IRCBot
 			const std::vector<str>	&argv = _seeker.get_matches();
 			const str				&mnemo = argv[0];
 
-			IRC_LOG("Mnemonic = %s", mnemo.c_str());
-
 			if (mnemo == "PING" && argv.size() == 2)
 			{
 				const str	&token = argv[1];
@@ -101,8 +98,6 @@ class IRCBot
 
 		void	_handleMessage()
 		{
-			IRC_WARN("received message : [%s]", _buffer.c_str());
-
 			str					buffer = get_buffer();
 			std::vector<str>	commands;
 
@@ -139,6 +134,9 @@ class IRCBot
 			if (_sockfd == -1)
 				throw BotSocketFailedException();
 
+// 			int flags = fcntl(_sockfd, F_GETFL, 0);
+// 			fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK);
+
 			IRC_LOG("connecting to localhost:%s ...", port.c_str());
 			if (connect(_sockfd, result->ai_addr, result->ai_addrlen) != -1)
 			{
@@ -160,12 +158,7 @@ class IRCBot
 			if (id > IRC_BOT_LIMIT)
 				throw BotLimitExceededException();
 
-			int flags = fcntl(_serverFd, F_GETFL, 0);
-			fcntl(_serverFd, F_SETFL, flags | O_NONBLOCK);
-			
 			_serverFd = _connect(port);
-
-			IRC_LOG("new BlackJack dealer !");
 
 			std::stringstream	ss;
 			ss << id;
@@ -178,6 +171,12 @@ class IRCBot
 
 			_table = summoner + "_table";
 			id++;
+		}
+
+		~IRCBot(void)
+		{
+			for (uint32_t i = 3; i < 1024; ++i)
+				close(i);
 		}
 
 		void	readBytes(void)
@@ -199,15 +198,12 @@ class IRCBot
 
 		void	start(void)
 		{
-			IRC_WARN("BOT STARTED");
 			while (!IRC_FLAG_GET(_flag, IRC_CLIENT_EOF))
 			{
-				IRC_WARN("READING FROM SERVER...");
 				readBytes();
 				if (IRC_FLAG_GET(_flag, IRC_CLIENT_EOT))
 					_handleMessage();
 			}
-			IRC_WARN("BOT STOPPED");
 			str quitPayload = "QUIT :No more bets !\r\n";
 			_send(quitPayload);
 		}
