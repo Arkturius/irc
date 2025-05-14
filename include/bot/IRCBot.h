@@ -6,7 +6,7 @@
 /*   By: rgramati <rgramati@42angouleme.fr>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/06 13:11:04 by rgramati          #+#    #+#             */
-/*   Updated: 2025/04/12 17:02:58 by yroussea         ###   ########.fr       */
+/*   Updated: 2025/05/14 17:25:32 by yroussea         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,8 @@ class IRCBot
 				
 				if (token == "ft_irc")				{ return _send("PONG " + argv[1] + "\r\n"); }
 				if (token == "ft_irc_bot_accept")	{ return _configTable(); }
+
+				if (token == "ft_irc_bot_error")	{ IRC_FLAG_SET(_flag, IRC_CLIENT_EOF); return ;}
 			}
 		}
 

@@ -265,6 +265,14 @@ class Server
 
 			if (client.get_nickname().find("dealer") != str::npos)
 			{
+				for (IRC_AUTO it = _botFd.begin(); it != _botFd.end(); ++it)
+				{
+					if (_clients[*it].get_username() == client.get_username())
+					{
+						_send(client, "PING ft_irc_bot_error");
+						return ;
+					}
+				}
 				_botFd.push_back(client.get_fd());
 				_send(client, "PING ft_irc_bot_accept");
 				client.set_bjTable(new BlackJack(client));
